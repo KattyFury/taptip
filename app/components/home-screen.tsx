@@ -30,6 +30,19 @@ export default function HomeScreen({ primaryWallet, historyContent }: Props) {
     "main" | "deposit" | "withdraw" | "history"
   >("main");
   const [sendOpen, setSendOpen] = useState(false);
+  const [randomSendAmount, setRandomSendAmount] = useState<string | undefined>();
+
+  const startRandomTip = () => {
+    const balanceNum = isNaN(balance.token) ? 0 : balance.token;
+    if (balanceNum <= 0) {
+      toast.error("Không đủ số dư để tip ngẫu nhiên");
+      return;
+    }
+    const max = Math.min(5, balanceNum);
+    const random = Math.max(0.1, Math.random() * max);
+    setRandomSendAmount(random.toFixed(2));
+    setSendOpen(true);
+  };
 
   const copyAddress = () => {
     navigator.clipboard.writeText(primaryWallet.wallet_address);
@@ -76,21 +89,28 @@ export default function HomeScreen({ primaryWallet, historyContent }: Props) {
         <Button
           variant="secondary"
           className="flex-1 py-6 rounded-full"
-          onClick={() => toast.info("Tip ngẫu nhiên - sắp có")}
+          onClick={startRandomTip}
         >
           <Shuffle className="mr-1 h-4 w-4" />
           Ngẫu nhiên
         </Button>
         <Button
           className="flex-[2] py-6 rounded-full text-lg font-semibold"
-          onClick={() => setSendOpen(true)}
+          onClick={() => {
+            setRandomSendAmount(undefined);
+            setSendOpen(true);
+          }}
         >
           <Send className="mr-1 h-4 w-4" />
           Tip
         </Button>
       </div>
 
-      <SendFlow open={sendOpen} onOpenChange={setSendOpen} />
+      <SendFlow
+        open={sendOpen}
+        onOpenChange={setSendOpen}
+        initialAmount={randomSendAmount}
+      />
 
       {/* Hang 10: icon menu */}
       <div className="pb-4">

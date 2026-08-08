@@ -35,9 +35,10 @@ type Step = "amount" | "scan" | "sending" | "success";
 interface Props {
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  initialAmount?: string;
 }
 
-export default function SendFlow({ open, onOpenChange }: Props) {
+export default function SendFlow({ open, onOpenChange, initialAmount }: Props) {
   const { sendUSDC } = useWeb3();
   const { balance } = useBalance();
   const [step, setStep] = useState<Step>("amount");
@@ -66,7 +67,12 @@ export default function SendFlow({ open, onOpenChange }: Props) {
   }, []);
 
   useEffect(() => {
-    if (!open) {
+    if (open) {
+      if (initialAmount) {
+        setAmount(initialAmount);
+        setStep("scan");
+      }
+    } else {
       setStep("amount");
       setAmount(null);
       setShowCustomInput(false);
@@ -75,7 +81,7 @@ export default function SendFlow({ open, onOpenChange }: Props) {
       setScanError(null);
       stopScanner();
     }
-  }, [open]);
+  }, [open, initialAmount]);
 
   useEffect(() => {
     if (step === "scan") {
