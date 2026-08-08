@@ -18,9 +18,7 @@
 
 import type { ReactNode } from "react";
 import { redirect } from "next/navigation";
-import { Tabs } from "@/components/ui/tabs";
 import { createSupabaseServerComponentClient } from "@/lib/supabase/server-client";
-import BottomTabNavigation from "@/components/bottom-tab-navigation";
 
 interface Props {
   children: ReactNode
@@ -56,9 +54,8 @@ export default async function Layout({ children }: Props) {
     .eq("profile_id", profile.id);
 
   return (
-    <Tabs className="relative flex flex-col h-full px-5 pb-19" defaultValue="balance">
+    <div className="relative flex flex-col h-full px-5 pb-4">
       {children}
-      <BottomTabNavigation />
-    </Tabs>
+    </div>
   );
 }

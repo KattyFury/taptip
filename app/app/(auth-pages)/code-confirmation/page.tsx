@@ -29,38 +29,26 @@ import { GlobalContext } from "@/contexts/global-context";
 import { useContext, useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/utils/supabase/client";
-import {
-  toPasskeyTransport,
-  toWebAuthnCredential,
-  WebAuthnMode,
-} from "@circle-fin/modular-wallets-core";
 import { ArrowLeft } from "lucide-react";
-
-const clientKey = process.env.NEXT_PUBLIC_CIRCLE_CLIENT_KEY;
-const clientUrl = process.env.NEXT_PUBLIC_CIRCLE_CLIENT_URL;
-
-// Create Circle transports
-const passkeyTransport = toPasskeyTransport(clientUrl, clientKey);
 
 export default function CodeConfirmation() {
   const supabase = createClient();
   const router = useRouter();
-  const { phone } = useContext(GlobalContext);
+  const { email } = useContext(GlobalContext);
 
   useEffect(() => {
-    if (!phone) {
-      console.warn("Phone number not specified, redirecting back to /sign-in");
+    if (!email) {
+      console.warn("Email not specified, redirecting back to /sign-in");
       router.push("/sign-in");
     }
-  }, [phone, router]);
+  }, [email, router]);
 
-  if (!phone) {
+  if (!email) {
     return null;
   }
 
   const [loading, setLoading] = useState(false);
   const [confirmationCode, setConfirmationCode] = useState("");
-  const [isLoggingIn, setIsLoggingIn] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const isConfirmationCodeInvalid = useMemo(
@@ -82,19 +70,19 @@ export default function CodeConfirmation() {
       data: { session },
       error,
     } = await supabase.auth.verifyOtp({
-      phone,
+      email,
       token: confirmationCode,
-      type: "sms",
+      type: "email",
     });
 
     if (error) {
-      alert(error.message);
+      setError(error.message);
       setLoading(false);
       return;
     }
 
     if (!session) {
-      alert("Could not initialize session");
+      setError("Could not initialize session");
       setLoading(false);
       return;
     }
@@ -114,58 +102,56 @@ export default function CodeConfirmation() {
   };
 
   return (
-    <div className="flex flex-col w-full flex-1">
-      <Button
-        className="-mt-[46px] mb-[20px]"
-        variant="ghost"
-        size="icon"
-        onClick={() => router.push("/sign-in")}
-      >
-        <ArrowLeft />
-      </Button>
-      <div className="flex-1 flex flex-col min-w-64">
-        <h1 className="text-2xl font-bold mb-[20px]">
-          Please enter the code sent to
+    <div className="flex flex-col w-full h-full">
+      {/* Hang 1-6: noi dung can giua */}
+      <div className="flex-1 flex flex-col items-center justify-center gap-4 w-full max-w-xs mx-auto">
+        <h1 className="text-2xl font-bold text-center">
+          Nhập mã đã gửi tới
         </h1>
+        <p className="text-muted-foreground text-center">{email}</p>
 
-        <p className="text-xl text-muted-foreground mb-[20px]">{phone}</p>
+        <InputOTP
+          autoFocus
+          maxLength={6}
+          value={confirmationCode}
+          onChange={setConfirmationCode}
+        >
+          <InputOTPGroup>
+            <InputOTPSlot index={0} />
+            <InputOTPSlot index={1} />
+            <InputOTPSlot index={2} />
+          </InputOTPGroup>
+          <InputOTPSeparator />
+          <InputOTPGroup>
+            <InputOTPSlot index={3} />
+            <InputOTPSlot index={4} />
+            <InputOTPSlot index={5} />
+          </InputOTPGroup>
+        </InputOTP>
 
-        <div className="flex flex-col gap-4 flex-1">
-          <div className="space-y-2 mx-auto">
-            <InputOTP
-              autoFocus
-              maxLength={6}
-              value={confirmationCode}
-              onChange={setConfirmationCode}
-            >
-              <InputOTPGroup>
-                <InputOTPSlot index={0} />
-                <InputOTPSlot index={1} />
-                <InputOTPSlot index={2} />
-              </InputOTPGroup>
-              <InputOTPSeparator />
-              <InputOTPGroup>
-                <InputOTPSlot index={3} />
-                <InputOTPSlot index={4} />
-                <InputOTPSlot index={5} />
-              </InputOTPGroup>
-            </InputOTP>
-          </div>
+        {error && (
+          <small className="text-sm text-red-600 font-medium leading-none text-center">
+            {error}
+          </small>
+        )}
+      </div>
 
-          {error && (
-            <small className="text-sm text-red-600 font-medium leading-none">
-              {error}
-            </small>
-          )}
-
-          <Button
-            disabled={isConfirmationCodeInvalid || loading}
-            className="w-full mt-auto"
-            onClick={handleCodeValidation}
-          >
-            Next
-          </Button>
-        </div>
+      {/* Hang 9: Quay lai (1/3) + Tiep tuc (2/3) */}
+      <div className="flex gap-2 pb-4">
+        <Button
+          variant="outline"
+          className="flex-1 py-6 rounded-full"
+          onClick={() => router.push("/sign-in")}
+        >
+          <ArrowLeft className="h-4 w-4" />
+        </Button>
+        <Button
+          disabled={isConfirmationCodeInvalid || loading}
+          className="flex-[2] py-6 rounded-full text-lg font-semibold"
+          onClick={handleCodeValidation}
+        >
+          {loading ? "Đang xác nhận..." : "Tiếp tục"}
+        </Button>
       </div>
     </div>
   );

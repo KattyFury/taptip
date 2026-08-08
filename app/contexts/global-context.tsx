@@ -20,7 +20,7 @@ import type { Session } from '@supabase/supabase-js'
 import React, { type PropsWithChildren, createContext, useState } from 'react'
 
 interface Context {
-  phone?: string
+  email?: string
   firstName?: string
   lastName?: string
   username?: string

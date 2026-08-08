@@ -19,7 +19,8 @@ Nút hành động luôn nằm ở hàng 9. Hàng 10 để trống, trừ màn P
 - Nút "Tiếp tục" full-width, hàng 9
 
 **Màn 3 — Đăng nhập (Email + OTP)**
-- Nội dung căn giữa hàng 1-6: input email → nút "Gửi mã OTP" → 4 ô nhập OTP → "Gửi lại mã (60s)"
+- Nội dung căn giữa hàng 1-6: input email → nút "Gửi mã OTP" → 6 ô nhập OTP
+- ⚠️ Supabase free tier không cho tuỳ chỉnh email template mặc định — phải tự cấu hình SMTP riêng (Gmail App Password) qua Management API mới chèn được mã `{{ .Token }}` vào email. Không cấu hình SMTP thì email chỉ có link, không có mã để gõ. Xem `example/docs/06-build.md`
 - Hàng 9: nút "Quay lại" (1/3 trái) + nút "Tiếp tục" (2/3 phải)
 
 **Màn 4 — Thiết lập Passkey**

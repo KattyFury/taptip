@@ -50,10 +50,8 @@ export default function SetupWalletPage() {
   if (walletSetupComplete === undefined) return null
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-[60vh]">
-      <div className="max-w-md w-full p-6 bg-card border border-border rounded-lg shadow-sm">
-        <PasskeySetup username={username} />
-      </div>
+    <div className="flex flex-col w-full h-full">
+      <PasskeySetup username={username} />
     </div>
   );
 }

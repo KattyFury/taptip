@@ -17,12 +17,10 @@
  */
 
 import { redirect } from "next/navigation";
-import { TabsContent } from "@/components/ui/tabs";
 import dynamic from "next/dynamic";
 import { createSupabaseServerComponentClient } from "@/lib/supabase/server-client";
+import HomeScreen from "@/components/home-screen";
 
-const BalanceTab = dynamic(() => import("@/components/balance-tab"), { ssr: true });
-const WalletTab = dynamic(() => import("@/components/wallet-tab"), { ssr: true });
 const TransactionsTab = dynamic(() => import("@/components/transactions-tab"), { ssr: true });
 
 export default async function Dashboard() {
@@ -73,29 +71,10 @@ export default async function Dashboard() {
     blockchain: "ARC",
   };
 
-  // Create wallet models for UI (single wallet)
-  const walletModels = arcWallet ? [{
-    ...arcWallet,
-    chain: "arc"
-  }] : [{
-    blockchain: "ARC",
-    circle_wallet_id: "incomplete-setup",
-    wallet_address: user?.user_metadata?.wallet_address || "0x0",
-    profile_id: profile.id,
-    chain: "arc",
-  }].filter(wallet => wallet.wallet_address !== "0x0");
-
   return (
-    <>
-      <TabsContent value="balance" className="flex-1 flex flex-col">
-        <BalanceTab walletModels={walletModels} />
-      </TabsContent>
-      <TabsContent value="wallet" className="flex-1 flex flex-col">
-        <WalletTab />
-      </TabsContent>
-      <TabsContent value="transactions" className="flex-1 flex flex-col min-h-0 overflow-y-auto">
-        <TransactionsTab primaryWallet={primaryWallet} profile={profile} />
-      </TabsContent>
-    </>
+    <HomeScreen
+      primaryWallet={primaryWallet}
+      historyContent={<TransactionsTab primaryWallet={primaryWallet} profile={profile} />}
+    />
   );
 }

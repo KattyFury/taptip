@@ -25,7 +25,7 @@ import {
     toWebAuthnCredential,
 } from '@circle-fin/modular-wallets-core';
 import { Button } from "@/components/ui/button";
-import { useRouter } from 'next/navigation';
+import { ScanFace } from "lucide-react";
 import { createPublicClient } from 'viem';
 import {
     toWebAuthnAccount,
@@ -44,7 +44,6 @@ interface PasskeySetupProps {
 export function PasskeySetup({ username }: PasskeySetupProps) {
     const [isCreating, setIsCreating] = useState(false);
     const [error, setError] = useState<string | null>(null);
-    const router = useRouter();
 
     const clientKey = process.env.NEXT_PUBLIC_CIRCLE_CLIENT_KEY;
     const clientUrl = process.env.NEXT_PUBLIC_CIRCLE_CLIENT_URL;
@@ -136,34 +135,33 @@ export function PasskeySetup({ username }: PasskeySetupProps) {
     };
 
     return (
-        <div className="flex flex-col items-center justify-center gap-4 p-6">
-            <h2 className="text-xl font-semibold">Set Up Your Wallet with Passkey</h2>
-            <p className="text-muted-foreground text-center max-w-md">
-                Set up your wallet using a passkey for enhanced security.
-                This allows you to sign transactions with biometric authentication.
-            </p>
+        <div className="flex flex-col w-full h-full">
+            {/* Hang 1-6: icon + tieu de + mo ta, can giua */}
+            <div className="flex-1 flex flex-col items-center justify-center gap-4 w-full max-w-xs mx-auto">
+                <ScanFace className="h-16 w-16 text-primary" />
+                <h2 className="text-xl font-semibold text-center">Thiết lập Passkey</h2>
+                <p className="text-muted-foreground text-center">
+                    Xác thực bằng Face ID / vân tay thay vì mật khẩu. Lần sau mở
+                    app chỉ cần bước này, không cần nhớ gì.
+                </p>
 
-            {error && (
-                <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
-                    {error}
-                </div>
-            )}
+                {error && (
+                    <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded text-sm text-center">
+                        {error}
+                    </div>
+                )}
+            </div>
 
-            <Button
-                onClick={setupPasskey}
-                disabled={isCreating}
-                className="w-full max-w-xs"
-            >
-                {isCreating ? 'Setting up passkey...' : 'Set up with passkey'}
-            </Button>
-
-            <Button
-                variant="outline"
-                onClick={() => router.push('/dashboard')}
-                className="w-full max-w-xs"
-            >
-                Skip for now
-            </Button>
+            {/* Hang 9: nut hanh dong */}
+            <div className="pb-4">
+                <Button
+                    onClick={setupPasskey}
+                    disabled={isCreating}
+                    className="w-full py-6 rounded-full text-lg font-semibold"
+                >
+                    {isCreating ? 'Đang thiết lập...' : 'Bật passkey'}
+                </Button>
+            </div>
         </div>
     );
 }

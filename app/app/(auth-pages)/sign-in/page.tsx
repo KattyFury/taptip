@@ -24,88 +24,67 @@ import { createClient } from "@/lib/utils/supabase/client";
 import { GlobalContext } from "@/contexts/global-context";
 import { useRouter } from "next/navigation";
 import { ChangeEventHandler, useContext, useMemo, useState } from "react";
-import { InputMask, unformat } from "@react-input/mask";
-
-const phoneMask = '(X__) X__-____'
-const phoneReplacement = {
-  X: /[2-9]/,
-  _: /\d/
-}
 
 export default function SignIn() {
   const supabase = createClient()
   const router = useRouter()
-  const [phone, setPhone] = useState('')
-  const [unmaskedPhone, setUnmaskedPhone] = useState('')
+  const [email, setEmail] = useState('')
   const [loading, setLoading] = useState(false)
   const { updateState } = useContext(GlobalContext)
 
-  const prefixedPhone = useMemo(() => `+1${unmaskedPhone}`, [unmaskedPhone])
-  const isPhoneNumberInvalid = useMemo(() => unmaskedPhone.length !== 10, [unmaskedPhone])
+  const isEmailInvalid = useMemo(() => !/^\S+@\S+\.\S+$/.test(email), [email])
 
-  const handlePhoneChange: ChangeEventHandler<HTMLInputElement> = event => {
-    setPhone(event.target.value)
-
-    const unmaskedPhone = unformat(event.target.value, {
-      mask: phoneMask,
-      replacement: phoneReplacement
-    })
-
-    setUnmaskedPhone(unmaskedPhone)
+  const handleEmailChange: ChangeEventHandler<HTMLInputElement> = event => {
+    setEmail(event.target.value)
   }
 
-  const signUpWithPhone = async () => {
-    if (isPhoneNumberInvalid) {
-      const warningMessage = 'The phone number must have exactly 10 digits'
-      console.warn(warningMessage)
-      alert(warningMessage)
+  const signInWithEmail = async () => {
+    if (isEmailInvalid) {
+      alert('Nhập đúng định dạng email')
       return
     }
 
     setLoading(true)
 
-    const { error: otpSignInError } = await supabase.auth.signInWithOtp({
-      phone: prefixedPhone
-    })
+    const { error } = await supabase.auth.signInWithOtp({ email })
 
-    if (otpSignInError) {
-      alert(otpSignInError.message)
-      setLoading(false)
+    setLoading(false)
+
+    if (error) {
+      alert(error.message)
       return
     }
 
-    updateState({ phone: prefixedPhone })
+    updateState({ email })
 
     router.push('/code-confirmation')
   }
 
   return (
-    <div className="flex flex-col w-full flex-1">
-      <div className="flex-1 flex flex-col min-w-64">
-        <h1 className="text-2xl font-bold mb-[20px]">
-          Enter your phone
+    <div className="flex flex-col w-full h-full">
+      {/* Hang 1-6: noi dung can giua */}
+      <div className="flex-1 flex flex-col items-center justify-center gap-4 w-full max-w-xs mx-auto">
+        <h1 className="text-2xl font-bold text-center">
+          Nhập email để bắt đầu
         </h1>
+        <Input
+          type="email"
+          placeholder="Email"
+          value={email}
+          onChange={handleEmailChange}
+          className="text-center"
+        />
+      </div>
 
-        <div className="flex flex-col gap-4 mt-4 flex-1">
-          <div className="space-y-2">
-            <InputMask
-              component={Input}
-              mask={phoneMask}
-              replacement={phoneReplacement}
-              placeholder="Phone number"
-              value={phone}
-              onChange={handlePhoneChange}
-            />
-          </div>
-
-          <Button
-            disabled={isPhoneNumberInvalid || loading}
-            className="w-full mt-auto"
-            onClick={signUpWithPhone}
-          >
-            Next
-          </Button>
-        </div>
+      {/* Hang 9: nut hanh dong */}
+      <div className="pb-4">
+        <Button
+          disabled={isEmailInvalid || loading}
+          className="w-full py-6 rounded-full text-lg font-semibold"
+          onClick={signInWithEmail}
+        >
+          {loading ? "Đang gửi..." : "Gửi mã OTP"}
+        </Button>
       </div>
     </div>
   );
