@@ -214,35 +214,31 @@ export const Transactions: FunctionComponent<Props> = (props) => {
     );
   }, [formattedData, searchQuery]);
 
-  // Group transactions by month
+  // Group transactions by day (dung spec: header "ngay thang nam")
   const groupedTransactions = useMemo(() => {
     const groups: Record<string, typeof formattedData> = {};
-    const now = new Date();
 
     searchedData.forEach((transaction) => {
       const date = new Date(transaction.created_at);
+      const dayKey = date.toLocaleDateString('vi-VN', {
+        day: '2-digit',
+        month: '2-digit',
+        year: 'numeric',
+      });
 
-      let monthKey: string;
-      if (date.getMonth() === now.getMonth() && date.getFullYear() === now.getFullYear()) {
-        monthKey = "This month";
-      } else {
-        monthKey = date.toLocaleString('default', { month: 'long', year: 'numeric' });
-      }
+      transaction.formattedDate = date.toLocaleTimeString('vi-VN', {
+        hour: '2-digit',
+        minute: '2-digit',
+      });
 
-      const diffTime = Math.abs(now.getTime() - date.getTime());
-      const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-      transaction.formattedDate = diffDays <= 7
-        ? date.toLocaleDateString('en-US', { weekday: 'long' })
-        : date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
-
-      if (!groups[monthKey]) groups[monthKey] = [];
-      groups[monthKey]!.push(transaction);
+      if (!groups[dayKey]) groups[dayKey] = [];
+      groups[dayKey]!.push(transaction);
     });
 
     const sortedKeys = Object.keys(groups).sort((a, b) => {
-      const dateA = a === "This month" ? now : new Date(a);
-      const dateB = b === "This month" ? now : new Date(b);
-      return dateB.getTime() - dateA.getTime();
+      const [dA, mA, yA] = a.split('/').map(Number);
+      const [dB, mB, yB] = b.split('/').map(Number);
+      return new Date(yB, mB - 1, dB).getTime() - new Date(yA, mA - 1, dA).getTime();
     });
 
     const sortedGroups: Record<string, typeof formattedData> = {};
@@ -363,11 +359,14 @@ export const Transactions: FunctionComponent<Props> = (props) => {
       />
 
       <div className="space-y-8">
-        {Object.entries(groupedTransactions).map(([month, transactions]) => (
-          <div key={month}>
-            <h2 className="text-xl font-bold mb-2">{month}</h2>
+        {Object.entries(groupedTransactions).map(([day, transactions]) => (
+          <div key={day}>
+            <h2 className="text-xl font-bold mb-2">{day}</h2>
             <div className="space-y-4">
               {transactions.map((transaction) => {
+                const isReceived =
+                  transaction.transaction_type === 'USDC_TRANSFER_IN' ||
+                  transaction.transaction_type === 'received';
                 // Arc goes PENDING → COMPLETE directly, no CONFIRMED state
                 const statusClass = transaction.status === "COMPLETE"
                   ? "bg-green-100 text-green-800"
@@ -404,9 +403,12 @@ export const Transactions: FunctionComponent<Props> = (props) => {
                           {transaction.formattedDate}
                         </div>
                       </div>
-                      <div className="ml-auto font-medium">
-                        {(transaction.transaction_type === 'USDC_TRANSFER_IN' ||
-                          transaction.transaction_type === 'received') ? '+' : '-'}
+                      <div
+                        className={`ml-auto font-medium ${
+                          isReceived ? 'text-green-600' : 'text-red-600'
+                        }`}
+                      >
+                        {isReceived ? '+' : '-'}
                         {parseFloat(transaction.amount).toFixed(2)}
                       </div>
                     </div>
