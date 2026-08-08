@@ -13,6 +13,7 @@ import {
 } from "@/components/ui/dialog";
 import { useBalance } from "@/contexts/balanceContext";
 import { WalletBalance } from "@/components/wallet-balance";
+import SendFlow from "@/components/send-flow";
 
 interface Props {
   primaryWallet: {
@@ -25,6 +26,7 @@ export default function HomeScreen({ primaryWallet, historyContent }: Props) {
   const { balance } = useBalance();
   const [menuOpen, setMenuOpen] = useState(false);
   const [menuView, setMenuView] = useState<"main" | "history">("main");
+  const [sendOpen, setSendOpen] = useState(false);
 
   const formattedBalance =
     isNaN(balance.token) || balance.token === 0 ? "0" : balance.token.toFixed(2);
@@ -73,12 +75,14 @@ export default function HomeScreen({ primaryWallet, historyContent }: Props) {
         </Button>
         <Button
           className="flex-[2] py-6 rounded-full text-lg font-semibold"
-          onClick={() => toast.info("Quét QR để tip - sắp có")}
+          onClick={() => setSendOpen(true)}
         >
           <Send className="mr-1 h-4 w-4" />
           Tip
         </Button>
       </div>
+
+      <SendFlow open={sendOpen} onOpenChange={setSendOpen} />
 
       {/* Hang 10: icon menu */}
       <div className="pb-4">
