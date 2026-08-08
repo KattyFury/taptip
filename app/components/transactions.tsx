@@ -195,6 +195,7 @@ export const Transactions: FunctionComponent<Props> = (props) => {
   const [error, setError] = useState<string | null>(null);
   const [refreshing, setRefreshing] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
+  const [counterpartyNames, setCounterpartyNames] = useState<Record<string, string>>({});
 
   const formattedData = useMemo(
     () =>
@@ -259,6 +260,47 @@ export const Transactions: FunctionComponent<Props> = (props) => {
     return type
   };
 
+  const loadCounterpartyNames = async (transactions: Transaction[]) => {
+    const addresses = Array.from(
+      new Set(
+        transactions
+          .map((t) => t.circle_contract_address?.toLowerCase())
+          .filter((a): a is string => !!a)
+      )
+    );
+
+    if (addresses.length === 0) return;
+
+    const { data: matchedWallets } = await supabase
+      .from("wallets")
+      .select("wallet_address, profile_id")
+      .in("wallet_address", addresses);
+
+    if (!matchedWallets || matchedWallets.length === 0) return;
+
+    const profileIds = Array.from(
+      new Set(matchedWallets.map((w: any) => w.profile_id))
+    );
+
+    const { data: matchedProfiles } = await supabase
+      .from("profiles")
+      .select("id, name")
+      .in("id", profileIds);
+
+    const nameByProfileId: Record<string, string> = {};
+    (matchedProfiles || []).forEach((p: any) => {
+      if (p.name) nameByProfileId[p.id] = p.name;
+    });
+
+    const nameByAddress: Record<string, string> = {};
+    matchedWallets.forEach((w: any) => {
+      const name = nameByProfileId[w.profile_id];
+      if (name) nameByAddress[w.wallet_address.toLowerCase()] = name;
+    });
+
+    setCounterpartyNames(nameByAddress);
+  };
+
   const updateTransactions = async () => {
     try {
       setLoading(true);
@@ -278,6 +320,7 @@ export const Transactions: FunctionComponent<Props> = (props) => {
       );
 
       setData(transactions);
+      await loadCounterpartyNames(transactions);
     } catch (error) {
       console.error("Failed to fetch transactions:", error);
       setError(error instanceof Error ? error.message : "Unknown error occurred");
@@ -376,6 +419,15 @@ export const Transactions: FunctionComponent<Props> = (props) => {
                       ? "bg-red-100 text-red-800"
                       : "bg-gray-100 text-gray-800";
 
+                const counterpartyName = transaction.circle_contract_address
+                  ? counterpartyNames[transaction.circle_contract_address.toLowerCase()]
+                  : undefined;
+                const displayLabel = counterpartyName
+                  ? `Tip: ${counterpartyName}`
+                  : transaction.circle_transaction_id
+                    ? `${transaction.circle_transaction_id.slice(0, 6)}...${transaction.circle_transaction_id.slice(-4)}`
+                    : 'Unknown address';
+
                 return (
                   <div
                     key={transaction.id}
@@ -388,9 +440,7 @@ export const Transactions: FunctionComponent<Props> = (props) => {
                       <div className="flex-1">
                         <div className="flex items-center">
                           <span className="font-medium">
-                            {transaction.circle_transaction_id ?
-                              `${transaction.circle_transaction_id.slice(0, 6)}...${transaction.circle_transaction_id.slice(-4)}` :
-                              'Unknown address'}
+                            {displayLabel}
                           </span>
                           <Badge className={`ml-2 ${statusClass}`}>
                             {transaction.status}

@@ -81,3 +81,13 @@ Tip tiền và lì xì nhanh như trao tay.
    tại (VD "1s", "instant") vào làm niềm tin — phải test bằng cách hỏi
    "nếu con số này đổi, niềm tin có đổi theo không" để phân biệt niềm
    tin thật với chi tiết implementation tạm thời.
+
+---
+
+## Cập nhật khi build (08-08)
+
+Phát sinh ý tưởng lúc build Tính năng 4 (Lịch sử): thay vì hiện địa chỉ
+ví/hash giao dịch, hiện **tên người gửi/nhận** (VD "Tip: Minh Béo –
+20 USDC") — vì onboarding đã thu thập tên (`profiles.name`) sẵn rồi,
+tận dụng luôn thay vì hiện chuỗi hex khó đọc. Người dùng chính (60 tuổi)
+sẽ khó nhận ra "0x71c9...4a2" là ai, nhưng nhận ra ngay tên quen thuộc.
