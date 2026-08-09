@@ -24,6 +24,7 @@ import { useEffect, useMemo, useState, type FunctionComponent } from "react";
 import { useRouter } from "next/navigation";
 import { createSupabaseBrowserClient } from "@/lib/supabase/browser-client";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { arcTestnet } from "@/components/web3-provider";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Input } from "@/components/ui/input";
@@ -250,14 +251,21 @@ export const Transactions: FunctionComponent<Props> = (props) => {
   // Transaction type display mapping
   const getTransactionTypeDisplay = (type: string) => {
     if (type === "USDC_TRANSFER_IN" || type === "received") {
-      return "Payment received"
+      return "Đã nhận"
     }
 
     if (type === "USDC_TRANSFER_OUT" || type === "sent") {
-      return "Payment sent"
+      return "Đã gửi"
     }
 
     return type
+  };
+
+  const getStatusDisplay = (status: string) => {
+    if (status === "COMPLETE") return "Hoàn tất";
+    if (status === "PENDING") return "Đang xử lý";
+    if (status === "FAILED") return "Thất bại";
+    return status;
   };
 
   const loadCounterpartyNames = async (transactions: Transaction[]) => {
@@ -362,14 +370,16 @@ export const Transactions: FunctionComponent<Props> = (props) => {
 
   if (error) {
     return (
-      <div className="p-4 border border-red-300 bg-red-50 rounded-md text-red-800">
-        <p>Error loading transactions: {error}</p>
-        <button
+      <div className="p-4 border border-destructive bg-destructive/10 text-destructive">
+        <p>Lỗi tải giao dịch: {error}</p>
+        <Button
+          variant="destructive"
+          size="sm"
+          className="mt-2"
           onClick={updateTransactions}
-          className="mt-2 px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700"
         >
-          Retry
-        </button>
+          Thử lại
+        </Button>
       </div>
     );
   }
@@ -379,14 +389,14 @@ export const Transactions: FunctionComponent<Props> = (props) => {
       <>
         <div className="flex flex-col justify-between mb-4">
           <Input
-            placeholder="Search transactions..."
+            placeholder="Tìm giao dịch..."
             className="w-full mb-2"
             value={searchQuery}
             onChange={event => setSearchQuery(event.target.value)}
           />
         </div>
         <p className="text-xl text-muted-foreground">
-          No transactions found
+          Chưa có giao dịch nào
         </p>
       </>
     );
@@ -395,7 +405,7 @@ export const Transactions: FunctionComponent<Props> = (props) => {
   return (
     <>
       <Input
-        placeholder="Search transactions..."
+        placeholder="Tìm giao dịch..."
         className="w-full mb-2"
         value={searchQuery}
         onChange={event => setSearchQuery(event.target.value)}
@@ -426,7 +436,7 @@ export const Transactions: FunctionComponent<Props> = (props) => {
                   ? `Tip: ${counterpartyName}`
                   : transaction.circle_transaction_id
                     ? `${transaction.circle_transaction_id.slice(0, 6)}...${transaction.circle_transaction_id.slice(-4)}`
-                    : 'Unknown address';
+                    : 'Không rõ địa chỉ';
 
                 return (
                   <div
@@ -442,8 +452,8 @@ export const Transactions: FunctionComponent<Props> = (props) => {
                           <span className="font-medium">
                             {displayLabel}
                           </span>
-                          <Badge className={`ml-2 ${statusClass}`}>
-                            {transaction.status}
+                          <Badge className={`ml-2 rounded-none ${statusClass}`}>
+                            {getStatusDisplay(transaction.status)}
                           </Badge>
                         </div>
                         <div className="text-sm text-muted-foreground mt-1">

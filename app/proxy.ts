@@ -55,9 +55,10 @@ export async function proxy(request: NextRequest) {
     return NextResponse.redirect(new URL("/sign-in", request.url));
   }
 
-  // Redirects to sign-in when attempting to visit the landing page
-  if (request.nextUrl.pathname === "/") {
-    return NextResponse.redirect(new URL("/sign-in", request.url))
+  // "/" la man Splash + Add to Home Screen (app/page.tsx) - chi danh cho
+  // nguoi chua dang nhap. Da dang nhap thi bo qua, vao thang dashboard.
+  if (user && request.nextUrl.pathname === "/") {
+    return NextResponse.redirect(new URL("/dashboard", request.url))
   }
 
   return response;

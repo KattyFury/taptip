@@ -62,7 +62,7 @@ export default function Transaction() {
         setTransaction(parsedResponse.transaction);
       } catch (err) {
         console.error("Error fetching transaction:", err);
-        setError("Failed to load transaction details");
+        setError("Không tải được chi tiết giao dịch");
       } finally {
         setLoading(false);
       }
@@ -87,11 +87,11 @@ export default function Transaction() {
 
   if (error) {
     return (
-      <div className="p-4 border border-red-300 bg-red-50 rounded-md">
-        <h2 className="scroll-m-20 text-2xl font-semibold tracking-tight text-red-700">
-          Error Loading Transaction
+      <div className="p-4 border border-destructive bg-destructive/10">
+        <h2 className="scroll-m-20 text-2xl font-semibold tracking-tight text-destructive">
+          Lỗi tải giao dịch
         </h2>
-        <p className="text-red-600">{error}</p>
+        <p className="text-destructive">{error}</p>
       </div>
     );
   }
@@ -99,7 +99,7 @@ export default function Transaction() {
   if (!transaction) {
     return (
       <h2 className="scroll-m-20 border-b pb-2 text-3xl font-semibold tracking-tight first:mt-0">
-        Invalid transaction
+        Giao dịch không hợp lệ
       </h2>
     );
   }
@@ -108,11 +108,11 @@ export default function Transaction() {
     try {
       const date = new Date(dateString);
       return {
-        date: date.toLocaleDateString(),
-        time: date.toLocaleTimeString(),
+        date: date.toLocaleDateString("vi-VN"),
+        time: date.toLocaleTimeString("vi-VN"),
       };
     } catch (e) {
-      return { date: "Unknown", time: "" };
+      return { date: "Không rõ", time: "" };
     }
   };
 
@@ -132,6 +132,20 @@ export default function Transaction() {
     return "bg-gray-100 text-gray-800";
   };
 
+  const getStatusText = (status: string) => {
+    const statusLower = status?.toLowerCase() || "";
+    if (statusLower === "complete") return "Hoàn tất";
+    if (statusLower === "pending") return "Đang xử lý";
+    if (statusLower === "failed") return "Thất bại";
+    return status?.toUpperCase() || "";
+  };
+
+  const getTypeText = (type: string) => {
+    if (type === "USDC_TRANSFER_IN") return "Nhận tip";
+    if (type === "USDC_TRANSFER_OUT") return "Gửi tip";
+    return type?.replace(/_/g, " ")?.toUpperCase();
+  };
+
   return (
     <div className="flex flex-col p-4 max-w-full overflow-y-auto h-full">
       {/* Header with back button */}
@@ -144,43 +158,43 @@ export default function Transaction() {
         >
           <X className="h-4 w-4" />
         </Button>
-        <h2 className="text-lg font-bold">Transaction Details</h2>
+        <h2 className="text-lg font-bold">Chi tiết giao dịch</h2>
       </div>
 
       {/* Primary transaction info */}
-      <div className="bg-muted/30 rounded-lg p-3 mb-4">
+      <div className="bg-muted/30 rounded-xl p-3 mb-4">
         <div className="flex justify-between items-center mb-3">
-          <Badge className={`${getStatusColor(transaction.state)} px-2 py-1`}>
-            {transaction.state?.toUpperCase()}
+          <Badge className={`rounded-none ${getStatusColor(transaction.state)} px-2 py-1`}>
+            {getStatusText(transaction.state)}
           </Badge>
           <span className="text-xs text-muted-foreground">
-            {transaction.transactionType?.replace(/_/g, " ")?.toUpperCase()}
+            {getTypeText(transaction.transactionType)}
           </span>
         </div>
 
         <div className="mb-3">
           <div className="flex justify-between mb-1">
-            <span className="text-xs text-muted-foreground">Amount</span>
+            <span className="text-xs text-muted-foreground">Số tiền</span>
             <span className="text-sm font-medium">
               {transaction.amounts && transaction.amounts[0]
                 ? `${parseFloat(transaction.amounts[0]).toFixed(2)} USDC`
-                : "N/A"}
+                : "—"}
             </span>
           </div>
           <div className="flex justify-between">
-            <span className="text-xs text-muted-foreground">Network</span>
+            <span className="text-xs text-muted-foreground">Mạng</span>
             <span className="text-sm">Arc Testnet</span>
           </div>
         </div>
 
         <div className="flex justify-between text-xs">
           <div>
-            <span className="text-muted-foreground">Created:</span>
+            <span className="text-muted-foreground">Ngày tạo:</span>
             <div>{creation.date}</div>
             <div>{creation.time}</div>
           </div>
           <div className="text-right">
-            <span className="text-muted-foreground">Last Updated:</span>
+            <span className="text-muted-foreground">Cập nhật lần cuối:</span>
             <div>{lastUpdate.date}</div>
             <div>{lastUpdate.time}</div>
           </div>
@@ -190,23 +204,23 @@ export default function Transaction() {
       {/* Collapsible sections */}
       <div className="space-y-3">
         {/* IDs Section */}
-        <details className="group rounded-lg border p-2">
+        <details className="group rounded-xl border p-2">
           <summary className="flex cursor-pointer list-none items-center justify-between font-medium">
-            <span className="text-sm font-medium">Transaction IDs</span>
+            <span className="text-sm font-medium">Mã giao dịch</span>
             <div className="text-muted-foreground">
               <ChevronDown className="h-4 w-4 transition-transform group-open:rotate-180" />
             </div>
           </summary>
           <div className="pt-2 space-y-2">
             <div>
-              <h4 className="text-xs text-muted-foreground">Transaction ID</h4>
+              <h4 className="text-xs text-muted-foreground">Mã giao dịch</h4>
               <p className="text-xs break-all mt-1">{transaction.id}</p>
             </div>
 
             {transaction.txHash && (
               <div className="mt-2">
                 <h4 className="text-xs text-muted-foreground">
-                  Transaction Hash
+                  Mã hash giao dịch
                 </h4>
                 <p className="text-xs break-all mt-1">{transaction.txHash}</p>
               </div>
@@ -215,9 +229,9 @@ export default function Transaction() {
         </details>
 
         {/* Addresses Section */}
-        <details className="group rounded-lg border p-2">
+        <details className="group rounded-xl border p-2">
           <summary className="flex cursor-pointer list-none items-center justify-between font-medium">
-            <span className="text-sm font-medium">Addresses</span>
+            <span className="text-sm font-medium">Địa chỉ</span>
             <div className="text-muted-foreground">
               <ChevronDown className="h-4 w-4 transition-transform group-open:rotate-180" />
             </div>
@@ -225,21 +239,21 @@ export default function Transaction() {
           <div className="pt-2 space-y-2">
             {transaction.from && (
               <div>
-                <h4 className="text-xs text-muted-foreground">From</h4>
+                <h4 className="text-xs text-muted-foreground">Từ</h4>
                 <p className="text-xs break-all mt-1">{transaction.from}</p>
               </div>
             )}
 
             {transaction.to && (
               <div className="mt-2">
-                <h4 className="text-xs text-muted-foreground">To</h4>
+                <h4 className="text-xs text-muted-foreground">Đến</h4>
                 <p className="text-xs break-all mt-1">{transaction.to}</p>
               </div>
             )}
 
             {transaction.walletId && (
               <div className="mt-2">
-                <h4 className="text-xs text-muted-foreground">Wallet ID</h4>
+                <h4 className="text-xs text-muted-foreground">Mã ví</h4>
                 <p className="text-xs break-all mt-1">{transaction.walletId}</p>
               </div>
             )}
@@ -247,7 +261,7 @@ export default function Transaction() {
             {transaction.walletAddress && (
               <div className="mt-2">
                 <h4 className="text-xs text-muted-foreground">
-                  Wallet Address
+                  Địa chỉ ví
                 </h4>
                 <p className="text-xs break-all mt-1">
                   {transaction.walletAddress}
@@ -257,7 +271,7 @@ export default function Transaction() {
 
             {transaction.tokenAddress && (
               <div className="mt-2">
-                <h4 className="text-xs text-muted-foreground">Token Address</h4>
+                <h4 className="text-xs text-muted-foreground">Địa chỉ token</h4>
                 <p className="text-xs break-all mt-1">
                   {transaction.tokenAddress}
                 </p>
@@ -276,7 +290,7 @@ export default function Transaction() {
               className="block"
             >
               <Button variant="outline" className="w-full py-2 text-sm">
-                View on ArcScan
+                Xem trên ArcScan
               </Button>
             </Link>
           </div>

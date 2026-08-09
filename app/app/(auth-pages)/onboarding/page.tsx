@@ -23,22 +23,15 @@ import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/utils/supabase/client";
 import { Input } from "@/components/ui/input";
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { Label } from "@/components/ui/label";
-import { toast } from "sonner";
 
 export default function Onboarding() {
   const supabase = createClient()
   const router = useRouter()
 
   const [loading, setLoading] = useState(false)
-  const [firstName, setFirstName] = useState('')
-  const [lastName, setLastName] = useState('')
-  const [username, setUserName] = useState('')
+  const [name, setName] = useState('')
 
-  const isProfileInvalid = useMemo(() => {
-    return !firstName || !lastName || !username
-  }, [firstName, lastName, username])
+  const isProfileInvalid = useMemo(() => !name, [name])
 
   const handleOnboarding = async () => {
     setLoading(true)
@@ -53,7 +46,7 @@ export default function Onboarding() {
         .from("profiles")
         .insert({
           auth_user_id: user?.id,
-          name: firstName,
+          name,
         })
 
       if (profileError) {
@@ -70,61 +63,29 @@ export default function Onboarding() {
   }
 
   return (
-    <div className="flex flex-col w-full flex-1">
-      <div className="flex-1 flex flex-col min-w-64">
-        <h1 className="text-2xl font-bold mb-[20px]">
-          Create your profile
+    <div className="flex flex-col w-full h-full">
+      {/* Hang 1-6: noi dung can giua */}
+      <div className="flex-1 flex flex-col items-center justify-center gap-4 w-full max-w-xs mx-auto">
+        <h1 className="text-2xl font-bold text-center">
+          Tạo hồ sơ của bạn
         </h1>
+        <Input
+          placeholder="Tên của bạn"
+          value={name}
+          onChange={event => setName(event.target.value)}
+          className="text-center"
+        />
+      </div>
 
-        <div className="flex flex-col gap-[20px] flex-1">
-          <div className="space-y-2">
-            <Input
-              placeholder="First name"
-              value={firstName}
-              onChange={event => setFirstName(event.target.value)}
-            />
-          </div>
-
-          <div className="space-y-2">
-            <Input
-              placeholder="Last name"
-              value={lastName}
-              onChange={event => setLastName(event.target.value)}
-            />
-          </div>
-
-          <div className="space-y-2">
-            <Input
-              placeholder="Username"
-              value={username}
-              onChange={event => setUserName(event.target.value)}
-            />
-            <p className="text-sm text-muted-foreground">
-              Your unique name for getting paid by anyone
-            </p>
-          </div>
-
-          <div className="space-y-2">
-            <RadioGroup defaultValue="individual">
-              <div className="flex items-center space-x-2">
-                <RadioGroupItem value="individual" id="individual" />
-                <Label htmlFor="individual">Individual</Label>
-              </div>
-              <div className="flex items-center space-x-2">
-                <RadioGroupItem value="business" id="business" />
-                <Label htmlFor="business">Business</Label>
-              </div>
-            </RadioGroup>
-          </div>
-
-          <Button
-            disabled={isProfileInvalid || loading}
-            className="w-full mt-auto"
-            onClick={handleOnboarding}
-          >
-            Next
-          </Button>
-        </div>
+      {/* Hang 9: nut hanh dong */}
+      <div className="pb-[2vh]">
+        <Button
+          disabled={isProfileInvalid || loading}
+          className="w-full py-6 rounded-full text-lg font-semibold"
+          onClick={handleOnboarding}
+        >
+          {loading ? "Đang lưu..." : "Tiếp tục"}
+        </Button>
       </div>
     </div>
   );

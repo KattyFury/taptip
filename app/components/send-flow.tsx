@@ -229,7 +229,15 @@ export default function SendFlow({ open, onOpenChange, initialAmount }: Props) {
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-md flex flex-col h-[600px] max-h-[80vh]">
+      <DialogContent
+        className="sm:max-w-md flex flex-col h-[600px] max-h-[80vh]"
+        onInteractOutside={(e) => {
+          if (step === "sending") e.preventDefault();
+        }}
+        onEscapeKeyDown={(e) => {
+          if (step === "sending") e.preventDefault();
+        }}
+      >
         {step === "amount" && (
           <>
             <DialogHeader>
@@ -320,7 +328,7 @@ export default function SendFlow({ open, onOpenChange, initialAmount }: Props) {
                   letterbox o duoi khi khung cao hon video */}
               <div
                 id={QR_REGION_ID}
-                className="w-full aspect-square bg-black rounded-lg overflow-hidden"
+                className="w-full aspect-square bg-black rounded-xl overflow-hidden"
               />
               {scanError && (
                 <p className="text-sm text-red-600 text-center">{scanError}</p>
