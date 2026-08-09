@@ -30,3 +30,39 @@ Ghi lại các quyết định/lỗi thật gặp phải khi build TapTip từ f
 - `/dashboard/setup-wallet` (component `PasskeySetup`) tạo ví qua **Modular Wallets + Passkey** (dùng Client Key) — có màn hình riêng cho user thao tác.
 
 TapTip cần bản passkey (đúng wireframe Màn 4 "Thiết lập Passkey" + đúng spec "ví ẩn phía sau bằng Circle Wallets" + Client Key đã tạo riêng cho việc này) — nên luồng `sign-in` → `code-confirmation` → (`onboarding` nếu chưa có profile) → `dashboard` → tự động redirect `setup-wallet` nếu chưa có ví, đúng logic gốc của sample app cho nhánh OTP, không đụng tới `/auth/callback`.
+
+---
+
+## 🔴 5 thứ làm dự án chậm gấp nhiều lần (tự kiểm điểm, 08-09)
+
+Dự án này về mặt tính năng rất đơn giản (5 tính năng, fork sẵn code nền) nhưng mất nhiều buổi. Không phải vì khó — vì 5 thói quen sai dưới đây. Ghi lại để không lặp lại, và để người đọc series tránh luôn.
+
+### 1. Không load skill/docs của SDK trước khi code
+
+Lao vào code Circle Modular Wallets rồi mới đi tra khi gặp lỗi. Mất nguyên buổi vật lộn Entity Secret trùng, thiếu Passkey Domain Config, lỗi WebAuthn — **trong khi skill `circle:use-modular-wallets` có sẵn bảng lỗi đầy đủ và dòng "ALWAYS complete Console Setup (client key, passkey domain, client URL) before using SDK" ngay đầu trang.**
+
+> Đụng SDK lạ → load skill/docs của nó TRƯỚC. Đọc 5 phút, tiết kiệm 5 tiếng.
+
+### 2. Sửa giao diện mà không có cách nhìn thấy kết quả
+
+Sửa layout cả chục vòng theo kiểu đoán, mỗi lần lại bắt user chụp màn hình gửi lại. **Trong khi máy có sẵn Chrome, chạy headless chụp ảnh + đo `getBoundingClientRect` được ngay từ đầu.** Lúc dùng công cụ đo thì tìm ra nguyên nhân trong 1 lần.
+
+> Không nhìn thấy được kết quả thì đừng sửa. Dựng cách verify trước, sửa sau.
+
+### 3. Tin rằng code mình viết ra là có tác dụng
+
+Đặt class Tailwind `flex-[1.5]`, `flex-[3]` để chia tỷ lệ — **Tailwind v4 không build class đó thành CSS, tức là suốt mấy vòng sửa layout không hề nhích một chút nào.** Cứ tưởng do tính sai tỷ lệ nên đi sửa công thức, càng sửa càng loạn.
+
+> Layout không đổi sau khi sửa → nghi ngờ code có chạy không, trước khi nghi ngờ logic. `grep` thẳng tên class trong file CSS đã build.
+
+### 4. Vá lỗi mà không chạy lại type-check ngay
+
+Xoá `import { useRouter }` nhưng quên xoá dòng `const router = useRouter()` → app crash runtime. Lỗi này `tsc --noEmit` bắt được trong 3 giây, nhưng lúc đó gộp nhiều sửa đổi rồi mới kiểm tra một lượt.
+
+> Sửa file nào, chạy type-check + reload ngay file đó. Đừng gộp.
+
+### 5. Né giới hạn hạ tầng bằng cách đổi UX
+
+Supabase free tier chặn tuỳ chỉnh email template (không chèn được mã OTP) → định đổi luôn sang magic link cho nhanh. **User phản đối đúng:** magic link trên mobile bấm từ app Mail sẽ mở trình duyệt khác với PWA đã ghim, session không chuyển được; người lớn tuổi chuyển qua lại 2 app còn phiền hơn gõ 6 số. Cách đúng là cấu hình SMTP riêng (Gmail App Password, ~2 phút) để giữ nguyên UX.
+
+> Giới hạn kỹ thuật không phải lý do để đổi trải nghiệm người dùng — nhất là trải nghiệm dành cho đúng đối tượng chính của sản phẩm. Tìm cách giữ UX trước.
