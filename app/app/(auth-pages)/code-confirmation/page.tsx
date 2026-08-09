@@ -137,7 +137,7 @@ export default function CodeConfirmation() {
       </div>
 
       {/* Hang 9: Quay lai (1/3) + Tiep tuc (2/3) */}
-      <div className="flex gap-2 pb-4">
+      <div className="flex gap-2 pb-[2vh]">
         <Button
           variant="outline"
           className="flex-1 py-6 rounded-full"

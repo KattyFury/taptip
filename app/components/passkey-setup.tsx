@@ -138,7 +138,7 @@ export function PasskeySetup({ username }: PasskeySetupProps) {
         <div className="flex flex-col w-full h-full">
             {/* Hang 1-6: icon + tieu de + mo ta, can giua */}
             <div className="flex-1 flex flex-col items-center justify-center gap-4 w-full max-w-xs mx-auto">
-                <ScanFace className="h-16 w-16 text-primary" />
+                <ScanFace className="h-[8vh] w-[8vh] text-primary" />
                 <h2 className="text-xl font-semibold text-center">Thiết lập Passkey</h2>
                 <p className="text-muted-foreground text-center">
                     Xác thực bằng Face ID / vân tay thay vì mật khẩu. Lần sau mở
@@ -146,14 +146,14 @@ export function PasskeySetup({ username }: PasskeySetupProps) {
                 </p>
 
                 {error && (
-                    <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded text-sm text-center">
+                    <div className="bg-destructive/10 border border-destructive text-destructive px-4 py-3 text-sm text-center">
                         {error}
                     </div>
                 )}
             </div>
 
             {/* Hang 9: nut hanh dong */}
-            <div className="pb-4">
+            <div className="pb-[2vh]">
                 <Button
                     onClick={setupPasskey}
                     disabled={isCreating}
