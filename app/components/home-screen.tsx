@@ -62,10 +62,13 @@ export default function HomeScreen({ primaryWallet, historyContent }: Props) {
 
   return (
     <div className="flex flex-col h-full">
-      {/* Hang 1-6: Balance + QR + chu thich, can giua chung 1 khoi */}
-      <div className="flex-1 flex flex-col items-center justify-center gap-4">
-        <div className="text-4xl font-bold">{formattedBalance} USDC</div>
+      {/* Hang 1: Balance, ghim tren dinh khoi hang 1-6 */}
+      <div className="text-center pt-2">
+        <div className="text-2xl font-bold">Số dư: {formattedBalance} USDC</div>
+      </div>
 
+      {/* QR can giua trong khoang con lai cua hang 1-6, chu thich cach QR ~0.5 hang */}
+      <div className="flex-1 flex flex-col items-center justify-center">
         {hasWallet ? (
           <div className="p-4 bg-white rounded-2xl border">
             <QRCodeSVG value={primaryWallet.wallet_address} size={220} />
@@ -75,8 +78,8 @@ export default function HomeScreen({ primaryWallet, historyContent }: Props) {
             Đang tạo ví...
           </div>
         )}
-        <p className="text-sm text-muted-foreground text-center px-8">
-          Cho người khác quét để nhận tip
+        <p className="text-sm text-muted-foreground text-center px-8 mt-10">
+          Cho người khác quét để nhận tip, chỉ nhận USDC mạng Arc Testnet
         </p>
       </div>
 
