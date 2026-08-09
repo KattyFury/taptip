@@ -63,32 +63,52 @@ export default function HomeScreen({ primaryWallet, historyContent }: Props) {
 
   return (
     <div className="flex flex-col h-full">
-      {/* Hang 1: Balance, ghim tren dinh khoi hang 1-6 */}
-      <div className="text-center pt-2">
-        <div className="text-2xl font-bold">Số dư: {formattedBalance} USDC</div>
+      {/* He 10 don vi flex-grow duy nhat cho ca trang, khong ai duoc choan
+          nhieu/it hon phan cua minh - moi ty le tinh tren TOAN BO man hinh */}
+
+      {/* Hang 1: Balance */}
+      <div className="flex-[1] flex items-center justify-center">
+        <div className="text-4xl font-bold text-center">
+          Số dư: {formattedBalance} USDC
+        </div>
       </div>
 
-      {/* QR can giua trong khoang con lai cua hang 1-6, chu thich cach QR ~0.5 hang */}
-      <div className="flex-1 flex flex-col items-center justify-center">
+      {/* Hang 1-2.5: khoang cach truoc QR */}
+      <div className="flex-[1.5]" />
+
+      {/* Hang 2.5-5.5: QR, can giua. Kich thuoc theo % chieu rong (vw) thay vi
+          px co dinh theo chieu doc - tranh vuot khung khi man hinh thap */}
+      <div className="flex-[3] flex items-center justify-center min-h-0">
         {hasWallet ? (
-          <div className="p-4 bg-white rounded-2xl border">
-            <QRCodeSVG value={encodeTapTipQr(primaryWallet.wallet_address)} size={220} />
+          <div className="p-4 bg-white rounded-2xl border w-[50vw] max-w-[260px] aspect-square flex items-center justify-center">
+            <QRCodeSVG
+              value={encodeTapTipQr(primaryWallet.wallet_address)}
+              size={260}
+              className="w-full h-full"
+            />
           </div>
         ) : (
-          <div className="w-[220px] h-[220px] flex items-center justify-center border rounded-2xl text-sm text-muted-foreground text-center px-4">
+          <div className="w-[50vw] max-w-[260px] aspect-square flex items-center justify-center border rounded-2xl text-sm text-muted-foreground text-center px-4">
             Đang tạo ví...
           </div>
         )}
-        <p className="text-sm text-muted-foreground text-center px-8 mt-10">
+      </div>
+
+      {/* Hang 5.5-6: chu thich */}
+      <div className="flex-[0.5] flex flex-col items-center justify-start">
+        <p className="text-sm text-muted-foreground text-center px-8">
           Cho người khác quét để nhận tip, chỉ nhận USDC mạng Arc Testnet
         </p>
       </div>
 
-      {/* Hang 9: 2 nut hanh dong, to du chieu cao 1 hang */}
-      <div className="flex gap-2 pb-3">
+      {/* Hang 6-8: khoang trong */}
+      <div className="flex-[2]" />
+
+      {/* Hang 9: 2 nut hanh dong */}
+      <div className="flex-[1] flex gap-2 items-stretch">
         <Button
           variant="secondary"
-          className="flex-1 h-20 rounded-full"
+          className="flex-1 h-full rounded-full"
           disabled
           onClick={startRandomTip}
         >
@@ -96,7 +116,7 @@ export default function HomeScreen({ primaryWallet, historyContent }: Props) {
           Ngẫu nhiên
         </Button>
         <Button
-          className="flex-[2] h-20 rounded-full text-lg font-semibold"
+          className="flex-[2] h-full rounded-full text-lg font-semibold"
           onClick={() => {
             setRandomSendAmount(undefined);
             setSendOpen(true);
@@ -114,7 +134,7 @@ export default function HomeScreen({ primaryWallet, historyContent }: Props) {
       />
 
       {/* Hang 10: icon menu */}
-      <div className="pb-4">
+      <div className="flex-[1] flex items-center">
         <Dialog open={menuOpen} onOpenChange={closeMenu}>
           <Button variant="ghost" size="icon" onClick={() => setMenuOpen(true)}>
             <Menu />
