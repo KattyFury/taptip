@@ -19,7 +19,11 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { createSupabaseReqResClient } from "@/lib/supabase/server-client";
 
-export async function proxy(request: NextRequest) {
+// Dung middleware.ts (Edge runtime, deprecated nhung con ho tro) thay vi
+// proxy.ts moi cua Next 16 - proxy.ts bat buoc chay Node.js runtime, va
+// @opennextjs/cloudflare (adapter deploy len Cloudflare Workers) chua ho tro
+// Node.js middleware (xem opennextjs/opennextjs-cloudflare#962).
+export async function middleware(request: NextRequest) {
   // Get the origin from the request headers
   const origin = request.headers.get('origin') || '';
   const allowedOrigins = [

@@ -24,8 +24,8 @@ import "./globals.css";
 import { Web3Provider } from "@/components/web3-provider";
 import { BalanceProvider } from "@/contexts/balanceContext";
 
-const defaultUrl = process.env.NEXT_PUBLIC_VERCEL_URL
-  ? process.env.NEXT_PUBLIC_VERCEL_URL
+const defaultUrl = process.env.NEXT_PUBLIC_SITE_URL
+  ? process.env.NEXT_PUBLIC_SITE_URL
   : "http://localhost:3000";
 
 // Font Archivo (Design Spec muc 2): weight 800 cho heading, 400 cho body

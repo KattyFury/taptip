@@ -26,10 +26,6 @@ import { Button } from "@/components/ui/button";
 import { ChevronDown, X } from "lucide-react";
 import Link from "next/link";
 
-const baseUrl = process.env.NEXT_PUBLIC_VERCEL_URL
-  ? process.env.NEXT_PUBLIC_VERCEL_URL
-  : "http://localhost:3000";
-
 export default function Transaction() {
   const router = useRouter();
   const [transaction, setTransaction] = useState<any>(null);
@@ -49,7 +45,7 @@ export default function Transaction() {
 
       try {
         setLoading(true);
-        const url = `${baseUrl}/api/wallet/transactions/${id}`;
+        const url = `/api/wallet/transactions/${id}`;
 
         const response = await fetch(url);
         const parsedResponse = await response.json();

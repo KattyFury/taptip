@@ -122,10 +122,6 @@ const Web3Context = createContext<Web3ContextType>({
 // Hook to use the Web3 context
 export const useWeb3 = () => useContext(Web3Context);
 
-const baseUrl = process.env.NEXT_PUBLIC_VERCEL_URL
-    ? process.env.NEXT_PUBLIC_VERCEL_URL
-    : "http://localhost:3000";
-
 // Provider component
 export const Web3Provider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     const [account, setAccount] = useState<Account>(emptyAccount);
@@ -158,7 +154,7 @@ export const Web3Provider: React.FC<{ children: React.ReactNode }> = ({ children
         const loadCredential = async () => {
             try {
                 // Fetch credential from the API
-                const response = await fetch(`${baseUrl}/api/get-credential`, {
+                const response = await fetch(`/api/get-credential`, {
                     method: 'GET',
                     headers: {
                         'Content-Type': 'application/json',
@@ -349,7 +345,7 @@ export const Web3Provider: React.FC<{ children: React.ReactNode }> = ({ children
                 await initializeWeb3(newCredential);
 
                 // Save the credential to the database via API
-                const response = await fetch(`${baseUrl}/api/update-passkey`, {
+                const response = await fetch(`/api/update-passkey`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
@@ -388,7 +384,7 @@ export const Web3Provider: React.FC<{ children: React.ReactNode }> = ({ children
 
                 // Save or update the credential in the database
                 try {
-                    const response = await fetch(`${baseUrl}/api/update-login-credential`, {
+                    const response = await fetch(`/api/update-login-credential`, {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({
