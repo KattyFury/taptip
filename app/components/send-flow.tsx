@@ -144,7 +144,16 @@ export default function SendFlow({ open, onOpenChange, initialAmount }: Props) {
       scannerRef.current = scanner;
       await scanner.start(
         { facingMode: "environment" },
-        { fps: 10, qrbox: { width: 250, height: 250 } },
+        {
+          fps: 10,
+          // qrbox theo % kich thuoc khung thay vi px co dinh, de khung quet
+          // luon can giua va vua voi moi kich thuoc man hinh
+          qrbox: (w: number, h: number) => {
+            const size = Math.floor(Math.min(w, h) * 0.7);
+            return { width: size, height: size };
+          },
+          aspectRatio: 1,
+        },
         (decodedText) => handleScanResult(decodedText),
         () => {
           // ignore per-frame "not found" callbacks
@@ -306,9 +315,12 @@ export default function SendFlow({ open, onOpenChange, initialAmount }: Props) {
               <DialogTitle>Quét QR để gửi {amount} USDC</DialogTitle>
             </DialogHeader>
             <div className="flex-1 flex flex-col gap-3">
+              {/* aspect-square thay vi flex-1: thu vien html5-qrcode tu dat
+                  kich thuoc video theo ty le camera, de flex-1 se tao dai den
+                  letterbox o duoi khi khung cao hon video */}
               <div
                 id={QR_REGION_ID}
-                className="flex-1 bg-black rounded-lg overflow-hidden"
+                className="w-full aspect-square bg-black rounded-lg overflow-hidden"
               />
               {scanError && (
                 <p className="text-sm text-red-600 text-center">{scanError}</p>

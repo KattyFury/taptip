@@ -140,3 +140,21 @@
     @apply bg-background text-foreground;
   }
 }
+/* Khung quet QR (html5-qrcode tu chen <video> voi kich thuoc co dinh theo
+   ty le camera) - buoc video phu kin khung vuong, tranh dai den letterbox */
+#taptip-qr-region {
+  position: relative;
+}
+
+#taptip-qr-region video {
+  width: 100% !important;
+  height: 100% !important;
+  object-fit: cover;
+  display: block;
+}
+
+/* An anh/thong bao mac dinh cua thu vien */
+#taptip-qr-region img[alt="Info icon"],
+#taptip-qr-region > div:not([style*="border"]) > img {
+  display: none;
+}

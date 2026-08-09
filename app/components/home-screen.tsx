@@ -102,18 +102,18 @@ export default function HomeScreen({ primaryWallet, historyContent }: Props) {
         )}
       </div>
 
-      {/* Hang 4.5-5: khoang cach sau QR */}
-      <div style={{ flex: "0.5 1 0" }} />
+      {/* Hang 4.5-4.75: khoang cach sau QR (sat QR) */}
+      <div style={{ flex: "0.25 1 0" }} />
 
-      {/* Hang 5-6: chu thich */}
-      <div style={{ flex: "1 1 0", minHeight: 0 }} className="flex items-center justify-center">
+      {/* Hang 4.75-5.75: chu thich */}
+      <div style={{ flex: "1 1 0", minHeight: 0 }} className="flex items-start justify-center">
         <p className="text-[1.8vh] text-muted-foreground text-center px-8">
           Cho người khác quét để nhận tip, chỉ nhận USDC mạng Arc Testnet
         </p>
       </div>
 
-      {/* Hang 6-8: khoang trong */}
-      <div style={{ flex: "2 1 0" }} />
+      {/* Hang 5.75-8: khoang trong */}
+      <div style={{ flex: "2.25 1 0" }} />
 
       {/* Hang 8-9: 2 nut hanh dong. TUYET DOI khong dat padding tren hang -
           padding la kich thuoc toi thieu khong co duoc, se bi CONG THEM ngoai
