@@ -84,7 +84,7 @@ export default function HomeScreen({ primaryWallet, historyContent }: Props) {
         {hasWallet ? (
           <div
             style={{ height: "100%", aspectRatio: "1" }}
-            className="p-[1.5vh] bg-white rounded-2xl border flex items-center justify-center"
+            className="p-[1.5vh] bg-white rounded-xl border flex items-center justify-center"
           >
             <QRCodeSVG
               value={encodeTapTipQr(primaryWallet.wallet_address)}
@@ -95,7 +95,7 @@ export default function HomeScreen({ primaryWallet, historyContent }: Props) {
         ) : (
           <div
             style={{ height: "100%", aspectRatio: "1" }}
-            className="flex items-center justify-center border rounded-2xl text-[1.8vh] text-muted-foreground text-center px-4"
+            className="flex items-center justify-center border rounded-xl text-[1.8vh] text-muted-foreground text-center px-4"
           >
             Đang tạo ví...
           </div>
@@ -118,20 +118,24 @@ export default function HomeScreen({ primaryWallet, historyContent }: Props) {
       {/* Hang 8-9: 2 nut hanh dong. TUYET DOI khong dat padding tren hang -
           padding la kich thuoc toi thieu khong co duoc, se bi CONG THEM ngoai
           phan chia ty le, day hang phinh to va lech ca luoi. Muon co khoang
-          tho thi cho nut cao theo % chieu cao hang. */}
-      <div style={{ flex: "1 1 0", minHeight: 0 }} className="flex gap-2 items-center">
+          tho thi cho nut cao theo % chieu cao hang.
+          minWidth:0 BAT BUOC tren hang chua nhieu flex-item (nut) - mac dinh
+          flex item co min-width:auto, khien hang tu choi co lai theo chieu
+          ngang neu tong do rong tu nhien cua noi dung ben trong > khong gian
+          duoc cap -> hang tran ra ngoai le phai du container cha da co padding. */}
+      <div style={{ flex: "1 1 0", minHeight: 0, minWidth: 0 }} className="flex gap-2 items-center">
         <Button
           variant="secondary"
-          style={{ flex: "1 1 0" }}
-          className="h-[80%] rounded-full text-[1.8vh]"
+          style={{ flex: "1 1 0", minWidth: 0 }}
+          className="h-[80%] rounded-full text-[1.6vh] px-[2vw] gap-1"
           disabled
           onClick={startRandomTip}
         >
-          <Shuffle className="mr-1 h-[2vh] w-[2vh]" />
+          <Shuffle className="h-[1.8vh] w-[1.8vh] shrink-0" />
           Ngẫu nhiên
         </Button>
         <Button
-          style={{ flex: "2 1 0" }}
+          style={{ flex: "2 1 0", minWidth: 0 }}
           className="h-[80%] rounded-full text-[2.2vh] font-semibold"
           onClick={() => {
             setRandomSendAmount(undefined);

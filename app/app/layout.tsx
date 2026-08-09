@@ -17,7 +17,7 @@
  */
 
 import type { Viewport } from "next";
-import { GeistSans } from "geist/font/sans";
+import { Archivo } from "next/font/google";
 import { ThemeProvider } from "next-themes";
 import { Toaster } from "@/components/ui/sonner";
 import "./globals.css";
@@ -27,6 +27,13 @@ import { BalanceProvider } from "@/contexts/balanceContext";
 const defaultUrl = process.env.NEXT_PUBLIC_VERCEL_URL
   ? process.env.NEXT_PUBLIC_VERCEL_URL
   : "http://localhost:3000";
+
+// Font Archivo (Design Spec muc 2): weight 800 cho heading, 400 cho body
+const archivo = Archivo({
+  subsets: ["latin", "vietnamese"],
+  weight: ["400", "800"],
+  variable: "--font-archivo",
+});
 
 export const metadata = {
   metadataBase: new URL(defaultUrl),
@@ -44,14 +51,14 @@ export default async function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en" className={GeistSans.className} suppressHydrationWarning>
+    <html lang="vi" className={`${archivo.variable} ${archivo.className}`} suppressHydrationWarning>
       <body className="bg-background/5 text-foreground flex items-center justify-center min-h-svh overflow-hidden">
         <Web3Provider>
           <BalanceProvider>
             <ThemeProvider
               attribute="class"
-              defaultTheme="dark"
-              enableSystem
+              defaultTheme="light"
+              enableSystem={false}
               disableTransitionOnChange
             >
               <Toaster expand />
