@@ -62,27 +62,30 @@ export default function HomeScreen({ primaryWallet, historyContent }: Props) {
   };
 
   return (
-    <div className="flex flex-col h-full">
-      {/* He 10 don vi flex-grow duy nhat cho ca trang, khong ai duoc choan
-          nhieu/it hon phan cua minh - moi ty le tinh tren TOAN BO man hinh */}
+    <div data-home-root className="flex flex-col h-full">
+      {/* He luoi 10 hang cho ca man hinh. BAT BUOC dung flex: "N 1 0" -
+          flexBasis PHAI la 0, neu chi dat flexGrow thi trinh duyet chi chia
+          phan DU sau khi tru kich thuoc noi dung, hang nao noi dung to (QR)
+          se tu chiem nhieu hon phan cua no -> lech het luoi.
+          Tong: 1 + 0.5 + 3 + 0.5 + 1 + 2 + 1 + 1 = 10 */}
 
-      {/* Hang 1: Balance. Co chu theo vh - hang nho lai thi chu cung nho theo,
-          khong dung rem co dinh (text-4xl) vi khong lien quan gi chieu cao hang */}
-      <div style={{ flexGrow: 1 }} className="flex items-center justify-center">
+      {/* Hang 0-1: Balance */}
+      <div style={{ flex: "1 1 0", minHeight: 0 }} className="flex items-center justify-center">
         <div className="text-[4.5vh] font-bold text-center">
           Số dư: {formattedBalance} USDC
         </div>
       </div>
 
       {/* Hang 1-1.5: khoang cach truoc QR */}
-      <div style={{ flexGrow: 0.5 }} />
+      <div style={{ flex: "0.5 1 0" }} />
 
-      {/* Hang 1.5-4.5: QR, can giua. Kich thuoc = min(50vw, 28vh) - bi chan boi
-          CA be rong LAN chieu cao hang, nen QR luon vua khung du man hinh
-          ngang hay doc */}
-      <div style={{ flexGrow: 3, minHeight: 0 }} className="flex items-center justify-center">
+      {/* Hang 1.5-4.5: QR, cao dung 3 hang, vuong theo chieu cao hang */}
+      <div style={{ flex: "3 1 0", minHeight: 0 }} className="flex items-center justify-center">
         {hasWallet ? (
-          <div className="p-4 bg-white rounded-2xl border w-[min(50vw,28vh)] max-w-[260px] aspect-square flex items-center justify-center">
+          <div
+            style={{ height: "100%", aspectRatio: "1" }}
+            className="p-[1.5vh] bg-white rounded-2xl border flex items-center justify-center"
+          >
             <QRCodeSVG
               value={encodeTapTipQr(primaryWallet.wallet_address)}
               size={260}
@@ -90,27 +93,37 @@ export default function HomeScreen({ primaryWallet, historyContent }: Props) {
             />
           </div>
         ) : (
-          <div className="w-[min(50vw,28vh)] max-w-[260px] aspect-square flex items-center justify-center border rounded-2xl text-[1.8vh] text-muted-foreground text-center px-4">
+          <div
+            style={{ height: "100%", aspectRatio: "1" }}
+            className="flex items-center justify-center border rounded-2xl text-[1.8vh] text-muted-foreground text-center px-4"
+          >
             Đang tạo ví...
           </div>
         )}
       </div>
 
-      {/* Hang 4.5-6: chu thich */}
-      <div style={{ flexGrow: 1.5 }} className="flex flex-col items-center justify-start">
+      {/* Hang 4.5-5: khoang cach sau QR */}
+      <div style={{ flex: "0.5 1 0" }} />
+
+      {/* Hang 5-6: chu thich */}
+      <div style={{ flex: "1 1 0", minHeight: 0 }} className="flex items-center justify-center">
         <p className="text-[1.8vh] text-muted-foreground text-center px-8">
           Cho người khác quét để nhận tip, chỉ nhận USDC mạng Arc Testnet
         </p>
       </div>
 
       {/* Hang 6-8: khoang trong */}
-      <div style={{ flexGrow: 2 }} />
+      <div style={{ flex: "2 1 0" }} />
 
-      {/* Hang 9: 2 nut hanh dong */}
-      <div style={{ flexGrow: 1 }} className="flex gap-2 items-stretch">
+      {/* Hang 8-9: 2 nut hanh dong. TUYET DOI khong dat padding tren hang -
+          padding la kich thuoc toi thieu khong co duoc, se bi CONG THEM ngoai
+          phan chia ty le, day hang phinh to va lech ca luoi. Muon co khoang
+          tho thi cho nut cao theo % chieu cao hang. */}
+      <div style={{ flex: "1 1 0", minHeight: 0 }} className="flex gap-2 items-center">
         <Button
           variant="secondary"
-          className="flex-1 h-full rounded-full text-[1.8vh]"
+          style={{ flex: "1 1 0" }}
+          className="h-[80%] rounded-full text-[1.8vh]"
           disabled
           onClick={startRandomTip}
         >
@@ -118,8 +131,8 @@ export default function HomeScreen({ primaryWallet, historyContent }: Props) {
           Ngẫu nhiên
         </Button>
         <Button
-          style={{ flexGrow: 2 }}
-          className="h-full rounded-full text-[2.2vh] font-semibold"
+          style={{ flex: "2 1 0" }}
+          className="h-[80%] rounded-full text-[2.2vh] font-semibold"
           onClick={() => {
             setRandomSendAmount(undefined);
             setSendOpen(true);
@@ -136,8 +149,8 @@ export default function HomeScreen({ primaryWallet, historyContent }: Props) {
         initialAmount={randomSendAmount}
       />
 
-      {/* Hang 10: icon menu */}
-      <div style={{ flexGrow: 1 }} className="flex items-center">
+      {/* Hang 9-10: icon menu */}
+      <div style={{ flex: "1 1 0", minHeight: 0 }} className="flex items-center">
         <Dialog open={menuOpen} onOpenChange={closeMenu}>
           <Button variant="ghost" size="icon" onClick={() => setMenuOpen(true)}>
             <Menu className="h-[2.2vh] w-[2.2vh]" />
