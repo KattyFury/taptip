@@ -22,7 +22,7 @@ export default function manifest(): MetadataRoute.Manifest {
   return {
     name: "TapTip",
     short_name: "TapTip",
-    description: "Tip và lì xì nhanh như trao tay",
+    description: "Tip and gift money as fast as a handshake",
     start_url: "/",
     display: "standalone",
     background_color: "#ffffff",

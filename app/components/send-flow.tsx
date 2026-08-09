@@ -40,7 +40,7 @@ interface Props {
 
 export default function SendFlow({ open, onOpenChange, initialAmount }: Props) {
   const { sendUSDC } = useWeb3();
-  const { balance } = useBalance();
+  const { balance, refreshBalances } = useBalance();
   const [step, setStep] = useState<Step>("amount");
   const [presets, setPresets] = useState<string[]>(DEFAULT_PRESETS);
   const [amount, setAmount] = useState<string | null>(null);
@@ -115,7 +115,7 @@ export default function SendFlow({ open, onOpenChange, initialAmount }: Props) {
   const addCustomAmount = () => {
     const value = parseFloat(customAmount);
     if (!customAmount || isNaN(value) || value <= 0) {
-      toast.error("Nhập số tiền hợp lệ");
+      toast.error("Enter a valid amount");
       return;
     }
     const next = [...presets, customAmount].sort(
@@ -135,7 +135,7 @@ export default function SendFlow({ open, onOpenChange, initialAmount }: Props) {
       await new Promise((resolve) => requestAnimationFrame(resolve));
     }
     if (!document.getElementById(QR_REGION_ID)) {
-      setScanError("Không mở được camera. Thử nhập ảnh từ kho ảnh.");
+      setScanError("Couldn't open camera. Try uploading a photo instead.");
       return;
     }
 
@@ -163,7 +163,7 @@ export default function SendFlow({ open, onOpenChange, initialAmount }: Props) {
       // Permission denied hoac khong co camera (VD test tren PC) la truong
       // hop da xu ly (fallback sang nhap anh), khong phai loi bat ngo.
       console.warn("Could not start camera:", err);
-      setScanError("Không mở được camera. Thử nhập ảnh từ kho ảnh.");
+      setScanError("Couldn't open camera. Try uploading a photo instead.");
     }
   };
 
@@ -191,7 +191,7 @@ export default function SendFlow({ open, onOpenChange, initialAmount }: Props) {
       handleScanResult(decodedText);
     } catch (err) {
       console.error("Could not decode QR from image:", err);
-      setScanError("Không đọc được QR trong ảnh này.");
+      setScanError("Couldn't read a QR code in this image.");
     } finally {
       e.target.value = "";
     }
@@ -200,11 +200,11 @@ export default function SendFlow({ open, onOpenChange, initialAmount }: Props) {
   const handleScanResult = async (decodedText: string) => {
     const decoded = decodeTapTipQr(decodedText);
     if (!decoded) {
-      setScanError("QR không hợp lệ — sai mạng, sai loại tiền, hoặc không phải QR TapTip.");
+      setScanError("Invalid QR - wrong network, wrong currency, or not a TapTip QR code.");
       return;
     }
     if (!amount) {
-      setScanError("Thiếu số tiền, quay lại chọn số tiền.");
+      setScanError("Missing amount, go back and choose an amount.");
       return;
     }
 
@@ -214,13 +214,16 @@ export default function SendFlow({ open, onOpenChange, initialAmount }: Props) {
     const txHash = await sendUSDC(decoded.address, amount);
 
     if (!txHash) {
-      toast.error("Gửi thất bại, thử lại");
+      toast.error("Send failed, try again");
       setStep("scan");
       return;
     }
 
     setLastAmount(amount);
     setStep("success");
+    refreshBalances().catch((err) => {
+      console.error("Failed to refresh balance after send:", err);
+    });
 
     setTimeout(() => {
       setStep("scan");
@@ -241,7 +244,7 @@ export default function SendFlow({ open, onOpenChange, initialAmount }: Props) {
         {step === "amount" && (
           <>
             <DialogHeader>
-              <DialogTitle>Chọn số tiền</DialogTitle>
+              <DialogTitle>Choose an amount</DialogTitle>
             </DialogHeader>
             <div className="flex-1 overflow-y-auto flex flex-col gap-2">
               {presets.map((value, index) => {
@@ -258,7 +261,7 @@ export default function SendFlow({ open, onOpenChange, initialAmount }: Props) {
                       <span>{value} USDC</span>
                       {disabled && (
                         <span className="text-xs text-muted-foreground">
-                          Không đủ số dư
+                          Not enough balance
                         </span>
                       )}
                     </Button>
@@ -269,14 +272,14 @@ export default function SendFlow({ open, onOpenChange, initialAmount }: Props) {
                           variant="destructive"
                           onClick={() => confirmDelete(index)}
                         >
-                          Xoá
+                          Delete
                         </Button>
                         <Button
                           size="sm"
                           variant="ghost"
                           onClick={() => setConfirmDeleteIndex(null)}
                         >
-                          Huỷ
+                          Cancel
                         </Button>
                       </>
                     ) : (
@@ -297,11 +300,11 @@ export default function SendFlow({ open, onOpenChange, initialAmount }: Props) {
                   <Input
                     type="number"
                     autoFocus
-                    placeholder="Số USDC"
+                    placeholder="USDC amount"
                     value={customAmount}
                     onChange={(e) => setCustomAmount(e.target.value)}
                   />
-                  <Button onClick={addCustomAmount}>Thêm</Button>
+                  <Button onClick={addCustomAmount}>Add</Button>
                 </div>
               ) : (
                 <Button
@@ -310,7 +313,7 @@ export default function SendFlow({ open, onOpenChange, initialAmount }: Props) {
                   onClick={() => setShowCustomInput(true)}
                 >
                   <Plus className="mr-2 h-4 w-4" />
-                  Nhập số khác
+                  Enter a different amount
                 </Button>
               )}
             </div>
@@ -320,7 +323,7 @@ export default function SendFlow({ open, onOpenChange, initialAmount }: Props) {
         {step === "scan" && (
           <>
             <DialogHeader>
-              <DialogTitle>Quét QR để gửi {amount} USDC</DialogTitle>
+              <DialogTitle>Scan QR to send {amount} USDC</DialogTitle>
             </DialogHeader>
             <div className="flex-1 flex flex-col gap-3">
               {/* aspect-square thay vi flex-1: thu vien html5-qrcode tu dat
@@ -342,10 +345,11 @@ export default function SendFlow({ open, onOpenChange, initialAmount }: Props) {
               />
               <Button
                 variant="outline"
+                className="w-2/3 mx-auto"
                 onClick={() => fileInputRef.current?.click()}
               >
                 <ImageIcon className="mr-2 h-4 w-4" />
-                Nhập ảnh từ kho ảnh
+                Upload photo from gallery
               </Button>
             </div>
             <div className="flex gap-2">
@@ -360,7 +364,7 @@ export default function SendFlow({ open, onOpenChange, initialAmount }: Props) {
                 className="flex-[2] rounded-full"
                 onClick={() => onOpenChange(false)}
               >
-                Hoàn tất
+                Done
               </Button>
             </div>
           </>
@@ -369,7 +373,7 @@ export default function SendFlow({ open, onOpenChange, initialAmount }: Props) {
         {step === "sending" && (
           <div className="flex-1 flex flex-col items-center justify-center gap-4">
             <Loader2 className="h-10 w-10 animate-spin text-primary" />
-            <p>Đang xử lý giao dịch...</p>
+            <p>Processing transaction...</p>
           </div>
         )}
 

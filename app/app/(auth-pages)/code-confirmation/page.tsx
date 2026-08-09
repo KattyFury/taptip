@@ -58,7 +58,7 @@ export default function CodeConfirmation() {
 
   const handleCodeValidation = async () => {
     if (isConfirmationCodeInvalid) {
-      const warningMessage = "The confirmation code must have exactly 6 digits";
+      const warningMessage = "The confirmation code must have exactly 6 digits.";
       console.warn(warningMessage);
       alert(warningMessage);
       return;
@@ -103,10 +103,12 @@ export default function CodeConfirmation() {
 
   return (
     <div className="flex flex-col w-full h-full">
-      {/* Hang 1-6: noi dung can giua */}
-      <div className="flex-1 flex flex-col items-center justify-center gap-4 w-full max-w-xs mx-auto">
+      {/* He luoi 10 hang: 1 (dem) + 5 (noi dung, tam ~hang 3.5) + 3 (dem) + 1 (nut) */}
+      <div style={{ flex: "1 1 0" }} />
+
+      <div style={{ flex: "5 1 0", minHeight: 0 }} className="flex flex-col items-center justify-center gap-4 w-full max-w-xs mx-auto">
         <h1 className="text-2xl font-bold text-center">
-          Nhập mã đã gửi tới
+          Enter the code sent to
         </h1>
         <p className="text-muted-foreground text-center">{email}</p>
 
@@ -136,21 +138,25 @@ export default function CodeConfirmation() {
         )}
       </div>
 
-      {/* Hang 9: Quay lai (1/3) + Tiep tuc (2/3) */}
-      <div className="flex gap-2 pb-[2vh]">
+      <div style={{ flex: "3 1 0" }} />
+
+      {/* Hang 9-10: Back (1/3) + Continue (2/3), cao 4/5 hang, minWidth:0 bat buoc tren hang nhieu nut */}
+      <div style={{ flex: "1 1 0", minHeight: 0, minWidth: 0 }} className="flex gap-2 items-center">
         <Button
           variant="outline"
-          className="flex-1 py-6 rounded-full"
+          style={{ flex: "1 1 0", minWidth: 0 }}
+          className="h-[80%] rounded-full"
           onClick={() => router.push("/sign-in")}
         >
           <ArrowLeft className="h-4 w-4" />
         </Button>
         <Button
           disabled={isConfirmationCodeInvalid || loading}
-          className="flex-[2] py-6 rounded-full text-lg font-semibold"
+          style={{ flex: "2 1 0", minWidth: 0 }}
+          className="h-[80%] rounded-full text-lg font-semibold"
           onClick={handleCodeValidation}
         >
-          {loading ? "Đang xác nhận..." : "Tiếp tục"}
+          {loading ? "Verifying..." : "Continue"}
         </Button>
       </div>
     </div>

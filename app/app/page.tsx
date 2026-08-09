@@ -21,7 +21,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
-import { Share, SquarePlus, CheckCircle2 } from "lucide-react";
+import { MoreHorizontal, Share, SquarePlus, CheckCircle2 } from "lucide-react";
 
 const SPLASH_DURATION_MS = 1600;
 
@@ -47,38 +47,46 @@ export default function Splash() {
 
   return (
     <div className="flex flex-col h-full px-5">
-      {/* Hang 1-6: huong dan them vao man hinh chinh */}
-      <div className="flex-1 flex flex-col items-center justify-center gap-6 w-full max-w-xs mx-auto">
+      {/* He luoi 10 hang: 1 (dem) + 5 (noi dung, tam ~hang 3.5) + 3 (dem) + 1 (nut) */}
+      <div style={{ flex: "1 1 0" }} />
+
+      <div style={{ flex: "5 1 0", minHeight: 0 }} className="flex flex-col items-center justify-center gap-6 w-full max-w-xs mx-auto">
         <h1 className="text-2xl font-bold text-center">
-          Thêm TapTip vào Màn hình chính
+          Add TapTip to Home Screen
         </h1>
         <p className="text-muted-foreground text-center">
-          Mở nhanh như một ứng dụng thật, không cần vào lại trình duyệt.
+          Opens as fast as a real app, no need to go back through the browser.
         </p>
 
         <div className="w-full flex flex-col gap-4">
           <div className="flex items-center gap-3">
+            <MoreHorizontal className="h-[3.5vh] w-[3.5vh] text-primary shrink-0" />
+            <span className="text-sm">Tap the options menu</span>
+          </div>
+          <div className="flex items-center gap-3">
             <Share className="h-[3.5vh] w-[3.5vh] text-primary shrink-0" />
-            <span className="text-sm">Nhấn biểu tượng Chia sẻ trên Safari</span>
+            <span className="text-sm">Tap the Share icon in Safari</span>
           </div>
           <div className="flex items-center gap-3">
             <SquarePlus className="h-[3.5vh] w-[3.5vh] text-primary shrink-0" />
-            <span className="text-sm">Chọn "Thêm vào MH chính"</span>
+            <span className="text-sm">Choose "Add to Home Screen"</span>
           </div>
           <div className="flex items-center gap-3">
             <CheckCircle2 className="h-[3.5vh] w-[3.5vh] text-primary shrink-0" />
-            <span className="text-sm">Nhấn "Thêm" để hoàn tất</span>
+            <span className="text-sm">Tap "Add" to finish</span>
           </div>
         </div>
       </div>
 
-      {/* Hang 9: nut hanh dong */}
-      <div className="pb-[2vh]">
+      <div style={{ flex: "3 1 0" }} />
+
+      {/* Hang 9-10: nut hanh dong, cao 4/5 hang, rong 2/3 man can giua */}
+      <div style={{ flex: "1 1 0", minHeight: 0 }} className="flex items-center">
         <Button
-          className="w-full py-6 rounded-full text-lg font-semibold"
+          className="w-2/3 mx-auto h-[80%] rounded-full text-lg font-semibold"
           onClick={() => router.push("/sign-in")}
         >
-          Tiếp tục
+          Continue
         </Button>
       </div>
     </div>

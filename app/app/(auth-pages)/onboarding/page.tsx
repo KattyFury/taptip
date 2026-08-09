@@ -64,27 +64,31 @@ export default function Onboarding() {
 
   return (
     <div className="flex flex-col w-full h-full">
-      {/* Hang 1-6: noi dung can giua */}
-      <div className="flex-1 flex flex-col items-center justify-center gap-4 w-full max-w-xs mx-auto">
+      {/* He luoi 10 hang: 1 (dem) + 5 (noi dung, tam ~hang 3.5) + 3 (dem) + 1 (nut) */}
+      <div style={{ flex: "1 1 0" }} />
+
+      <div style={{ flex: "5 1 0", minHeight: 0 }} className="flex flex-col items-center justify-center gap-4 w-full max-w-xs mx-auto">
         <h1 className="text-2xl font-bold text-center">
-          Tạo hồ sơ của bạn
+          Create your profile
         </h1>
         <Input
-          placeholder="Tên của bạn"
+          placeholder="Your name"
           value={name}
           onChange={event => setName(event.target.value)}
           className="text-center"
         />
       </div>
 
-      {/* Hang 9: nut hanh dong */}
-      <div className="pb-[2vh]">
+      <div style={{ flex: "3 1 0" }} />
+
+      {/* Hang 9-10: nut hanh dong, cao 4/5 hang, rong 2/3 man can giua */}
+      <div style={{ flex: "1 1 0", minHeight: 0 }} className="flex items-center">
         <Button
           disabled={isProfileInvalid || loading}
-          className="w-full py-6 rounded-full text-lg font-semibold"
+          className="w-2/3 mx-auto h-[80%] rounded-full text-lg font-semibold"
           onClick={handleOnboarding}
         >
-          {loading ? "Đang lưu..." : "Tiếp tục"}
+          {loading ? "Saving..." : "Continue"}
         </Button>
       </div>
     </div>

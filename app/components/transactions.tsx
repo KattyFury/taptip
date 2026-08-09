@@ -212,19 +212,19 @@ export const Transactions: FunctionComponent<Props> = (props) => {
     );
   }, [formattedData, searchQuery]);
 
-  // Group transactions by day (dung spec: header "ngay thang nam")
+  // Group transactions by day (header shows month/day/year)
   const groupedTransactions = useMemo(() => {
     const groups: Record<string, typeof formattedData> = {};
 
     searchedData.forEach((transaction) => {
       const date = new Date(transaction.created_at);
-      const dayKey = date.toLocaleDateString('vi-VN', {
+      const dayKey = date.toLocaleDateString('en-US', {
         day: '2-digit',
         month: '2-digit',
         year: 'numeric',
       });
 
-      transaction.formattedDate = date.toLocaleTimeString('vi-VN', {
+      transaction.formattedDate = date.toLocaleTimeString('en-US', {
         hour: '2-digit',
         minute: '2-digit',
       });
@@ -234,8 +234,8 @@ export const Transactions: FunctionComponent<Props> = (props) => {
     });
 
     const sortedKeys = Object.keys(groups).sort((a, b) => {
-      const [dA, mA, yA] = a.split('/').map(Number);
-      const [dB, mB, yB] = b.split('/').map(Number);
+      const [mA, dA, yA] = a.split('/').map(Number);
+      const [mB, dB, yB] = b.split('/').map(Number);
       return new Date(yB, mB - 1, dB).getTime() - new Date(yA, mA - 1, dA).getTime();
     });
 
@@ -247,20 +247,20 @@ export const Transactions: FunctionComponent<Props> = (props) => {
   // Transaction type display mapping
   const getTransactionTypeDisplay = (type: string) => {
     if (type === "USDC_TRANSFER_IN" || type === "received") {
-      return "Đã nhận"
+      return "Received"
     }
 
     if (type === "USDC_TRANSFER_OUT" || type === "sent") {
-      return "Đã gửi"
+      return "Sent"
     }
 
     return type
   };
 
   const getStatusDisplay = (status: string) => {
-    if (status === "COMPLETE") return "Hoàn tất";
-    if (status === "PENDING") return "Đang xử lý";
-    if (status === "FAILED") return "Thất bại";
+    if (status === "COMPLETE") return "Complete";
+    if (status === "PENDING") return "Pending";
+    if (status === "FAILED") return "Failed";
     return status;
   };
 
@@ -367,14 +367,14 @@ export const Transactions: FunctionComponent<Props> = (props) => {
   if (error) {
     return (
       <div className="p-4 border border-destructive bg-destructive/10 text-destructive">
-        <p>Lỗi tải giao dịch: {error}</p>
+        <p>Error loading transactions: {error}</p>
         <Button
           variant="destructive"
           size="sm"
           className="mt-2"
           onClick={updateTransactions}
         >
-          Thử lại
+          Retry
         </Button>
       </div>
     );
@@ -385,14 +385,14 @@ export const Transactions: FunctionComponent<Props> = (props) => {
       <>
         <div className="flex flex-col justify-between mb-4">
           <Input
-            placeholder="Tìm giao dịch..."
+            placeholder="Search transactions..."
             className="w-full mb-2"
             value={searchQuery}
             onChange={event => setSearchQuery(event.target.value)}
           />
         </div>
         <p className="text-xl text-muted-foreground">
-          Chưa có giao dịch nào
+          No transactions yet
         </p>
       </>
     );
@@ -401,7 +401,7 @@ export const Transactions: FunctionComponent<Props> = (props) => {
   return (
     <>
       <Input
-        placeholder="Tìm giao dịch..."
+        placeholder="Search transactions..."
         className="w-full mb-2"
         value={searchQuery}
         onChange={event => setSearchQuery(event.target.value)}
@@ -432,7 +432,7 @@ export const Transactions: FunctionComponent<Props> = (props) => {
                   ? `Tip: ${counterpartyName}`
                   : transaction.circle_transaction_id
                     ? `${transaction.circle_transaction_id.slice(0, 6)}...${transaction.circle_transaction_id.slice(-4)}`
-                    : 'Không rõ địa chỉ';
+                    : 'Unknown address';
 
                 return (
                   <div

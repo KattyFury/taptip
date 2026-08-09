@@ -36,7 +36,7 @@ export default function HomeScreen({ primaryWallet, historyContent }: Props) {
   const startRandomTip = () => {
     const balanceNum = isNaN(balance.token) ? 0 : balance.token;
     if (balanceNum <= 0) {
-      toast.error("Không đủ số dư để tip ngẫu nhiên");
+      toast.error("Not enough balance for a random tip");
       return;
     }
     const max = Math.min(5, balanceNum);
@@ -47,7 +47,7 @@ export default function HomeScreen({ primaryWallet, historyContent }: Props) {
 
   const copyAddress = () => {
     navigator.clipboard.writeText(primaryWallet.wallet_address);
-    toast.success("Đã copy địa chỉ ví");
+    toast.success("Wallet address copied");
   };
 
   const formattedBalance =
@@ -72,7 +72,7 @@ export default function HomeScreen({ primaryWallet, historyContent }: Props) {
       {/* Hang 0-1: Balance */}
       <div style={{ flex: "1 1 0", minHeight: 0 }} className="flex items-center justify-center">
         <div className="text-[4.5vh] font-bold text-center">
-          Số dư: {formattedBalance} USDC
+          Balance: {formattedBalance} USDC
         </div>
       </div>
 
@@ -97,7 +97,7 @@ export default function HomeScreen({ primaryWallet, historyContent }: Props) {
             style={{ height: "100%", aspectRatio: "1" }}
             className="flex items-center justify-center border rounded-xl text-[1.8vh] text-muted-foreground text-center px-4"
           >
-            Đang tạo ví...
+            Creating wallet...
           </div>
         )}
       </div>
@@ -108,7 +108,7 @@ export default function HomeScreen({ primaryWallet, historyContent }: Props) {
       {/* Hang 4.75-5.75: chu thich */}
       <div style={{ flex: "1 1 0", minHeight: 0 }} className="flex items-start justify-center">
         <p className="text-[1.8vh] text-muted-foreground text-center px-8">
-          Cho người khác quét để nhận tip, chỉ nhận USDC mạng Arc Testnet
+          Let others scan this to send you a tip - only receives USDC on Arc Testnet
         </p>
       </div>
 
@@ -132,7 +132,7 @@ export default function HomeScreen({ primaryWallet, historyContent }: Props) {
           onClick={startRandomTip}
         >
           <Shuffle className="h-[1.8vh] w-[1.8vh] shrink-0" />
-          Ngẫu nhiên
+          Random
         </Button>
         <Button
           style={{ flex: "2 1 0", minWidth: 0 }}
@@ -163,7 +163,7 @@ export default function HomeScreen({ primaryWallet, historyContent }: Props) {
             {menuView === "main" && (
               <>
                 <DialogHeader>
-                  <DialogTitle>Số dư & Ví</DialogTitle>
+                  <DialogTitle>Balance & Wallet</DialogTitle>
                 </DialogHeader>
                 <div className="text-2xl font-bold text-center py-2">
                   {formattedBalance} USDC
@@ -176,28 +176,28 @@ export default function HomeScreen({ primaryWallet, historyContent }: Props) {
                     setMenuView("deposit");
                   }}
                 >
-                  Nạp
+                  Deposit
                 </Button>
                 <Button
                   variant="outline"
                   className="w-full"
                   onClick={() => setMenuView("withdraw")}
                 >
-                  Rút
+                  Withdraw
                 </Button>
                 <Button
                   variant="outline"
                   className="w-full"
                   onClick={() => setMenuView("history")}
                 >
-                  Lịch sử tip
+                  Tip history
                 </Button>
                 <Button
                   variant="ghost"
                   className="w-full"
                   onClick={() => setMenuOpen(false)}
                 >
-                  Thoát
+                  Close
                 </Button>
               </>
             )}
@@ -205,26 +205,26 @@ export default function HomeScreen({ primaryWallet, historyContent }: Props) {
             {menuView === "deposit" && (
               <>
                 <DialogHeader>
-                  <DialogTitle>Nạp USDC (testnet)</DialogTitle>
+                  <DialogTitle>Deposit USDC (testnet)</DialogTitle>
                 </DialogHeader>
                 <p className="text-sm text-muted-foreground">
-                  Đã tự copy địa chỉ ví của bạn:
+                  Your wallet address has been copied:
                 </p>
                 <code className="text-xs break-all bg-muted p-2 rounded block">
                   {primaryWallet.wallet_address}
                 </code>
                 <ol className="text-sm list-decimal list-inside space-y-1">
-                  <li>Mở trang Circle Faucet</li>
-                  <li>Dán địa chỉ ví vừa copy</li>
-                  <li>Bấm Request trên trang đó</li>
+                  <li>Open the Circle Faucet page</li>
+                  <li>Paste the wallet address you just copied</li>
+                  <li>Click Request on that page</li>
                 </ol>
                 <Button className="w-full" asChild>
                   <a href={CIRCLE_FAUCET_URL} target="_blank" rel="noopener noreferrer">
-                    Mở trang Circle Faucet
+                    Open Circle Faucet
                   </a>
                 </Button>
                 <Button variant="ghost" className="w-full" onClick={() => setMenuView("main")}>
-                  Quay lại
+                  Back
                 </Button>
               </>
             )}
@@ -232,13 +232,13 @@ export default function HomeScreen({ primaryWallet, historyContent }: Props) {
             {menuView === "withdraw" && (
               <>
                 <DialogHeader>
-                  <DialogTitle>Rút</DialogTitle>
+                  <DialogTitle>Withdraw</DialogTitle>
                 </DialogHeader>
                 <p className="text-sm text-muted-foreground">
-                  Tính năng chưa khả dụng — rút chỉ mở ở mainnet.
+                  This feature isn't available yet - withdrawals only open on mainnet.
                 </p>
                 <Button className="w-full" onClick={() => setMenuView("main")}>
-                  Đã hiểu
+                  Got it
                 </Button>
               </>
             )}
@@ -246,7 +246,7 @@ export default function HomeScreen({ primaryWallet, historyContent }: Props) {
             {menuView === "history" && (
               <>
                 <DialogHeader>
-                  <DialogTitle>Lịch sử tip</DialogTitle>
+                  <DialogTitle>Tip history</DialogTitle>
                 </DialogHeader>
                 <div className="max-h-[60vh] overflow-y-auto">
                   {historyContent}

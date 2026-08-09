@@ -38,7 +38,7 @@ const archivo = Archivo({
 export const metadata = {
   metadataBase: new URL(defaultUrl),
   title: "TapTip",
-  description: "Tip và lì xì nhanh như trao tay",
+  description: "Tip and gift money as fast as a handshake",
 };
 
 export const viewport: Viewport = {
@@ -51,7 +51,7 @@ export default async function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="vi" className={`${archivo.variable} ${archivo.className}`} suppressHydrationWarning>
+    <html lang="en" className={`${archivo.variable} ${archivo.className}`} suppressHydrationWarning>
       <body className="bg-background/5 text-foreground flex items-center justify-center min-h-svh overflow-hidden">
         <Web3Provider>
           <BalanceProvider>
