@@ -62,13 +62,10 @@ export default function HomeScreen({ primaryWallet, historyContent }: Props) {
 
   return (
     <div className="flex flex-col h-full">
-      {/* Hang 1: Balance */}
-      <div className="flex flex-col items-center pt-8">
-        <div className="text-4xl font-bold">{formattedBalance} USDC</div>
-      </div>
-
-      {/* Hang 2-5: QR code cua vi minh */}
+      {/* Hang 1-6: Balance + QR + chu thich, can giua chung 1 khoi */}
       <div className="flex-1 flex flex-col items-center justify-center gap-4">
+        <div className="text-4xl font-bold">{formattedBalance} USDC</div>
+
         {hasWallet ? (
           <div className="p-4 bg-white rounded-2xl border">
             <QRCodeSVG value={primaryWallet.wallet_address} size={220} />
@@ -78,17 +75,16 @@ export default function HomeScreen({ primaryWallet, historyContent }: Props) {
             Đang tạo ví...
           </div>
         )}
-        {/* Hang 6: chu thich */}
         <p className="text-sm text-muted-foreground text-center px-8">
           Cho người khác quét để nhận tip
         </p>
       </div>
 
-      {/* Hang 9: 2 nut hanh dong */}
+      {/* Hang 9: 2 nut hanh dong, to du chieu cao 1 hang */}
       <div className="flex gap-2 pb-3">
         <Button
           variant="secondary"
-          className="flex-1 py-6 rounded-full"
+          className="flex-1 h-20 rounded-full"
           disabled
           onClick={startRandomTip}
         >
@@ -96,7 +92,7 @@ export default function HomeScreen({ primaryWallet, historyContent }: Props) {
           Ngẫu nhiên
         </Button>
         <Button
-          className="flex-[2] py-6 rounded-full text-lg font-semibold"
+          className="flex-[2] h-20 rounded-full text-lg font-semibold"
           onClick={() => {
             setRandomSendAmount(undefined);
             setSendOpen(true);
@@ -151,6 +147,13 @@ export default function HomeScreen({ primaryWallet, historyContent }: Props) {
                   onClick={() => setMenuView("history")}
                 >
                   Lịch sử tip
+                </Button>
+                <Button
+                  variant="ghost"
+                  className="w-full"
+                  onClick={() => setMenuOpen(false)}
+                >
+                  Thoát
                 </Button>
               </>
             )}
