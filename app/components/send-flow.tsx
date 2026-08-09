@@ -21,6 +21,7 @@ import {
 import { useWeb3 } from "@/components/web3-provider";
 import { useBalance } from "@/contexts/balanceContext";
 import { toast } from "sonner";
+import { decodeTapTipQr } from "@/lib/utils/qr-payment";
 
 // Giai doan 1: gia tri tinh bang USDC truc tiep, chua lam quy doi VND
 // (spec PRD noi "hien thi quy doi VND" - de danh cho Giai doan 2, can ty
@@ -28,7 +29,6 @@ import { toast } from "sonner";
 const DEFAULT_PRESETS = ["1", "5", "10"];
 const PRESETS_STORAGE_KEY = "taptip_presets";
 const QR_REGION_ID = "taptip-qr-region";
-const ADDRESS_REGEX = /^0x[a-fA-F0-9]{40}$/;
 
 type Step = "amount" | "scan" | "sending" | "success";
 
@@ -189,8 +189,9 @@ export default function SendFlow({ open, onOpenChange, initialAmount }: Props) {
   };
 
   const handleScanResult = async (decodedText: string) => {
-    if (!ADDRESS_REGEX.test(decodedText)) {
-      setScanError("QR không hợp lệ — không phải địa chỉ ví.");
+    const decoded = decodeTapTipQr(decodedText);
+    if (!decoded) {
+      setScanError("QR không hợp lệ — sai mạng, sai loại tiền, hoặc không phải QR TapTip.");
       return;
     }
     if (!amount) {
@@ -201,7 +202,7 @@ export default function SendFlow({ open, onOpenChange, initialAmount }: Props) {
     stopScanner();
     setStep("sending");
 
-    const txHash = await sendUSDC(decodedText, amount);
+    const txHash = await sendUSDC(decoded.address, amount);
 
     if (!txHash) {
       toast.error("Gửi thất bại, thử lại");

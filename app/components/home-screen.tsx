@@ -13,6 +13,7 @@ import {
 } from "@/components/ui/dialog";
 import { useBalance } from "@/contexts/balanceContext";
 import SendFlow from "@/components/send-flow";
+import { encodeTapTipQr } from "@/lib/utils/qr-payment";
 
 const CIRCLE_FAUCET_URL = "https://faucet.circle.com/";
 
@@ -71,7 +72,7 @@ export default function HomeScreen({ primaryWallet, historyContent }: Props) {
       <div className="flex-1 flex flex-col items-center justify-center">
         {hasWallet ? (
           <div className="p-4 bg-white rounded-2xl border">
-            <QRCodeSVG value={primaryWallet.wallet_address} size={220} />
+            <QRCodeSVG value={encodeTapTipQr(primaryWallet.wallet_address)} size={220} />
           </div>
         ) : (
           <div className="w-[220px] h-[220px] flex items-center justify-center border rounded-2xl text-sm text-muted-foreground text-center px-4">
