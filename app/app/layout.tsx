@@ -30,8 +30,8 @@ const defaultUrl = process.env.NEXT_PUBLIC_VERCEL_URL
 
 export const metadata = {
   metadataBase: new URL(defaultUrl),
-  title: "Arc Pay",
-  description: "Seamless, Gasless Transactions with Passkey Security and Instant Top-ups",
+  title: "TapTip",
+  description: "Tip và lì xì nhanh như trao tay",
 };
 
 export const viewport: Viewport = {

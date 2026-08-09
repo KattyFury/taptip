@@ -20,9 +20,9 @@ import type { MetadataRoute } from "next";
 
 export default function manifest(): MetadataRoute.Manifest {
   return {
-    name: "Arc Pay",
-    short_name: "Arc Pay",
-    description: "Seamless, Gasless Transactions with Passkey Security and Instant Top-ups",
+    name: "TapTip",
+    short_name: "TapTip",
+    description: "Tip và lì xì nhanh như trao tay",
     start_url: "/",
     display: "standalone",
     background_color: "#ffffff",
