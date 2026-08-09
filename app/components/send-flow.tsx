@@ -128,6 +128,17 @@ export default function SendFlow({ open, onOpenChange, initialAmount }: Props) {
 
   const startScanner = async () => {
     setScanError(null);
+
+    // Doi 1 frame de dam bao div QR_REGION_ID da that su co trong DOM
+    // (dialog + step chuyen cung luc co the chua kip commit)
+    if (!document.getElementById(QR_REGION_ID)) {
+      await new Promise((resolve) => requestAnimationFrame(resolve));
+    }
+    if (!document.getElementById(QR_REGION_ID)) {
+      setScanError("Không mở được camera. Thử nhập ảnh từ kho ảnh.");
+      return;
+    }
+
     try {
       const scanner = new Html5Qrcode(QR_REGION_ID);
       scannerRef.current = scanner;
@@ -140,7 +151,9 @@ export default function SendFlow({ open, onOpenChange, initialAmount }: Props) {
         },
       );
     } catch (err) {
-      console.error("Could not start camera:", err);
+      // Permission denied hoac khong co camera (VD test tren PC) la truong
+      // hop da xu ly (fallback sang nhap anh), khong phai loi bat ngo.
+      console.warn("Could not start camera:", err);
       setScanError("Không mở được camera. Thử nhập ảnh từ kho ảnh.");
     }
   };

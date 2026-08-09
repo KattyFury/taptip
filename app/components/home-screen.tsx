@@ -89,6 +89,7 @@ export default function HomeScreen({ primaryWallet, historyContent }: Props) {
         <Button
           variant="secondary"
           className="flex-1 py-6 rounded-full"
+          disabled
           onClick={startRandomTip}
         >
           <Shuffle className="mr-1 h-4 w-4" />
