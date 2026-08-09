@@ -66,21 +66,23 @@ export default function HomeScreen({ primaryWallet, historyContent }: Props) {
       {/* He 10 don vi flex-grow duy nhat cho ca trang, khong ai duoc choan
           nhieu/it hon phan cua minh - moi ty le tinh tren TOAN BO man hinh */}
 
-      {/* Hang 1: Balance */}
+      {/* Hang 1: Balance. Co chu theo vh - hang nho lai thi chu cung nho theo,
+          khong dung rem co dinh (text-4xl) vi khong lien quan gi chieu cao hang */}
       <div style={{ flexGrow: 1 }} className="flex items-center justify-center">
-        <div className="text-4xl font-bold text-center">
+        <div className="text-[4.5vh] font-bold text-center">
           Số dư: {formattedBalance} USDC
         </div>
       </div>
 
-      {/* Hang 1-2.5: khoang cach truoc QR */}
-      <div style={{ flexGrow: 1.5 }} />
+      {/* Hang 1-1.5: khoang cach truoc QR */}
+      <div style={{ flexGrow: 0.5 }} />
 
-      {/* Hang 2.5-5.5: QR, can giua. Kich thuoc theo % chieu rong (vw) thay vi
-          px co dinh theo chieu doc - tranh vuot khung khi man hinh thap */}
+      {/* Hang 1.5-4.5: QR, can giua. Kich thuoc = min(50vw, 28vh) - bi chan boi
+          CA be rong LAN chieu cao hang, nen QR luon vua khung du man hinh
+          ngang hay doc */}
       <div style={{ flexGrow: 3, minHeight: 0 }} className="flex items-center justify-center">
         {hasWallet ? (
-          <div className="p-4 bg-white rounded-2xl border w-[50vw] max-w-[260px] aspect-square flex items-center justify-center">
+          <div className="p-4 bg-white rounded-2xl border w-[min(50vw,28vh)] max-w-[260px] aspect-square flex items-center justify-center">
             <QRCodeSVG
               value={encodeTapTipQr(primaryWallet.wallet_address)}
               size={260}
@@ -88,15 +90,15 @@ export default function HomeScreen({ primaryWallet, historyContent }: Props) {
             />
           </div>
         ) : (
-          <div className="w-[50vw] max-w-[260px] aspect-square flex items-center justify-center border rounded-2xl text-sm text-muted-foreground text-center px-4">
+          <div className="w-[min(50vw,28vh)] max-w-[260px] aspect-square flex items-center justify-center border rounded-2xl text-[1.8vh] text-muted-foreground text-center px-4">
             Đang tạo ví...
           </div>
         )}
       </div>
 
-      {/* Hang 5.5-6: chu thich */}
-      <div style={{ flexGrow: 0.5 }} className="flex flex-col items-center justify-start">
-        <p className="text-sm text-muted-foreground text-center px-8">
+      {/* Hang 4.5-6: chu thich */}
+      <div style={{ flexGrow: 1.5 }} className="flex flex-col items-center justify-start">
+        <p className="text-[1.8vh] text-muted-foreground text-center px-8">
           Cho người khác quét để nhận tip, chỉ nhận USDC mạng Arc Testnet
         </p>
       </div>
@@ -108,22 +110,22 @@ export default function HomeScreen({ primaryWallet, historyContent }: Props) {
       <div style={{ flexGrow: 1 }} className="flex gap-2 items-stretch">
         <Button
           variant="secondary"
-          className="flex-1 h-full rounded-full"
+          className="flex-1 h-full rounded-full text-[1.8vh]"
           disabled
           onClick={startRandomTip}
         >
-          <Shuffle className="mr-1 h-4 w-4" />
+          <Shuffle className="mr-1 h-[2vh] w-[2vh]" />
           Ngẫu nhiên
         </Button>
         <Button
           style={{ flexGrow: 2 }}
-          className="h-full rounded-full text-lg font-semibold"
+          className="h-full rounded-full text-[2.2vh] font-semibold"
           onClick={() => {
             setRandomSendAmount(undefined);
             setSendOpen(true);
           }}
         >
-          <Send className="mr-1 h-4 w-4" />
+          <Send className="mr-1 h-[2.2vh] w-[2.2vh]" />
           Tip
         </Button>
       </div>
@@ -135,10 +137,10 @@ export default function HomeScreen({ primaryWallet, historyContent }: Props) {
       />
 
       {/* Hang 10: icon menu */}
-      <div className="flex-[1] flex items-center">
+      <div style={{ flexGrow: 1 }} className="flex items-center">
         <Dialog open={menuOpen} onOpenChange={closeMenu}>
           <Button variant="ghost" size="icon" onClick={() => setMenuOpen(true)}>
-            <Menu />
+            <Menu className="h-[2.2vh] w-[2.2vh]" />
           </Button>
           <DialogContent className="sm:max-w-md">
             {menuView === "main" && (
