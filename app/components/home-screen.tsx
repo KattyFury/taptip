@@ -67,18 +67,18 @@ export default function HomeScreen({ primaryWallet, historyContent }: Props) {
           nhieu/it hon phan cua minh - moi ty le tinh tren TOAN BO man hinh */}
 
       {/* Hang 1: Balance */}
-      <div className="flex-[1] flex items-center justify-center">
+      <div style={{ flexGrow: 1 }} className="flex items-center justify-center">
         <div className="text-4xl font-bold text-center">
           Số dư: {formattedBalance} USDC
         </div>
       </div>
 
       {/* Hang 1-2.5: khoang cach truoc QR */}
-      <div className="flex-[1.5]" />
+      <div style={{ flexGrow: 1.5 }} />
 
       {/* Hang 2.5-5.5: QR, can giua. Kich thuoc theo % chieu rong (vw) thay vi
           px co dinh theo chieu doc - tranh vuot khung khi man hinh thap */}
-      <div className="flex-[3] flex items-center justify-center min-h-0">
+      <div style={{ flexGrow: 3, minHeight: 0 }} className="flex items-center justify-center">
         {hasWallet ? (
           <div className="p-4 bg-white rounded-2xl border w-[50vw] max-w-[260px] aspect-square flex items-center justify-center">
             <QRCodeSVG
@@ -95,17 +95,17 @@ export default function HomeScreen({ primaryWallet, historyContent }: Props) {
       </div>
 
       {/* Hang 5.5-6: chu thich */}
-      <div className="flex-[0.5] flex flex-col items-center justify-start">
+      <div style={{ flexGrow: 0.5 }} className="flex flex-col items-center justify-start">
         <p className="text-sm text-muted-foreground text-center px-8">
           Cho người khác quét để nhận tip, chỉ nhận USDC mạng Arc Testnet
         </p>
       </div>
 
       {/* Hang 6-8: khoang trong */}
-      <div className="flex-[2]" />
+      <div style={{ flexGrow: 2 }} />
 
       {/* Hang 9: 2 nut hanh dong */}
-      <div className="flex-[1] flex gap-2 items-stretch">
+      <div style={{ flexGrow: 1 }} className="flex gap-2 items-stretch">
         <Button
           variant="secondary"
           className="flex-1 h-full rounded-full"
@@ -116,7 +116,8 @@ export default function HomeScreen({ primaryWallet, historyContent }: Props) {
           Ngẫu nhiên
         </Button>
         <Button
-          className="flex-[2] h-full rounded-full text-lg font-semibold"
+          style={{ flexGrow: 2 }}
+          className="h-full rounded-full text-lg font-semibold"
           onClick={() => {
             setRandomSendAmount(undefined);
             setSendOpen(true);
