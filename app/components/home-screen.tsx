@@ -63,7 +63,10 @@ export default function HomeScreen({ primaryWallet, historyContent }: Props) {
   };
 
   return (
-    <div data-home-root className="relative flex flex-col h-full pb-4">
+    // KHONG dat padding doc o day. Ban thiet ke goc co pb 16px, nhung padding
+    // an vao chieu cao luoi -> 10 hang khong con chia tron khung, icon menu roi
+    // ve vach 9.32 thay vi 9.5. Luoi phai neo dung dinh 0 / day 10 cua khung.
+    <div data-home-root className="relative flex flex-col h-full">
       {/* ================== LUOI 10 HANG MAN HOME ==========================
           Tong: 1 + 0.5 + 3 + 0.25 + 1 + 2.25 + 1 + 1 = 10
 

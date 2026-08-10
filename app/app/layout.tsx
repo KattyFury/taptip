@@ -66,16 +66,21 @@ export default async function RootLayout({
       className={`${nunito.variable} ${comfortaa.variable}`}
       suppressHydrationWarning
     >
-      <body className="bg-page-backdrop text-foreground font-sans flex items-center justify-center min-h-dvh overflow-hidden">
+      <body className="bg-page-backdrop text-foreground font-sans min-h-dvh overflow-hidden">
         <Web3Provider>
           <BalanceProvider>
+            {/* Toaster PHAI nam ngoai container can giua: sonner render mot
+                <section> tham gia layout, de trong flex la no an mat mot phan
+                be ngang va day khung dien thoai lech sang phai. */}
             <Toaster expand />
-            {/* Khung dien thoai 430x932. `tt-frame` bat container-type: size
-                de don vi cqh cua chu/icon bam theo chieu cao khung nay. */}
-            <div className="tt-frame relative w-full max-w-[430px] h-dvh max-h-[932px] flex flex-col bg-background shadow-modal overflow-hidden">
-              <main className="flex-1 flex flex-col items-center overflow-hidden">
-                <div className="flex flex-col w-full flex-1">{children}</div>
-              </main>
+            <div className="flex items-center justify-center min-h-dvh">
+              {/* Khung dien thoai 430x932. `tt-frame` bat container-type: size
+                  de don vi cqh cua chu/icon bam theo chieu cao khung nay. */}
+              <div className="tt-frame relative w-full max-w-[430px] h-dvh max-h-[932px] flex flex-col bg-background shadow-modal overflow-hidden">
+                <main className="flex-1 flex flex-col items-center overflow-hidden">
+                  <div className="flex flex-col w-full flex-1">{children}</div>
+                </main>
+              </div>
             </div>
           </BalanceProvider>
         </Web3Provider>

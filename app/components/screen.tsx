@@ -46,7 +46,7 @@ interface ScreenProps {
 
 export function Screen({ icon, title, children, action, foot }: ScreenProps) {
   return (
-    <div className="flex flex-col w-full h-full">
+    <div data-screen-root className="flex flex-col w-full h-full">
       {/* 0.0 -> 1.0 */}
       <div style={{ flex: "1 1 0" }} />
 
@@ -111,7 +111,9 @@ export function PrimaryButton({
         className
       }
       {...props}
-    />
+    >
+      {children}
+    </button>
   );
 }
 
@@ -130,7 +132,9 @@ export function IconButton({
         className
       }
       {...props}
-    />
+    >
+      {children}
+    </button>
   );
 }
 
@@ -175,7 +179,9 @@ export function TextLink({
     <button
       className={"text-accent text-body font-extrabold text-center " + className}
       {...props}
-    />
+    >
+      {children}
+    </button>
   );
 }
 

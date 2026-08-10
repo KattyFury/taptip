@@ -2,7 +2,7 @@
 
 Áp `design_handoff_taptip/` (README + `TapTip Design Recreation.dc.html`) vào code thật trong `example/app/`, kèm 4 điều chỉnh do chủ dự án chốt trực tiếp (mục 2).
 
-**Trạng thái:** `npx tsc --noEmit` sạch · `npm run build` thành công (24 route) · CSS build ra đã kiểm tra có đủ token mới. Chưa chạy thử bằng mắt trên trình duyệt vì máy chưa có `.env.local` (xem mục 7).
+**Trạng thái:** `npx tsc --noEmit` sạch · `npm run build` thành công (24 route) · **đã chạy dev server và đo lưới thật bằng Chrome headless** — xem mục 7.
 
 ---
 
@@ -124,7 +124,7 @@ Nay khung điện thoại có class `.tt-frame` đặt `container-type: size`, v
 - **Chi tiết giao dịch giờ là modal** nổi trên Lịch sử tip, đúng bản thiết kế. Không cần gọi API riêng — dữ liệu đã có sẵn trong dòng danh sách. Route `/dashboard/transaction/[id]` vẫn còn cho link trực tiếp, và **dùng chung** component `TransactionDetail` nên hai chỗ không thể lệch nhau.
 - **Bỏ dark mode.** Đã xoá `ThemeProvider` và block `.dark` (vốn còn nguyên bảng xanh dương của sample app và không bật được). `sonner` đặt cứng `theme="light"`.
 - **Bỏ sạch `alert()`** ở màn đăng nhập và OTP — lỗi giờ hiện inline ở hàng 9-10, thống nhất với các màn khác.
-- **Padding cạnh gom về một mức.** Xoá `mt-[66px]` ở layout auth (pixel cứng, làm "10 hàng" của màn auth lệch thang đo so với Home). Giờ layout chỉ đặt `px-5`; Home tự thêm `pb-4` đúng như bản thiết kế.
+- **Padding cạnh gom về một mức.** Xoá `mt-[66px]` ở layout auth (pixel cứng, làm "10 hàng" của màn auth lệch thang đo so với Home). Giờ layout **chỉ đặt `px-5`**, không màn nào có padding dọc — lưới 10 hàng của mọi màn đều neo đúng đỉnh 0 / đáy 10 của khung (xem mục 7.2).
 - **Sửa lỗi hook có sẵn** ở `code-confirmation`: `useState` nằm sau một `return` có điều kiện — vi phạm Rules of Hooks, sẽ crash khi `email` rỗng rồi có. Đã đưa hook lên trước.
 - Modal Lịch sử tip **bỏ header "Activity" + nút logout** (không có trong bản thiết kế, và trông sai khi nằm trong modal).
 
@@ -138,9 +138,50 @@ Nay khung điện thoại có class `.tt-frame` đặt `container-type: size`, v
 
 ---
 
-## 7. Chưa làm được: xem thử bằng mắt
+## 7. Kết quả đo lưới thật
 
-Máy này **không có `.env.local`** — file bị gitignore, không theo repo về. Quét cả cây `build_on_arc` không thấy. Thư mục recovery Circle entity-secret `C:\tmp\taptip-entity-secret-recovery2` cũng đã bị dọn mất.
+Chạy `next dev` với env giả (Supabase/Circle placeholder — các màn onboarding và Home không cần gọi API thật), rồi dựng một route tạm `/preview` để đo `getBoundingClientRect()` từng khối, quy ra đơn vị hàng. Route tạm **đã xoá** sau khi đo xong.
+
+**Khung `<Screen>` (6 màn onboarding) — khớp tuyệt đối:**
+
+```
+[0] 0.00 -> 1.00   đệm trên
+[1] 1.00 -> 2.50   icon + tiêu đề
+[2] 2.50 -> 8.00   nội dung
+[3] 8.00 -> 9.00   hàng nút
+[4] 9.00 -> 10.00  hàng phụ
+h1 font-size = 25.11px  (= 3cqh của khung cao 837px; ra đúng 28px ở khung 932px)
+```
+
+**Màn Home — khớp tuyệt đối, icon menu đúng vạch 9.5:**
+
+```
+[0] 0.00 -> 1.00   số dư
+[1] 1.00 -> 1.50   đệm
+[2] 1.50 -> 4.50   QR
+[3] 4.50 -> 4.75   đệm
+[4] 4.75 -> 5.75   chú thích
+[5] 5.75 -> 8.00   khoảng trống
+[6] 8.00 -> 9.00   nút Random + Tip
+[8] 9.00 -> 10.00  hàng menu
+MENU centerY = 9.50   left = 20px   size = 25px (= 3cqh)
+```
+
+### Ba lỗi thật tìm ra nhờ đo, đã sửa
+
+1. **Nút không hiện chữ.** `PrimaryButton` / `IconButton` / `TextLink` destructure `children` ra khỏi props rồi chỉ spread `{...props}` vào `<button />` — `children` bị rơi mất. Nút "Continue", "Skip", mũi tên Quay lại đều render thành ô rỗng. Đã trả `{children}` vào trong thẻ.
+2. **Home lệch lưới, menu rơi về vạch 9.32.** Container lưới có `pb-4` (theo prototype gốc). Padding ăn vào chiều cao → 10 hàng không còn chia trọn khung. Đã bỏ `pb-4`; đây là **chệch có chủ ý so với prototype** để lưới neo đúng đỉnh 0 / đáy 10 theo yêu cầu.
+3. **Toaster nằm trong container căn giữa.** `sonner` render một `<section>` tham gia layout; để nó làm con của flex căn giữa thì nó ăn mất một phần bề ngang. Đã tách ra ngoài, khung điện thoại được bọc trong div căn giữa riêng.
+
+> Lưu ý khi tự chụp lại: Chrome headless trên Windows ép `innerWidth` tối thiểu **500px**, `--window-size=430` không cho viewport 430. Chụp ở `--window-size=520,940` thì khung 430 nằm giữa, không bị cắt.
+
+Đã xem ảnh chụp thật của: Add to Home, Sign in, Home, modal menu "Balance & Wallet", modal "Choose an amount". Màu/font/bo góc/đổ bóng/scrim đều đúng bản thiết kế.
+
+---
+
+## 8. Chưa kiểm tra được với dữ liệu thật
+
+Các màn còn lại (Lịch sử tip, chi tiết giao dịch, luồng gửi sau khi quét) cần dữ liệu ví thật. Máy này **không có `.env.local`** — file bị gitignore, không theo repo về. Quét cả cây `build_on_arc` không thấy. Thư mục recovery Circle entity-secret `C:\tmp\taptip-entity-secret-recovery2` cũng đã bị dọn mất.
 
 Nên chỉ verify được tới mức: typecheck sạch, build production thành công, và CSS build ra có đủ token (`#fc0`, `#0b53bf`, `container:screen/size`, `3cqh`, `4.94cqh`, `shadow-btn`, `font-num`, `tt-caret`).
 
@@ -161,7 +202,7 @@ Chụp ở đúng 430×932 để `cqh` khớp 1:1 với bản thiết kế gốc
 
 ---
 
-## 8. Lưu ý khi sửa tiếp
+## 9. Lưu ý khi sửa tiếp
 
 Ba luật lưới **giữ nguyên**, đã ghi đầy đủ trong docblock đầu [components/screen.tsx](../app/components/screen.tsx):
 
