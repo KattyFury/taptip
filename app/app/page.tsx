@@ -20,10 +20,17 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Button } from "@/components/ui/button";
-import { MoreHorizontal, Share, SquarePlus, CheckCircle2 } from "lucide-react";
+import { Screen, SingleAction, PrimaryButton, TextLink } from "@/components/screen";
+import * as Icon from "@/components/icons";
 
 const SPLASH_DURATION_MS = 1600;
+
+const INSTALL_STEPS = [
+  "Tap Option in Safari",
+  "Tap Share",
+  "Tap Add to Home Screen",
+  "Tap Add - you're done!",
+];
 
 export default function Splash() {
   const router = useRouter();
@@ -34,61 +41,49 @@ export default function Splash() {
     return () => clearTimeout(timer);
   }, []);
 
+  // Splash: chu ky TapTip can giua, hoi cao hon tam mot chut
+  // (luoi 1 dem tren / 5 logo / 4 dem duoi)
   if (step === "splash") {
     return (
       <div className="flex flex-col h-full px-5">
-        <div className="flex-1 flex flex-col items-center justify-center gap-4">
-          <img src="/logo.png" alt="TapTip" className="h-[16vh] w-[16vh] object-contain" />
-          <h1 className="text-3xl font-bold">TapTip</h1>
+        <div style={{ flex: "1 1 0" }} />
+        <div
+          style={{ flex: "5 1 0", minHeight: 0 }}
+          className="flex items-center justify-center"
+        >
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src="/logo-full.svg" alt="TapTip" className="w-[60%] h-auto" />
         </div>
+        <div style={{ flex: "4 1 0" }} />
       </div>
     );
   }
 
   return (
-    <div className="flex flex-col h-full px-5">
-      {/* He luoi 10 hang: 1 (dem) + 5 (noi dung, tam ~hang 3.5) + 3 (dem) + 1 (nut) */}
-      <div style={{ flex: "1 1 0" }} />
-
-      <div style={{ flex: "5 1 0", minHeight: 0 }} className="flex flex-col items-center justify-center gap-6 w-full max-w-xs mx-auto">
-        <h1 className="text-2xl font-bold text-center">
-          Add TapTip to Home Screen
-        </h1>
-        <p className="text-muted-foreground text-center">
-          Opens as fast as a real app, no need to go back through the browser.
-        </p>
-
-        <div className="w-full flex flex-col gap-4">
-          <div className="flex items-center gap-3">
-            <MoreHorizontal className="h-[3.5vh] w-[3.5vh] text-primary shrink-0" />
-            <span className="text-sm">Tap the options menu</span>
-          </div>
-          <div className="flex items-center gap-3">
-            <Share className="h-[3.5vh] w-[3.5vh] text-primary shrink-0" />
-            <span className="text-sm">Tap the Share icon in Safari</span>
-          </div>
-          <div className="flex items-center gap-3">
-            <SquarePlus className="h-[3.5vh] w-[3.5vh] text-primary shrink-0" />
-            <span className="text-sm">Choose "Add to Home Screen"</span>
-          </div>
-          <div className="flex items-center gap-3">
-            <CheckCircle2 className="h-[3.5vh] w-[3.5vh] text-primary shrink-0" />
-            <span className="text-sm">Tap "Add" to finish</span>
-          </div>
-        </div>
-      </div>
-
-      <div style={{ flex: "3 1 0" }} />
-
-      {/* Hang 9-10: nut hanh dong, cao 4/5 hang, rong 2/3 man can giua */}
-      <div style={{ flex: "1 1 0", minHeight: 0 }} className="flex items-center">
-        <Button
-          className="w-2/3 mx-auto h-[80%] rounded-full text-lg font-semibold"
-          onClick={() => router.push("/sign-in")}
-        >
-          Continue
-        </Button>
-      </div>
+    <div className="h-full px-5">
+      <Screen
+        icon={<Icon.Add className="w-full h-full" />}
+        title="Add TapTip to your Home Screen"
+        action={
+          <SingleAction>
+            <PrimaryButton onClick={() => router.push("/sign-in")}>
+              Continue
+            </PrimaryButton>
+          </SingleAction>
+        }
+        foot={<TextLink onClick={() => router.push("/sign-in")}>Skip</TextLink>}
+      >
+        <ol className="w-full flex flex-col gap-[1.5cqh]">
+          {INSTALL_STEPS.map((label, index) => (
+            <li key={label} className="flex items-center gap-3">
+              <span className="w-[2.8cqh] h-[2.8cqh] rounded-full bg-accent text-background shrink-0 flex items-center justify-center text-small font-extrabold">
+                {index + 1}
+              </span>
+              <span className="text-body">{label}</span>
+            </li>
+          ))}
+        </ol>
+      </Screen>
     </div>
   );
 }

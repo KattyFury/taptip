@@ -2,7 +2,6 @@
 
 import { useState } from "react";
 import { QRCodeSVG } from "qrcode.react";
-import { Menu, Shuffle, Send } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import {
@@ -11,9 +10,11 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import * as Icon from "@/components/icons";
 import { useBalance } from "@/contexts/balanceContext";
 import SendFlow from "@/components/send-flow";
 import { encodeTapTipQr } from "@/lib/utils/qr-payment";
+import { signOutAction } from "@/app/actions";
 
 const CIRCLE_FAUCET_URL = "https://faucet.circle.com/";
 
@@ -62,29 +63,46 @@ export default function HomeScreen({ primaryWallet, historyContent }: Props) {
   };
 
   return (
-    <div data-home-root className="flex flex-col h-full">
-      {/* He luoi 10 hang cho ca man hinh. BAT BUOC dung flex: "N 1 0" -
-          flexBasis PHAI la 0, neu chi dat flexGrow thi trinh duyet chi chia
-          phan DU sau khi tru kich thuoc noi dung, hang nao noi dung to (QR)
-          se tu chiem nhieu hon phan cua no -> lech het luoi.
-          Tong: 1 + 0.5 + 3 + 0.5 + 1 + 2 + 1 + 1 = 10 */}
+    <div data-home-root className="relative flex flex-col h-full pb-4">
+      {/* ================== LUOI 10 HANG MAN HOME ==========================
+          Tong: 1 + 0.5 + 3 + 0.25 + 1 + 2.25 + 1 + 1 = 10
 
-      {/* Hang 0-1: Balance */}
-      <div style={{ flex: "1 1 0", minHeight: 0 }} className="flex items-center justify-center">
-        <div className="text-[4.5vh] font-bold text-center">
-          Balance: {formattedBalance} USDC
+            0.00 - 1.00   so du
+            1.00 - 1.50   dem
+            1.50 - 4.50   QR (vuong theo chieu cao hang)
+            4.50 - 4.75   dem sat QR
+            4.75 - 5.75   chu thich
+            5.75 - 8.00   khoang trong
+            8.00 - 9.00   nut Random + Tip (cao 66.6% hang)
+            9.00 - 10.00  icon menu, GOC TRAI-DUOI (tam doc o vach 9.5)
+
+          3 luat bat buoc: xem components/screen.tsx.
+          ==================================================================== */}
+
+      {/* 0.00 - 1.00 : so du */}
+      <div
+        style={{ flex: "1 1 0", minHeight: 0 }}
+        className="flex items-center justify-center"
+      >
+        <div className="flex items-baseline gap-2">
+          <span className="text-lead font-bold text-accent">Balance</span>
+          <span className="text-figure font-bold font-num">{formattedBalance}</span>
+          <span className="text-lead font-bold text-accent">USDC</span>
         </div>
       </div>
 
-      {/* Hang 1-1.5: khoang cach truoc QR */}
+      {/* 1.00 - 1.50 */}
       <div style={{ flex: "0.5 1 0" }} />
 
-      {/* Hang 1.5-4.5: QR, cao dung 3 hang, vuong theo chieu cao hang */}
-      <div style={{ flex: "3 1 0", minHeight: 0 }} className="flex items-center justify-center">
+      {/* 1.50 - 4.50 : QR nhan tien */}
+      <div
+        style={{ flex: "3 1 0", minHeight: 0 }}
+        className="flex items-center justify-center"
+      >
         {hasWallet ? (
           <div
             style={{ height: "100%", aspectRatio: "1" }}
-            className="p-[1.5vh] bg-white rounded-xl border flex items-center justify-center"
+            className="p-[1.5cqh] bg-background border border-border rounded-xl flex items-center justify-center"
           >
             <QRCodeSVG
               value={encodeTapTipQr(primaryWallet.wallet_address)}
@@ -95,56 +113,57 @@ export default function HomeScreen({ primaryWallet, historyContent }: Props) {
         ) : (
           <div
             style={{ height: "100%", aspectRatio: "1" }}
-            className="flex items-center justify-center border rounded-xl text-[1.8vh] text-muted-foreground text-center px-4"
+            className="flex items-center justify-center border border-border rounded-xl text-body text-hint text-center px-4"
           >
             Creating wallet...
           </div>
         )}
       </div>
 
-      {/* Hang 4.5-4.75: khoang cach sau QR (sat QR) */}
+      {/* 4.50 - 4.75 */}
       <div style={{ flex: "0.25 1 0" }} />
 
-      {/* Hang 4.75-5.75: chu thich */}
-      <div style={{ flex: "1 1 0", minHeight: 0 }} className="flex items-start justify-center">
-        <p className="text-[1.8vh] text-muted-foreground text-center px-8">
-          Let others scan this to send you a tip - only receives USDC on Arc Testnet
+      {/* 4.75 - 5.75 : chu thich */}
+      <div
+        style={{ flex: "1 1 0", minHeight: 0 }}
+        className="flex items-center justify-center"
+      >
+        <p className="text-lead font-bold text-accent text-center px-[30px]">
+          Let others scan this to send you a tip - only receives USDC on Arc
+          Testnet
         </p>
       </div>
 
-      {/* Hang 5.75-8: khoang trong */}
+      {/* 5.75 - 8.00 */}
       <div style={{ flex: "2.25 1 0" }} />
 
-      {/* Hang 8-9: 2 nut hanh dong. TUYET DOI khong dat padding tren hang -
-          padding la kich thuoc toi thieu khong co duoc, se bi CONG THEM ngoai
-          phan chia ty le, day hang phinh to va lech ca luoi. Muon co khoang
-          tho thi cho nut cao theo % chieu cao hang.
-          minWidth:0 BAT BUOC tren hang chua nhieu flex-item (nut) - mac dinh
-          flex item co min-width:auto, khien hang tu choi co lai theo chieu
-          ngang neu tong do rong tu nhien cua noi dung ben trong > khong gian
-          duoc cap -> hang tran ra ngoai le phai du container cha da co padding. */}
-      <div style={{ flex: "1 1 0", minHeight: 0, minWidth: 0 }} className="flex gap-2 items-center">
-        <Button
-          variant="secondary"
+      {/* 8.00 - 9.00 : hai nut hanh dong.
+          minWidth:0 bat buoc tren ca hang lan tung nut - mac dinh flex item co
+          min-width:auto khien hang khong co ngang duoc va tran ra le. */}
+      <div
+        style={{ flex: "1 1 0", minHeight: 0, minWidth: 0 }}
+        className="relative z-10 flex items-center gap-2"
+      >
+        <button
           style={{ flex: "1 1 0", minWidth: 0 }}
-          className="h-[80%] rounded-full text-[1.6vh] px-[2vw] gap-1"
+          className="h-[66.6%] rounded-full bg-surface text-foreground opacity-50 shadow-btn flex items-center justify-center disabled:pointer-events-none"
           disabled
           onClick={startRandomTip}
+          aria-label="Random tip amount"
         >
-          <Shuffle className="h-[1.8vh] w-[1.8vh] shrink-0" />
-          Random
-        </Button>
-        <Button
+          <Icon.Dice className="w-[1.82cqh] h-[1.82cqh] shrink-0" />
+        </button>
+        <button
           style={{ flex: "2 1 0", minWidth: 0 }}
-          className="h-[80%] rounded-full text-[2.2vh] font-semibold"
+          className="h-[66.6%] rounded-full bg-primary text-primary-foreground shadow-btn flex items-center justify-center gap-[6px] text-[2.58cqh] font-extrabold"
           onClick={() => {
             setRandomSendAmount(undefined);
             setSendOpen(true);
           }}
         >
-          <Send className="mr-1 h-[2.2vh] w-[2.2vh]" />
+          <Icon.Send className="w-[2.15cqh] h-[2.15cqh] shrink-0" />
           Tip
-        </Button>
+        </button>
       </div>
 
       <SendFlow
@@ -153,52 +172,70 @@ export default function HomeScreen({ primaryWallet, historyContent }: Props) {
         initialAmount={randomSendAmount}
       />
 
-      {/* Hang 9-10: icon menu */}
-      <div style={{ flex: "1 1 0", minHeight: 0 }} className="flex items-center">
+      {/* Mang tron vang trang tri o goc trai-duoi. Tam dat o (16, day khung)
+          nen chi lo ra mot phan tu - nam duoi icon menu. */}
+      <div
+        aria-hidden
+        className="absolute left-4 bottom-0 w-[186px] h-[186px] rounded-full bg-primary -translate-x-1/2 translate-y-1/2 z-0"
+      />
+
+      {/* 9.00 - 10.00 : icon menu o GOC TRAI-DUOI, tam doc dung vach 9.5 */}
+      <div
+        style={{ flex: "1 1 0", minHeight: 0 }}
+        className="relative z-10 flex items-center justify-start"
+      >
         <Dialog open={menuOpen} onOpenChange={closeMenu}>
-          <Button variant="ghost" size="icon" onClick={() => setMenuOpen(true)}>
-            <Menu className="h-[2.2vh] w-[2.2vh]" />
-          </Button>
-          <DialogContent className="sm:max-w-md">
+          <button
+            onClick={() => setMenuOpen(true)}
+            aria-label="Open menu"
+            className="flex items-center justify-center"
+          >
+            <Icon.Menu className="w-[3cqh] h-[3cqh] text-foreground" />
+          </button>
+
+          <DialogContent
+            className={menuView === "history" ? "max-h-[70%] gap-3" : undefined}
+          >
             {menuView === "main" && (
               <>
                 <DialogHeader>
-                  <DialogTitle>Balance & Wallet</DialogTitle>
+                  <DialogTitle>Balance &amp; Wallet</DialogTitle>
                 </DialogHeader>
-                <div className="text-2xl font-bold text-center py-2">
+                <div className="text-[28px] font-bold font-num text-center py-2">
                   {formattedBalance} USDC
                 </div>
+                <div className="flex flex-col gap-[10px]">
+                  <Button
+                    variant="outline"
+                    onClick={() => {
+                      copyAddress();
+                      setMenuView("deposit");
+                    }}
+                  >
+                    Deposit
+                  </Button>
+                  <Button variant="outline" onClick={() => setMenuView("withdraw")}>
+                    Withdraw
+                  </Button>
+                  <Button variant="outline" onClick={() => setMenuView("history")}>
+                    Tip history
+                  </Button>
+                </div>
                 <Button
-                  variant="outline"
-                  className="w-full"
-                  onClick={() => {
-                    copyAddress();
-                    setMenuView("deposit");
-                  }}
-                >
-                  Deposit
-                </Button>
-                <Button
-                  variant="outline"
-                  className="w-full"
-                  onClick={() => setMenuView("withdraw")}
-                >
-                  Withdraw
-                </Button>
-                <Button
-                  variant="outline"
-                  className="w-full"
-                  onClick={() => setMenuView("history")}
-                >
-                  Tip history
-                </Button>
-                <Button
-                  variant="ghost"
-                  className="w-full"
+                  variant="link"
+                  size="text"
                   onClick={() => setMenuOpen(false)}
                 >
                   Close
                 </Button>
+                {/* Dang xuat khong co trong ban thiet ke handoff, nhung day la
+                    loi ra duy nhat cua app - de tam o day cho khoi mat chuc
+                    nang, cho ban thiet ke chot cho dat chinh thuc. */}
+                <form action={signOutAction} className="flex justify-center">
+                  <Button variant="link" size="text" type="submit" className="text-hint">
+                    Sign out
+                  </Button>
+                </form>
               </>
             )}
 
@@ -207,23 +244,31 @@ export default function HomeScreen({ primaryWallet, historyContent }: Props) {
                 <DialogHeader>
                   <DialogTitle>Deposit USDC (testnet)</DialogTitle>
                 </DialogHeader>
-                <p className="text-sm text-muted-foreground">
+                <p className="text-[21px] font-bold text-accent">
                   Your wallet address has been copied:
                 </p>
-                <code className="text-xs break-all bg-muted p-2 rounded block">
+                <code className="text-[14px] font-mono bg-surface p-[10px] rounded-xl break-all block">
                   {primaryWallet.wallet_address}
                 </code>
-                <ol className="text-sm list-decimal list-inside space-y-1">
+                <ol className="text-[17px] list-decimal pl-5 flex flex-col gap-1.5">
                   <li>Open the Circle Faucet page</li>
                   <li>Paste the wallet address you just copied</li>
                   <li>Click Request on that page</li>
                 </ol>
-                <Button className="w-full" asChild>
-                  <a href={CIRCLE_FAUCET_URL} target="_blank" rel="noopener noreferrer">
+                <Button size="block" asChild>
+                  <a
+                    href={CIRCLE_FAUCET_URL}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
                     Open Circle Faucet
                   </a>
                 </Button>
-                <Button variant="ghost" className="w-full" onClick={() => setMenuView("main")}>
+                <Button
+                  variant="link"
+                  size="text"
+                  onClick={() => setMenuView("main")}
+                >
                   Back
                 </Button>
               </>
@@ -234,10 +279,11 @@ export default function HomeScreen({ primaryWallet, historyContent }: Props) {
                 <DialogHeader>
                   <DialogTitle>Withdraw</DialogTitle>
                 </DialogHeader>
-                <p className="text-sm text-muted-foreground">
-                  This feature isn't available yet - withdrawals only open on mainnet.
+                <p className="text-[21px] font-bold text-accent">
+                  This feature isn&apos;t available yet - withdrawals only open
+                  on mainnet.
                 </p>
-                <Button className="w-full" onClick={() => setMenuView("main")}>
+                <Button size="block" onClick={() => setMenuView("main")}>
                   Got it
                 </Button>
               </>
@@ -248,9 +294,14 @@ export default function HomeScreen({ primaryWallet, historyContent }: Props) {
                 <DialogHeader>
                   <DialogTitle>Tip history</DialogTitle>
                 </DialogHeader>
-                <div className="max-h-[60vh] overflow-y-auto">
-                  {historyContent}
-                </div>
+                {historyContent}
+                <Button
+                  variant="link"
+                  size="text"
+                  onClick={() => setMenuView("main")}
+                >
+                  Back
+                </Button>
               </>
             )}
           </DialogContent>

@@ -18,11 +18,11 @@
 
 "use client"
 
-import { Button } from "@/components/ui/button";
+import { Screen, BackAction, PrimaryButton, Field } from "@/components/screen";
+import * as Icon from "@/components/icons";
 import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/utils/supabase/client";
-import { Input } from "@/components/ui/input";
 
 export default function Onboarding() {
   const supabase = createClient()
@@ -30,11 +30,13 @@ export default function Onboarding() {
 
   const [loading, setLoading] = useState(false)
   const [name, setName] = useState('')
+  const [error, setError] = useState<string | null>(null)
 
-  const isProfileInvalid = useMemo(() => !name, [name])
+  const isProfileInvalid = useMemo(() => !name.trim(), [name])
 
   const handleOnboarding = async () => {
     setLoading(true)
+    setError(null)
 
     try {
       const {
@@ -51,11 +53,14 @@ export default function Onboarding() {
 
       if (profileError) {
         console.error("Error while attempting to create user:", profileError);
+        setError("Could not create your profile, try again.")
+        setLoading(false)
         return
       }
     } catch (error: any) {
       console.error("Could not create user:", error.message);
-      alert("Could not create user")
+      setError("Could not create your profile, try again.")
+      setLoading(false)
       return
     }
 
@@ -63,34 +68,33 @@ export default function Onboarding() {
   }
 
   return (
-    <div className="flex flex-col w-full h-full">
-      {/* He luoi 10 hang: 1 (dem) + 5 (noi dung, tam ~hang 3.5) + 3 (dem) + 1 (nut) */}
-      <div style={{ flex: "1 1 0" }} />
-
-      <div style={{ flex: "5 1 0", minHeight: 0 }} className="flex flex-col items-center justify-center gap-4 w-full max-w-xs mx-auto">
-        <h1 className="text-2xl font-bold text-center">
-          Create your profile
-        </h1>
-        <Input
-          placeholder="Your name"
-          value={name}
-          onChange={event => setName(event.target.value)}
-          className="text-center"
-        />
-      </div>
-
-      <div style={{ flex: "3 1 0" }} />
-
-      {/* Hang 9-10: nut hanh dong, cao 4/5 hang, rong 2/3 man can giua */}
-      <div style={{ flex: "1 1 0", minHeight: 0 }} className="flex items-center">
-        <Button
-          disabled={isProfileInvalid || loading}
-          className="w-2/3 mx-auto h-[80%] rounded-full text-lg font-semibold"
-          onClick={handleOnboarding}
-        >
-          {loading ? "Saving..." : "Continue"}
-        </Button>
-      </div>
-    </div>
+    <Screen
+      icon={<Icon.Person className="w-full h-full" />}
+      title="Create your username"
+      action={
+        <BackAction onBack={() => router.push("/sign-in")}>
+          <PrimaryButton disabled={isProfileInvalid || loading} onClick={handleOnboarding}>
+            {loading ? "Saving..." : "Continue"}
+          </PrimaryButton>
+        </BackAction>
+      }
+      foot={
+        error && (
+          <p className="text-danger text-small font-extrabold text-center">
+            {error}
+          </p>
+        )
+      }
+    >
+      <Field
+        placeholder="Your name"
+        value={name}
+        onChange={event => {
+          setName(event.target.value)
+          setError(null)
+        }}
+        autoComplete="name"
+      />
+    </Screen>
   );
 }

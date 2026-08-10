@@ -54,7 +54,9 @@ export default async function Layout({ children }: Props) {
     .eq("profile_id", profile.id);
 
   return (
-    <div className="relative flex flex-col h-full px-5 pb-4">
+    // Chi padding ngang o day. Man nao can khoang tho duoi (Home) thi tu them
+    // pb tren container luoi cua no.
+    <div className="relative flex flex-col h-full px-5">
       {children}
     </div>
   );

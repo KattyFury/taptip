@@ -19,25 +19,27 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Skeleton } from "@/components/ui/skeleton";
 import { useParams, useRouter } from "next/navigation";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { ChevronDown, X } from "lucide-react";
-import Link from "next/link";
+import { Skeleton } from "@/components/ui/skeleton";
+import * as Icon from "@/components/icons";
+import {
+  TransactionDetail,
+  type TransactionDetailData,
+} from "@/components/transaction-detail";
 
+/**
+ * Trang chi tiet giao dich mo bang link truc tiep.
+ * Luong binh thuong trong app mo chi tiet bang modal noi tren Lich su tip
+ * (components/transactions.tsx) - ca hai dung chung <TransactionDetail>.
+ */
 export default function Transaction() {
   const router = useRouter();
-  const [transaction, setTransaction] = useState<any>(null);
+  const [detail, setDetail] = useState<TransactionDetailData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   const params = useParams();
   const id = params.id as string;
-
-  const handleReturn = () => {
-    router.push("/dashboard");
-  };
 
   useEffect(() => {
     async function fetchTransaction() {
@@ -45,17 +47,36 @@ export default function Transaction() {
 
       try {
         setLoading(true);
-        const url = `/api/wallet/transactions/${id}`;
+        const response = await fetch(`/api/wallet/transactions/${id}`);
+        const parsed = await response.json();
 
-        const response = await fetch(url);
-        const parsedResponse = await response.json();
-
-        if (parsedResponse.error) {
-          setError(parsedResponse.error);
+        if (parsed.error) {
+          setError(parsed.error);
           return;
         }
 
-        setTransaction(parsedResponse.transaction);
+        const tx = parsed.transaction;
+        const created = new Date(tx.createDate);
+        const received = tx.transactionType === "USDC_TRANSFER_IN";
+        const counterparty = received ? tx.from : tx.to;
+
+        setDetail({
+          status: tx.state,
+          received,
+          amount:
+            tx.amounts && tx.amounts[0]
+              ? parseFloat(tx.amounts[0]).toFixed(2)
+              : "0.00",
+          counterparty: counterparty
+            ? `${counterparty.slice(0, 6)}...${counterparty.slice(-4)}`
+            : "Unknown address",
+          date: created.toLocaleDateString("en-US"),
+          time: created.toLocaleTimeString("en-US", {
+            hour: "2-digit",
+            minute: "2-digit",
+          }),
+          txHash: tx.txHash,
+        });
       } catch (err) {
         console.error("Error fetching transaction:", err);
         setError("Could not load transaction details");
@@ -67,231 +88,41 @@ export default function Transaction() {
     fetchTransaction();
   }, [id]);
 
-  if (loading) {
-    return (
-      <>
-        <Skeleton className="h-12 w-3/4 mb-4" />
-        <Skeleton className="h-8 w-1/2 mb-2" />
-        <Skeleton className="h-6 w-full mb-4" />
-        <Skeleton className="h-8 w-1/2 mb-2" />
-        <Skeleton className="h-6 w-full mb-4" />
-        <Skeleton className="h-8 w-1/2 mb-2" />
-        <Skeleton className="h-6 w-full mb-4" />
-      </>
-    );
-  }
-
-  if (error) {
-    return (
-      <div className="p-4 border border-destructive bg-destructive/10">
-        <h2 className="scroll-m-20 text-2xl font-semibold tracking-tight text-destructive">
-          Error loading transaction
-        </h2>
-        <p className="text-destructive">{error}</p>
-      </div>
-    );
-  }
-
-  if (!transaction) {
-    return (
-      <h2 className="scroll-m-20 border-b pb-2 text-3xl font-semibold tracking-tight first:mt-0">
-        Invalid transaction
-      </h2>
-    );
-  }
-
-  const formatDate = (dateString: string) => {
-    try {
-      const date = new Date(dateString);
-      return {
-        date: date.toLocaleDateString("en-US"),
-        time: date.toLocaleTimeString("en-US"),
-      };
-    } catch (e) {
-      return { date: "Unknown", time: "" };
-    }
-  };
-
-  const creation = formatDate(transaction.createDate);
-  const lastUpdate = formatDate(transaction.updateDate);
-
-  // Arc goes PENDING → COMPLETE directly, no CONFIRMED state
-  const getStatusColor = (status: string) => {
-    const statusLower = status?.toLowerCase() || "";
-    if (statusLower === "complete") {
-      return "bg-green-100 text-green-800";
-    } else if (statusLower === "pending") {
-      return "bg-yellow-100 text-yellow-800";
-    } else if (statusLower === "failed") {
-      return "bg-red-100 text-red-800";
-    }
-    return "bg-gray-100 text-gray-800";
-  };
-
-  const getStatusText = (status: string) => {
-    const statusLower = status?.toLowerCase() || "";
-    if (statusLower === "complete") return "Complete";
-    if (statusLower === "pending") return "Pending";
-    if (statusLower === "failed") return "Failed";
-    return status?.toUpperCase() || "";
-  };
-
-  const getTypeText = (type: string) => {
-    if (type === "USDC_TRANSFER_IN") return "Tip received";
-    if (type === "USDC_TRANSFER_OUT") return "Tip sent";
-    return type?.replace(/_/g, " ")?.toUpperCase();
-  };
-
   return (
-    <div className="flex flex-col p-4 max-w-full overflow-y-auto h-full">
-      {/* Header with back button */}
-      <div className="sticky top-0 bg-background z-10 pb-2 mb-4 flex items-center">
-        <Button
-          onClick={handleReturn}
-          variant="ghost"
-          size="icon"
-          className="mr-2"
+    <div className="flex flex-col h-full py-6 gap-4 overflow-y-auto">
+      <div className="grid grid-cols-[24px_1fr_24px] items-center">
+        <span />
+        <h1 className="text-[20px] font-extrabold text-center">
+          Transaction Details
+        </h1>
+        <button
+          onClick={() => router.push("/dashboard")}
+          aria-label="Close"
+          className="justify-self-end"
         >
-          <X className="h-4 w-4" />
-        </Button>
-        <h2 className="text-lg font-bold">Transaction Details</h2>
+          <Icon.Cancel className="w-5 h-5 text-accent" />
+        </button>
       </div>
 
-      {/* Primary transaction info */}
-      <div className="bg-muted/30 rounded-xl p-3 mb-4">
-        <div className="flex justify-between items-center mb-3">
-          <Badge className={`rounded-none ${getStatusColor(transaction.state)} px-2 py-1`}>
-            {getStatusText(transaction.state)}
-          </Badge>
-          <span className="text-xs text-muted-foreground">
-            {getTypeText(transaction.transactionType)}
-          </span>
+      {loading && (
+        <div className="flex flex-col gap-3">
+          <Skeleton className="w-full h-40 rounded-xl" />
+          <Skeleton className="w-full h-10 rounded-xl" />
         </div>
+      )}
 
-        <div className="mb-3">
-          <div className="flex justify-between mb-1">
-            <span className="text-xs text-muted-foreground">Amount</span>
-            <span className="text-sm font-medium">
-              {transaction.amounts && transaction.amounts[0]
-                ? `${parseFloat(transaction.amounts[0]).toFixed(2)} USDC`
-                : "-"}
-            </span>
-          </div>
-          <div className="flex justify-between">
-            <span className="text-xs text-muted-foreground">Network</span>
-            <span className="text-sm">Arc Testnet</span>
-          </div>
+      {!loading && error && (
+        <div className="flex flex-col gap-3 items-center text-center">
+          <Icon.Warning className="w-10 h-10 text-danger" />
+          <p className="text-[15px] font-extrabold text-danger">{error}</p>
         </div>
+      )}
 
-        <div className="flex justify-between text-xs">
-          <div>
-            <span className="text-muted-foreground">Created:</span>
-            <div>{creation.date}</div>
-            <div>{creation.time}</div>
-          </div>
-          <div className="text-right">
-            <span className="text-muted-foreground">Last updated:</span>
-            <div>{lastUpdate.date}</div>
-            <div>{lastUpdate.time}</div>
-          </div>
-        </div>
-      </div>
+      {!loading && !error && !detail && (
+        <p className="text-[17px] text-hint text-center">Invalid transaction</p>
+      )}
 
-      {/* Collapsible sections */}
-      <div className="space-y-3">
-        {/* IDs Section */}
-        <details className="group rounded-xl border p-2">
-          <summary className="flex cursor-pointer list-none items-center justify-between font-medium">
-            <span className="text-sm font-medium">Transaction IDs</span>
-            <div className="text-muted-foreground">
-              <ChevronDown className="h-4 w-4 transition-transform group-open:rotate-180" />
-            </div>
-          </summary>
-          <div className="pt-2 space-y-2">
-            <div>
-              <h4 className="text-xs text-muted-foreground">Transaction ID</h4>
-              <p className="text-xs break-all mt-1">{transaction.id}</p>
-            </div>
-
-            {transaction.txHash && (
-              <div className="mt-2">
-                <h4 className="text-xs text-muted-foreground">
-                  Transaction Hash
-                </h4>
-                <p className="text-xs break-all mt-1">{transaction.txHash}</p>
-              </div>
-            )}
-          </div>
-        </details>
-
-        {/* Addresses Section */}
-        <details className="group rounded-xl border p-2">
-          <summary className="flex cursor-pointer list-none items-center justify-between font-medium">
-            <span className="text-sm font-medium">Addresses</span>
-            <div className="text-muted-foreground">
-              <ChevronDown className="h-4 w-4 transition-transform group-open:rotate-180" />
-            </div>
-          </summary>
-          <div className="pt-2 space-y-2">
-            {transaction.from && (
-              <div>
-                <h4 className="text-xs text-muted-foreground">From</h4>
-                <p className="text-xs break-all mt-1">{transaction.from}</p>
-              </div>
-            )}
-
-            {transaction.to && (
-              <div className="mt-2">
-                <h4 className="text-xs text-muted-foreground">To</h4>
-                <p className="text-xs break-all mt-1">{transaction.to}</p>
-              </div>
-            )}
-
-            {transaction.walletId && (
-              <div className="mt-2">
-                <h4 className="text-xs text-muted-foreground">Wallet ID</h4>
-                <p className="text-xs break-all mt-1">{transaction.walletId}</p>
-              </div>
-            )}
-
-            {transaction.walletAddress && (
-              <div className="mt-2">
-                <h4 className="text-xs text-muted-foreground">
-                  Wallet Address
-                </h4>
-                <p className="text-xs break-all mt-1">
-                  {transaction.walletAddress}
-                </p>
-              </div>
-            )}
-
-            {transaction.tokenAddress && (
-              <div className="mt-2">
-                <h4 className="text-xs text-muted-foreground">Token Address</h4>
-                <p className="text-xs break-all mt-1">
-                  {transaction.tokenAddress}
-                </p>
-              </div>
-            )}
-          </div>
-        </details>
-
-        {/* External link to ArcScan */}
-        {transaction.txHash && (
-          <div className="pt-2 space-y-2">
-            <Link
-              href={`https://testnet.arcscan.app/tx/${transaction.txHash}`}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="block"
-            >
-              <Button variant="outline" className="w-full py-2 text-sm">
-                View on ArcScan
-              </Button>
-            </Link>
-          </div>
-        )}
-      </div>
+      {!loading && detail && <TransactionDetail data={detail} />}
     </div>
   );
 }

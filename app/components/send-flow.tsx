@@ -10,22 +10,14 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import {
-  X,
-  Plus,
-  ArrowLeft,
-  ImageIcon,
-  CheckCircle2,
-  Loader2,
-} from "lucide-react";
+import * as Icon from "@/components/icons";
 import { useWeb3 } from "@/components/web3-provider";
 import { useBalance } from "@/contexts/balanceContext";
 import { toast } from "sonner";
 import { decodeTapTipQr } from "@/lib/utils/qr-payment";
 
-// Giai doan 1: gia tri tinh bang USDC truc tiep, chua lam quy doi VND
-// (spec PRD noi "hien thi quy doi VND" - de danh cho Giai doan 2, can ty
-// gia that thay vi hardcode)
+// Gia tri tinh bang USDC truc tiep, chua lam quy doi VND (can ty gia that,
+// khong hardcode).
 const DEFAULT_PRESETS = ["1", "5", "10"];
 const PRESETS_STORAGE_KEY = "taptip_presets";
 const QR_REGION_ID = "taptip-qr-region";
@@ -146,8 +138,8 @@ export default function SendFlow({ open, onOpenChange, initialAmount }: Props) {
         { facingMode: "environment" },
         {
           fps: 10,
-          // qrbox theo % kich thuoc khung thay vi px co dinh, de khung quet
-          // luon can giua va vua voi moi kich thuoc man hinh
+          // qrbox theo % kich thuoc khung thay vi px co dinh, de o quet luon
+          // can giua va khop voi overlay vien trang 70% ve o duoi
           qrbox: (w: number, h: number) => {
             const size = Math.floor(Math.min(w, h) * 0.7);
             return { width: size, height: size };
@@ -200,7 +192,9 @@ export default function SendFlow({ open, onOpenChange, initialAmount }: Props) {
   const handleScanResult = async (decodedText: string) => {
     const decoded = decodeTapTipQr(decodedText);
     if (!decoded) {
-      setScanError("Invalid QR - wrong network, wrong currency, or not a TapTip QR code.");
+      setScanError(
+        "Invalid QR - wrong network, wrong currency, or not a TapTip QR code.",
+      );
       return;
     }
     if (!amount) {
@@ -230,10 +224,15 @@ export default function SendFlow({ open, onOpenChange, initialAmount }: Props) {
     }, 2000);
   };
 
+  // Buoc sending/success: giu nguyen man quet phia sau nhung lam mo con 40%,
+  // roi noi mot the popover nho len tren.
+  const isOverlayStep = step === "sending" || step === "success";
+  const scanIsBehind = isOverlayStep || step === "scan";
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent
-        className="sm:max-w-md flex flex-col h-[600px] max-h-[80vh]"
+        className="h-[600px] max-h-[80vh] gap-[14px]"
         onInteractOutside={(e) => {
           if (step === "sending") e.preventDefault();
         }}
@@ -246,30 +245,36 @@ export default function SendFlow({ open, onOpenChange, initialAmount }: Props) {
             <DialogHeader>
               <DialogTitle>Choose an amount</DialogTitle>
             </DialogHeader>
-            <div className="flex-1 overflow-y-auto flex flex-col gap-2">
+
+            <div className="flex-1 min-h-0 overflow-y-auto flex flex-col gap-[10px]">
               {presets.map((value, index) => {
                 const disabled = parseFloat(value) > balanceNum;
                 const confirming = confirmDeleteIndex === index;
                 return (
-                  <div key={value} className="flex items-center gap-2">
-                    <Button
-                      variant="outline"
+                  <div
+                    key={value}
+                    className={
+                      "flex items-center gap-2 " + (disabled ? "opacity-50" : "")
+                    }
+                  >
+                    <button
                       disabled={disabled}
-                      className="flex-1 justify-between py-6"
                       onClick={() => choosePreset(value)}
+                      className="flex-1 border border-border rounded-xl p-4 shadow-btn flex justify-between items-center text-[17px] disabled:pointer-events-none"
                     >
-                      <span>{value} USDC</span>
+                      <span className="font-num">{value} USDC</span>
                       {disabled && (
-                        <span className="text-xs text-muted-foreground">
+                        <span className="text-[13px] text-hint">
                           Not enough balance
                         </span>
                       )}
-                    </Button>
+                    </button>
+
                     {confirming ? (
                       <>
                         <Button
                           size="sm"
-                          variant="destructive"
+                          variant="danger"
                           onClick={() => confirmDelete(index)}
                         >
                           Delete
@@ -283,13 +288,13 @@ export default function SendFlow({ open, onOpenChange, initialAmount }: Props) {
                         </Button>
                       </>
                     ) : (
-                      <Button
-                        size="icon"
-                        variant="ghost"
+                      <button
                         onClick={() => setConfirmDeleteIndex(index)}
+                        aria-label={`Remove ${value} USDC`}
+                        className="w-9 h-9 flex items-center justify-center"
                       >
-                        <X className="h-4 w-4" />
-                      </Button>
+                        <Icon.Cancel className="w-[18px] h-[18px] text-accent" />
+                      </button>
                     )}
                   </div>
                 );
@@ -304,86 +309,122 @@ export default function SendFlow({ open, onOpenChange, initialAmount }: Props) {
                     value={customAmount}
                     onChange={(e) => setCustomAmount(e.target.value)}
                   />
-                  <Button onClick={addCustomAmount}>Add</Button>
+                  <Button size="sm" onClick={addCustomAmount}>
+                    Add
+                  </Button>
                 </div>
               ) : (
-                <Button
-                  variant="ghost"
-                  className="justify-start"
+                <button
                   onClick={() => setShowCustomInput(true)}
+                  className="flex items-center gap-2 py-2 text-[17px] text-foreground"
                 >
-                  <Plus className="mr-2 h-4 w-4" />
+                  <Icon.Add className="w-4 h-4 text-accent shrink-0" />
                   Enter a different amount
-                </Button>
+                </button>
               )}
             </div>
           </>
         )}
 
-        {step === "scan" && (
-          <>
+        {scanIsBehind && (
+          <div
+            className={
+              "flex flex-col gap-[14px] flex-1 min-h-0 " +
+              (isOverlayStep ? "opacity-40 pointer-events-none" : "")
+            }
+          >
             <DialogHeader>
-              <DialogTitle>Scan QR to send {amount} USDC</DialogTitle>
+              <DialogTitle>
+                Scan QR to send <span className="font-num">{amount}</span> USDC
+              </DialogTitle>
             </DialogHeader>
-            <div className="flex-1 flex flex-col gap-3">
-              {/* aspect-square thay vi flex-1: thu vien html5-qrcode tu dat
-                  kich thuoc video theo ty le camera, de flex-1 se tao dai den
-                  letterbox o duoi khi khung cao hon video */}
+
+            {/* Khung camera vuong. aspect-square thay vi flex-1: html5-qrcode
+                tu dat kich thuoc video theo ty le camera, de flex-1 se tao
+                dai den letterbox o duoi khi khung cao hon video. */}
+            <div className="relative w-full aspect-square rounded-xl overflow-hidden bg-foreground shrink-0">
+              <div id={QR_REGION_ID} className="w-full h-full" />
+              {/* O ngam: vuong 70% canh ngan, can giua - ve de khop dung voi
+                  qrbox cau hinh cho thu vien */}
               <div
-                id={QR_REGION_ID}
-                className="w-full aspect-square bg-black rounded-xl overflow-hidden"
+                aria-hidden
+                className="pointer-events-none absolute left-[15%] top-[15%] w-[70%] h-[70%] border-[3px] border-background rounded-sm"
               />
-              {scanError && (
-                <p className="text-sm text-red-600 text-center">{scanError}</p>
-              )}
-              <input
-                ref={fileInputRef}
-                type="file"
-                accept="image/*"
-                className="hidden"
-                onChange={handleFileUpload}
-              />
+            </div>
+
+            {scanError && (
+              <p className="text-[15px] font-extrabold text-danger text-center">
+                {scanError}
+              </p>
+            )}
+
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="image/*"
+              className="hidden"
+              onChange={handleFileUpload}
+            />
+
+            <div className="flex justify-center">
               <Button
                 variant="outline"
-                className="w-2/3 mx-auto"
+                size="chip"
                 onClick={() => fileInputRef.current?.click()}
               >
-                <ImageIcon className="mr-2 h-4 w-4" />
+                <Icon.Image className="w-4 h-4 text-accent shrink-0" />
                 Upload photo from gallery
               </Button>
             </div>
+
+            <div className="flex-1" />
+
             <div className="flex gap-2">
               <Button
                 variant="outline"
-                className="flex-1 rounded-full"
+                size="pill"
+                className="flex-1"
                 onClick={() => setStep("amount")}
+                aria-label="Go back"
               >
-                <ArrowLeft className="h-4 w-4" />
+                <Icon.Back className="w-4 h-4" />
               </Button>
               <Button
-                className="flex-[2] rounded-full"
+                variant="dark"
+                size="pill"
+                className="flex-[2]"
                 onClick={() => onOpenChange(false)}
               >
                 Done
               </Button>
             </div>
-          </>
+          </div>
         )}
 
+        {/* The popover noi len tren man quet da lam mo */}
         {step === "sending" && (
-          <div className="flex-1 flex flex-col items-center justify-center gap-4">
-            <Loader2 className="h-10 w-10 animate-spin text-primary" />
-            <p>Processing transaction...</p>
-          </div>
+          <OverlayCard>
+            <Icon.Loading className="w-[56px] h-[56px] text-accent animate-spin" />
+            <p className="text-[20px] font-bold">Processing transaction...</p>
+          </OverlayCard>
         )}
 
         {step === "success" && (
-          <div className="flex-1 flex flex-col items-center justify-center gap-4">
-            <CheckCircle2 className="h-16 w-16 text-green-500" />
-            <p className="text-xl font-semibold">-{lastAmount} USDC</p>
-          </div>
+          <OverlayCard>
+            <Icon.Check className="w-[56px] h-[56px] text-success" />
+            <p className="text-[20px] font-bold font-num">-{lastAmount} USDC</p>
+          </OverlayCard>
         )}
       </DialogContent>
     </Dialog>
+  );
+}
+
+/** The thong bao nho noi giua man - dung cho buoc dang xu ly va thanh cong. */
+function OverlayCard({ children }: { children: React.ReactNode }) {
+  return (
+    <div className="fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-50 w-[calc(100%-100px)] max-w-[330px] bg-background rounded-xl shadow-popover px-5 py-7 flex flex-col items-center gap-4">
+      {children}
+    </div>
   );
 }

@@ -19,13 +19,14 @@
 'use client';
 
 import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import {
     WebAuthnMode,
     toPasskeyTransport,
     toWebAuthnCredential,
 } from '@circle-fin/modular-wallets-core';
-import { Button } from "@/components/ui/button";
-import { ScanFace } from "lucide-react";
+import { Screen, BackAction, PrimaryButton, TextLink } from "@/components/screen";
+import * as Icon from "@/components/icons";
 import { createPublicClient } from 'viem';
 import {
     toWebAuthnAccount,
@@ -42,6 +43,7 @@ interface PasskeySetupProps {
 
 // This component handles the wallet setup after user registration
 export function PasskeySetup({ username }: PasskeySetupProps) {
+    const router = useRouter();
     const [isCreating, setIsCreating] = useState(false);
     const [error, setError] = useState<string | null>(null);
 
@@ -118,12 +120,6 @@ export function PasskeySetup({ username }: PasskeySetupProps) {
             // Force a small delay to ensure all database writes complete
             await new Promise(resolve => setTimeout(resolve, 1000));
 
-            try {
-                const responseData = await response.json();
-            } catch (e) {
-                console.warn("Could not parse response JSON", e);
-            }
-
             // Force redirect to dashboard
             window.location.href = '/dashboard';
         } catch (err) {
@@ -135,37 +131,32 @@ export function PasskeySetup({ username }: PasskeySetupProps) {
     };
 
     return (
-        <div className="flex flex-col w-full h-full">
-            {/* He luoi 10 hang: 1 (dem) + 5 (noi dung, tam ~hang 3.5) + 3 (dem) + 1 (nut) */}
-            <div style={{ flex: "1 1 0" }} />
-
-            <div style={{ flex: "5 1 0", minHeight: 0 }} className="flex flex-col items-center justify-center gap-4 w-full max-w-xs mx-auto">
-                <ScanFace className="h-[8vh] w-[8vh] text-primary" />
-                <h2 className="text-xl font-semibold text-center">Set Up Passkey</h2>
-                <p className="text-muted-foreground text-center">
-                    Sign in with Face ID / fingerprint instead of a password. Next
-                    time you open the app, this is all you need, nothing to remember.
-                </p>
-
-                {error && (
-                    <div className="bg-destructive/10 border border-destructive text-destructive px-4 py-3 text-sm text-center">
+        <Screen
+            icon={<Icon.FaceId className="w-full h-full" />}
+            title="Set up a passkey"
+            action={
+                <BackAction onBack={() => router.push("/sign-in")}>
+                    <PrimaryButton onClick={setupPasskey} disabled={isCreating}>
+                        {isCreating ? 'Setting up...' : 'Set up passkey'}
+                    </PrimaryButton>
+                </BackAction>
+            }
+            foot={
+                error ? (
+                    <p className="text-danger text-small font-extrabold text-center px-4">
                         {error}
-                    </div>
-                )}
-            </div>
-
-            <div style={{ flex: "3 1 0" }} />
-
-            {/* Hang 9-10: nut hanh dong, cao 4/5 hang, rong 2/3 man can giua */}
-            <div style={{ flex: "1 1 0", minHeight: 0 }} className="flex items-center">
-                <Button
-                    onClick={setupPasskey}
-                    disabled={isCreating}
-                    className="w-2/3 mx-auto h-[80%] rounded-full text-lg font-semibold"
-                >
-                    {isCreating ? 'Setting up...' : 'Enable passkey'}
-                </Button>
-            </div>
-        </div>
+                    </p>
+                ) : (
+                    <TextLink onClick={() => router.push('/dashboard')}>
+                        Skip for now
+                    </TextLink>
+                )
+            }
+        >
+            <p className="text-body text-accent text-center">
+                Sign in with Face ID or your fingerprint instead of a password.
+                Next time you open TapTip, this is all you need.
+            </p>
+        </Screen>
     );
 }

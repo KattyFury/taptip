@@ -18,8 +18,8 @@
 
 "use client"
 
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import { Screen, BackAction, PrimaryButton, Field } from "@/components/screen";
+import * as Icon from "@/components/icons";
 import { createClient } from "@/lib/utils/supabase/client";
 import { GlobalContext } from "@/contexts/global-context";
 import { useRouter } from "next/navigation";
@@ -32,6 +32,7 @@ export default function SignIn() {
   const router = useRouter()
   const [email, setEmail] = useState('')
   const [loading, setLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
   const { updateState } = useContext(GlobalContext)
 
   const isEmailInvalid = useMemo(() => !/^\S+@\S+\.\S+$/.test(email), [email])
@@ -41,26 +42,29 @@ export default function SignIn() {
 
   const handleEmailChange: ChangeEventHandler<HTMLInputElement> = event => {
     setEmail(event.target.value)
+    setError(null)
   }
 
   const applyEmailSuggestion = (domain: string) => {
     setEmail(`${localPart}${domain}`)
+    setError(null)
   }
 
   const signInWithEmail = async () => {
     if (isEmailInvalid) {
-      alert('Enter a valid email address')
+      setError('Enter a valid email address')
       return
     }
 
     setLoading(true)
+    setError(null)
 
-    const { error } = await supabase.auth.signInWithOtp({ email })
+    const { error: otpError } = await supabase.auth.signInWithOtp({ email })
 
     setLoading(false)
 
-    if (error) {
-      alert(error.message)
+    if (otpError) {
+      setError(otpError.message)
       return
     }
 
@@ -70,49 +74,46 @@ export default function SignIn() {
   }
 
   return (
-    <div className="flex flex-col w-full h-full">
-      {/* He luoi 10 hang: 1 (dem) + 5 (noi dung, tam ~hang 3.5) + 3 (dem) + 1 (nut) */}
-      <div style={{ flex: "1 1 0" }} />
+    <Screen
+      icon={<Icon.SignIn className="w-full h-full" />}
+      title="Enter your email to get started"
+      action={
+        <BackAction onBack={() => router.push("/")}>
+          <PrimaryButton disabled={isEmailInvalid || loading} onClick={signInWithEmail}>
+            {loading ? "Sending..." : "Send OTP"}
+          </PrimaryButton>
+        </BackAction>
+      }
+      foot={
+        error && (
+          <p className="text-danger text-small font-extrabold text-center">
+            {error}
+          </p>
+        )
+      }
+    >
+      <Field
+        type="email"
+        placeholder="Email"
+        value={email}
+        onChange={handleEmailChange}
+        autoComplete="email"
+      />
 
-      <div style={{ flex: "5 1 0", minHeight: 0 }} className="flex flex-col items-center justify-center gap-4 w-full max-w-xs mx-auto">
-        <h1 className="text-2xl font-bold text-center">
-          Enter your email to get started
-        </h1>
-        <Input
-          type="email"
-          placeholder="Email"
-          value={email}
-          onChange={handleEmailChange}
-          className="text-center"
-        />
-        {showEmailSuggestions && (
-          <div className="flex flex-wrap gap-2 justify-center">
-            {EMAIL_DOMAIN_SUGGESTIONS.map(domain => (
-              <button
-                key={domain}
-                type="button"
-                onClick={() => applyEmailSuggestion(domain)}
-                className="text-sm px-3 py-1 border rounded-full text-muted-foreground hover:bg-accent"
-              >
-                {localPart}{domain}
-              </button>
-            ))}
-          </div>
-        )}
-      </div>
-
-      <div style={{ flex: "3 1 0" }} />
-
-      {/* Hang 9-10: nut hanh dong, cao 4/5 hang, rong 2/3 man can giua */}
-      <div style={{ flex: "1 1 0", minHeight: 0 }} className="flex items-center">
-        <Button
-          disabled={isEmailInvalid || loading}
-          className="w-2/3 mx-auto h-[80%] rounded-full text-lg font-semibold"
-          onClick={signInWithEmail}
-        >
-          {loading ? "Sending..." : "Send OTP"}
-        </Button>
-      </div>
-    </div>
+      {showEmailSuggestions && (
+        <div className="flex flex-wrap gap-2 justify-center">
+          {EMAIL_DOMAIN_SUGGESTIONS.map(domain => (
+            <button
+              key={domain}
+              type="button"
+              onClick={() => applyEmailSuggestion(domain)}
+              className="text-body px-[14px] py-[5px] border border-border rounded-full text-hint"
+            >
+              {localPart}{domain}
+            </button>
+          ))}
+        </div>
+      )}
+    </Screen>
   );
 }

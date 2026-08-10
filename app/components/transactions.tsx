@@ -21,13 +21,22 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type { Wallet } from "@/types/database.types";
 import { useEffect, useMemo, useState, type FunctionComponent } from "react";
-import { useRouter } from "next/navigation";
 import { createSupabaseBrowserClient } from "@/lib/supabase/browser-client";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { arcTestnet } from "@/components/web3-provider";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Input } from "@/components/ui/input";
+import { StatusPill, DirectionBadge } from "@/components/ui/status-pill";
+import {
+  Dialog,
+  DialogContent,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import * as Icon from "@/components/icons";
+import {
+  TransactionDetail,
+  type TransactionDetailData,
+} from "@/components/transaction-detail";
 
 const ARC_CHAIN_ID = arcTestnet.id;
 
@@ -185,14 +194,16 @@ async function syncTransactions(
 
 const supabase = createSupabaseBrowserClient();
 
+const shortenHash = (hash: string) =>
+  `${hash.slice(0, 6)}...${hash.slice(-4)}`;
+
 export const Transactions: FunctionComponent<Props> = (props) => {
-  const router = useRouter();
   const [data, setData] = useState<Transaction[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [refreshing, setRefreshing] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [counterpartyNames, setCounterpartyNames] = useState<Record<string, string>>({});
+  const [selected, setSelected] = useState<TransactionDetailData | null>(null);
 
   const formattedData = useMemo(
     () =>
@@ -244,26 +255,6 @@ export const Transactions: FunctionComponent<Props> = (props) => {
     return sortedGroups;
   }, [searchedData]);
 
-  // Transaction type display mapping
-  const getTransactionTypeDisplay = (type: string) => {
-    if (type === "USDC_TRANSFER_IN" || type === "received") {
-      return "Received"
-    }
-
-    if (type === "USDC_TRANSFER_OUT" || type === "sent") {
-      return "Sent"
-    }
-
-    return type
-  };
-
-  const getStatusDisplay = (status: string) => {
-    if (status === "COMPLETE") return "Complete";
-    if (status === "PENDING") return "Pending";
-    if (status === "FAILED") return "Failed";
-    return status;
-  };
-
   const loadCounterpartyNames = async (transactions: Transaction[]) => {
     const addresses = Array.from(
       new Set(
@@ -308,7 +299,6 @@ export const Transactions: FunctionComponent<Props> = (props) => {
   const updateTransactions = async () => {
     try {
       setLoading(true);
-      setRefreshing(true);
       setError(null);
 
       if (!props.wallet?.id || !props.profile?.id || !props.wallet?.circle_wallet_id) {
@@ -330,7 +320,6 @@ export const Transactions: FunctionComponent<Props> = (props) => {
       setError(error instanceof Error ? error.message : "Unknown error occurred");
     } finally {
       setLoading(false);
-      setRefreshing(false);
     }
   };
 
@@ -360,21 +349,36 @@ export const Transactions: FunctionComponent<Props> = (props) => {
     };
   }, [props.wallet?.id, props.profile?.id, props.wallet?.circle_wallet_id]);
 
+  const searchField = (
+    <Input
+      placeholder="Search transactions..."
+      value={searchQuery}
+      onChange={event => setSearchQuery(event.target.value)}
+    />
+  );
+
   if (loading) {
-    return <Skeleton className="w-full h-[30px] rounded-md" />;
+    return (
+      <>
+        {searchField}
+        <div className="flex flex-col gap-3">
+          <Skeleton className="w-1/3 h-5 rounded-xl" />
+          <Skeleton className="w-full h-10 rounded-xl" />
+          <Skeleton className="w-full h-10 rounded-xl" />
+        </div>
+      </>
+    );
   }
 
   if (error) {
     return (
-      <div className="p-4 border border-destructive bg-destructive/10 text-destructive">
-        <p>Error loading transactions: {error}</p>
-        <Button
-          variant="destructive"
-          size="sm"
-          className="mt-2"
-          onClick={updateTransactions}
-        >
-          Retry
+      <div className="flex flex-col gap-3 items-center text-center">
+        <Icon.Warning className="w-10 h-10 text-danger" />
+        <p className="text-[15px] font-extrabold text-danger">
+          Couldn&apos;t load your tips: {error}
+        </p>
+        <Button size="row" onClick={updateTransactions}>
+          Try again
         </Button>
       </div>
     );
@@ -383,15 +387,8 @@ export const Transactions: FunctionComponent<Props> = (props) => {
   if (data.length === 0) {
     return (
       <>
-        <div className="flex flex-col justify-between mb-4">
-          <Input
-            placeholder="Search transactions..."
-            className="w-full mb-2"
-            value={searchQuery}
-            onChange={event => setSearchQuery(event.target.value)}
-          />
-        </div>
-        <p className="text-xl text-muted-foreground">
+        {searchField}
+        <p className="text-[17px] text-hint text-center py-4">
           No transactions yet
         </p>
       </>
@@ -400,30 +397,18 @@ export const Transactions: FunctionComponent<Props> = (props) => {
 
   return (
     <>
-      <Input
-        placeholder="Search transactions..."
-        className="w-full mb-2"
-        value={searchQuery}
-        onChange={event => setSearchQuery(event.target.value)}
-      />
+      {searchField}
 
-      <div className="space-y-8">
+      <div className="flex-1 min-h-0 flex flex-col gap-5 overflow-y-auto">
         {Object.entries(groupedTransactions).map(([day, transactions]) => (
           <div key={day}>
-            <h2 className="text-xl font-bold mb-2">{day}</h2>
-            <div className="space-y-4">
+            <div className="text-[18px] font-bold font-num mb-2">{day}</div>
+
+            <div className="flex flex-col gap-3">
               {transactions.map((transaction) => {
-                const isReceived =
+                const received =
                   transaction.transaction_type === 'USDC_TRANSFER_IN' ||
                   transaction.transaction_type === 'received';
-                // Arc goes PENDING → COMPLETE directly, no CONFIRMED state
-                const statusClass = transaction.status === "COMPLETE"
-                  ? "bg-green-100 text-green-800"
-                  : transaction.status === "PENDING"
-                    ? "bg-yellow-100 text-yellow-800"
-                    : transaction.status === "FAILED"
-                      ? "bg-red-100 text-red-800"
-                      : "bg-gray-100 text-gray-800";
 
                 const counterpartyName = transaction.circle_contract_address
                   ? counterpartyNames[transaction.circle_contract_address.toLowerCase()]
@@ -431,50 +416,82 @@ export const Transactions: FunctionComponent<Props> = (props) => {
                 const displayLabel = counterpartyName
                   ? `Tip: ${counterpartyName}`
                   : transaction.circle_transaction_id
-                    ? `${transaction.circle_transaction_id.slice(0, 6)}...${transaction.circle_transaction_id.slice(-4)}`
+                    ? shortenHash(transaction.circle_transaction_id)
                     : 'Unknown address';
 
+                const amount = parseFloat(transaction.amount).toFixed(2);
+
                 return (
-                  <div
+                  <button
                     key={transaction.id}
-                    className="p-4 pl-0 hover:bg-gray-50 dark:hover:bg-white/5"
-                    onClick={() => router.push(
-                      `/dashboard/transaction/${transaction.circle_transaction_id}`
-                    )}
+                    className="flex flex-col gap-1.5 py-2.5 text-left"
+                    onClick={() =>
+                      setSelected({
+                        status: transaction.status,
+                        received,
+                        amount,
+                        counterparty:
+                          counterpartyName ??
+                          (transaction.circle_contract_address
+                            ? shortenHash(transaction.circle_contract_address)
+                            : "Unknown address"),
+                        date: day,
+                        time: transaction.formattedDate,
+                        txHash: transaction.circle_transaction_id,
+                      })
+                    }
                   >
-                    <div className="flex items-start gap-2">
-                      <div className="flex-1">
-                        <div className="flex items-center">
-                          <span className="font-medium">
-                            {displayLabel}
-                          </span>
-                          <Badge className={`ml-2 rounded-none ${statusClass}`}>
-                            {getStatusDisplay(transaction.status)}
-                          </Badge>
-                        </div>
-                        <div className="text-sm text-muted-foreground mt-1">
-                          {getTransactionTypeDisplay(transaction.transaction_type)}
-                        </div>
-                        <div className="text-sm text-muted-foreground">
-                          {transaction.formattedDate}
-                        </div>
-                      </div>
-                      <div
-                        className={`ml-auto font-medium ${
-                          isReceived ? 'text-green-600' : 'text-red-600'
-                        }`}
+                    <div className="flex items-center gap-2">
+                      <DirectionBadge received={received} />
+                      <span className="flex-1 text-[17px] font-extrabold">
+                        {displayLabel}
+                      </span>
+                      <span
+                        className={
+                          "text-[17px] font-extrabold font-num " +
+                          (received ? "text-success" : "text-danger")
+                        }
                       >
-                        {isReceived ? '+' : '-'}
-                        {parseFloat(transaction.amount).toFixed(2)}
-                      </div>
+                        {received ? "+" : "-"}
+                        {amount}{" "}
+                        <span className="text-[12px] font-extrabold font-sans">
+                          USDC
+                        </span>
+                      </span>
                     </div>
-                  </div>
+
+                    <div className="flex items-center gap-2 pl-[30px]">
+                      <span className="text-[14px] text-accent font-num">
+                        {transaction.formattedDate}
+                      </span>
+                      <StatusPill status={transaction.status} />
+                    </div>
+                  </button>
                 );
               })}
             </div>
           </div>
         ))}
       </div>
+
+      {/* Chi tiet giao dich: modal thu hai noi len tren modal Lich su tip */}
+      <Dialog open={!!selected} onOpenChange={(open) => !open && setSelected(null)}>
+        <DialogContent className="max-h-[80%] overflow-y-auto">
+          <div className="grid grid-cols-[24px_1fr_24px] items-center">
+            <span />
+            <DialogTitle>Transaction Details</DialogTitle>
+            <button
+              onClick={() => setSelected(null)}
+              aria-label="Close"
+              className="justify-self-end"
+            >
+              <Icon.Cancel className="w-5 h-5 text-accent" />
+            </button>
+          </div>
+
+          {selected && <TransactionDetail data={selected} />}
+        </DialogContent>
+      </Dialog>
     </>
   );
 };

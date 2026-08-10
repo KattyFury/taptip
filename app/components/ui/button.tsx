@@ -22,31 +22,49 @@ import { cva, type VariantProps } from "class-variance-authority";
 
 import { cn } from "@/lib/utils";
 
+/**
+ * Nut dung TRONG MODAL. Nut o hang hanh dong cua man toan khung dung
+ * <PrimaryButton> / <IconButton> trong components/screen.tsx (chung cao theo
+ * % chieu cao hang, khong theo px).
+ *
+ * QUY DINH:
+ * - variant `primary` la hanh dong chinh (vang). Moi modal chi mot cai.
+ * - `dark` chi dung cho nut trung tinh xac nhan dong y (nut Done man quet QR).
+ * - `link` la chu xanh khong nen: Close / Back / Skip.
+ * - Khong tu them rounded-* / bg-* o call-site. Thieu kieu thi them variant.
+ */
 const buttonVariants = cva(
-  "inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50",
+  "inline-flex items-center justify-center gap-2 whitespace-nowrap font-extrabold transition-colors outline-none focus-visible:ring-2 focus-visible:ring-primary disabled:opacity-50 disabled:pointer-events-none",
   {
     variants: {
       variant: {
-        default: "bg-primary text-primary-foreground hover:bg-primary/90",
-        destructive:
-          "bg-destructive text-destructive-foreground hover:bg-destructive/90",
-        outline:
-          "border border-input bg-background hover:bg-accent hover:text-accent-foreground",
-        secondary:
-          "bg-secondary text-secondary-foreground hover:bg-secondary/80",
-        ghost: "hover:bg-accent hover:text-accent-foreground",
-        link: "text-primary underline-offset-4 hover:underline",
+        primary: "bg-primary text-primary-foreground shadow-btn",
+        dark: "bg-foreground text-background shadow-btn",
+        outline: "border border-border bg-background text-foreground shadow-btn",
+        ghost: "text-foreground hover:bg-surface",
+        link: "text-accent",
+        danger: "bg-danger text-background shadow-btn",
       },
       size: {
-        default: "h-10 px-4 py-2",
-        sm: "h-9 rounded-md px-3",
-        lg: "h-11 rounded-md px-8",
-        icon: "h-10 w-10",
+        /** Hang trong modal: cao 40px, bo 12px, full width */
+        row: "w-full h-10 rounded-xl text-[17px]",
+        /** Nut chinh trong modal: cao 44px, bo 12px, full width */
+        block: "w-full h-11 rounded-xl text-[17px]",
+        /** Nut vien tron o hang cuoi modal (Back / Done) */
+        pill: "h-10 rounded-full text-[17px] px-4",
+        /** Chip vien tron (Upload photo from gallery) */
+        chip: "rounded-full border border-border shadow-btn px-4 py-2 text-[15px]",
+        /** Nut chi co icon */
+        icon: "h-9 w-9 rounded-full",
+        /** Chu khong nen (Close / Back / Skip) */
+        text: "h-9 text-[17px]",
+        /** Nut nho trong hang xac nhan xoa */
+        sm: "h-9 rounded-xl px-3 text-[15px]",
       },
     },
     defaultVariants: {
-      variant: "default",
-      size: "default",
+      variant: "primary",
+      size: "row",
     },
   },
 );

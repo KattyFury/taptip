@@ -17,8 +17,7 @@
  */
 
 import type { Viewport } from "next";
-import { Archivo } from "next/font/google";
-import { ThemeProvider } from "next-themes";
+import { Nunito, Comfortaa } from "next/font/google";
 import { Toaster } from "@/components/ui/sonner";
 import "./globals.css";
 import { Web3Provider } from "@/components/web3-provider";
@@ -28,11 +27,21 @@ const defaultUrl = process.env.NEXT_PUBLIC_SITE_URL
   ? process.env.NEXT_PUBLIC_SITE_URL
   : "http://localhost:3000";
 
-// Font Archivo (Design Spec muc 2): weight 800 cho heading, 400 cho body
-const archivo = Archivo({
+// Nunito: toan bo chu giao dien (400 thuong, 700 dam, 800 tieu de/nut)
+const nunito = Nunito({
   subsets: ["latin", "vietnamese"],
-  weight: ["400", "800"],
-  variable: "--font-archivo",
+  weight: ["400", "700", "800"],
+  variable: "--font-nunito",
+  display: "swap",
+});
+
+// Comfortaa: CHI dung cho gia tri so - so du, so tien, ngay gio, chu so OTP.
+// Comfortaa het nac o 700, khong co 800.
+const comfortaa = Comfortaa({
+  subsets: ["latin", "vietnamese"],
+  weight: ["400", "700"],
+  variable: "--font-comfortaa",
+  display: "swap",
 });
 
 export const metadata = {
@@ -42,8 +51,9 @@ export const metadata = {
 };
 
 export const viewport: Viewport = {
-  interactiveWidget: 'resizes-content'
-}
+  interactiveWidget: "resizes-content",
+  themeColor: "#FFCC00",
+};
 
 export default async function RootLayout({
   children,
@@ -51,26 +61,22 @@ export default async function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en" className={`${archivo.variable} ${archivo.className}`} suppressHydrationWarning>
-      <body className="bg-background/5 text-foreground flex items-center justify-center min-h-svh overflow-hidden">
+    <html
+      lang="en"
+      className={`${nunito.variable} ${comfortaa.variable}`}
+      suppressHydrationWarning
+    >
+      <body className="bg-page-backdrop text-foreground font-sans flex items-center justify-center min-h-dvh overflow-hidden">
         <Web3Provider>
           <BalanceProvider>
-            <ThemeProvider
-              attribute="class"
-              defaultTheme="light"
-              enableSystem={false}
-              disableTransitionOnChange
-            >
-              <Toaster expand />
-              {/* Phone simulation container */}
-              <div className="relative w-full max-w-[430px] h-screen max-h-[932px] flex flex-col bg-background shadow-xl overflow-hidden">
-                <main className="flex-1 flex flex-col items-center overflow-hidden">
-                  <div className="flex flex-col w-full flex-1">
-                    {children}
-                  </div>
-                </main>
-              </div>
-            </ThemeProvider>
+            <Toaster expand />
+            {/* Khung dien thoai 430x932. `tt-frame` bat container-type: size
+                de don vi cqh cua chu/icon bam theo chieu cao khung nay. */}
+            <div className="tt-frame relative w-full max-w-[430px] h-dvh max-h-[932px] flex flex-col bg-background shadow-modal overflow-hidden">
+              <main className="flex-1 flex flex-col items-center overflow-hidden">
+                <div className="flex flex-col w-full flex-1">{children}</div>
+              </main>
+            </div>
           </BalanceProvider>
         </Web3Provider>
       </body>

@@ -54,7 +54,9 @@ export default function Layout({
 
   return (
     <GlobalContextProvider>
-      <div className="flex flex-col flex-1 items-center px-5 pb-5 mt-[66px]">{children}</div>
+      {/* Chi padding ngang. KHONG dat margin/padding doc o day - luoi 10 hang
+          phai chia tron chieu cao khung, them 1px doc la lech het cac vach. */}
+      <div className="flex flex-col flex-1 w-full px-5">{children}</div>
     </GlobalContextProvider>
   );
 }
