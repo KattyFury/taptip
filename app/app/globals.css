@@ -124,12 +124,13 @@
   --font-num: var(--font-comfortaa), sans-serif;
 
   /* Thang chu cho man toan khung. 1cqh = 1% chieu cao khung dien thoai,
-     nen quy doi tu ban thiet ke goc 932px: 28px -> 3cqh, 21px -> 2.25cqh,
-     17px -> 1.82cqh, 14px -> 1.5cqh, 46px -> 4.94cqh */
+     nen quy doi tu ban thiet ke goc 932px. Tang lead/body/small (08-10,
+     user phan hoi chu con nho voi nguoi lon tuoi): 24px -> 2.58cqh,
+     19px -> 2.04cqh, 16px -> 1.72cqh. title/figure giu nguyen. */
   --text-title: 3cqh;
-  --text-lead: 2.25cqh;
-  --text-body: 1.82cqh;
-  --text-small: 1.5cqh;
+  --text-lead: 2.58cqh;
+  --text-body: 2.04cqh;
+  --text-small: 1.72cqh;
   --text-figure: 4.94cqh;
 }
 

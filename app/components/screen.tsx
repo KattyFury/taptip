@@ -6,12 +6,14 @@
  *
  *   0.0 -> 1.0    dem tren                     flex "1 1 0"
  *   1.0 -> 2.5    icon + tieu de (bam dinh)    flex "1.5 1 0"
- *   2.5 -> 8.0    noi dung (bam tren)          flex "5.5 1 0"
+ *   2.5 -> 8.0    vung noi dung (flex "5.5 1 0")
  *   8.0 -> 9.0    hang nut hanh dong           flex "1 1 0"
  *   9.0 -> 10.0   hang phu (link Skip / loi)   flex "1 1 0"
  *
- * Icon va tieu de bat dau dung tai vach 1.0; noi dung bat dau dung tai vach
- * 2.5 - nen ca hai khoi deu `justify-start`, KHONG can giua.
+ * Icon va tieu de bat dau dung tai vach 1.0. Vung noi dung co dem 0.5 hang
+ * (3.2cqh spacer + 1.8cqh gap co san = 5cqh) truoc children, nen noi dung
+ * that su bat dau dung tai vach 3.0 - ca hai khoi deu `justify-start`, KHONG
+ * can giua.
  *
  * ======================= 3 LUAT KY THUAT BAT BUOC ===========================
  * 1. Neo theo ty le, khong hardcode pixel. Chu/icon dung `cqh` (1cqh = 1%
@@ -36,7 +38,7 @@ interface ScreenProps {
   icon?: ReactNode;
   /** Tieu de man. Nhan ReactNode de man OTP ghep them dong email mau xanh */
   title?: ReactNode;
-  /** Noi dung chinh, bat dau tu vach 2.5 */
+  /** Noi dung chinh, bat dau tu vach 3.0 */
   children?: ReactNode;
   /** Hang 8-9: nut hanh dong. Dung <SingleAction> hoac <BackAction> */
   action?: ReactNode;
@@ -67,11 +69,12 @@ export function Screen({ icon, title, children, action, foot }: ScreenProps) {
         )}
       </div>
 
-      {/* 2.5 -> 8.0 : noi dung, bam dinh vach 2.5 */}
+      {/* 2.5 -> 8.0 : noi dung, bam dinh vach 3.0 (dem 0.5 hang truoc noi dung) */}
       <div
         style={{ flex: "5.5 1 0", minHeight: 0 }}
         className="flex flex-col items-center justify-start gap-[1.8cqh] w-full max-w-[320px] mx-auto"
       >
+        <div style={{ flexShrink: 0, height: "3.2cqh" }} />
         {children}
       </div>
 
