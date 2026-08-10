@@ -196,8 +196,8 @@ export function Field({
   return (
     <input
       className={
-        "w-full h-[4.3cqh] min-h-[36px] rounded-xl border-0 bg-surface shadow-field " +
-        "px-3 text-body text-center text-foreground placeholder:text-hint " +
+        "w-full h-[6cqh] min-h-[48px] rounded-xl border-0 bg-surface shadow-field " +
+        "px-4 text-lead text-center text-foreground placeholder:text-hint " +
         "outline-none focus:ring-2 focus:ring-primary " +
         className
       }
@@ -213,7 +213,7 @@ function BackIcon() {
       viewBox="0 0 100 100"
       fill="none"
       aria-hidden="true"
-      className="w-[2cqh] h-[2cqh] text-foreground"
+      className="w-[3cqh] h-[3cqh] text-foreground"
     >
       <path
         d="M30 50L10 70L30 90M10 70H50C60 70.1428 80 66.9235 80 40.5336C80 14.1437 50 10 50 10"
