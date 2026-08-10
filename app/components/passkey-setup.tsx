@@ -27,6 +27,7 @@ import {
 } from '@circle-fin/modular-wallets-core';
 import { Screen, BackAction, PrimaryButton, TextLink } from "@/components/screen";
 import * as Icon from "@/components/icons";
+import { createClient } from '@/lib/utils/supabase/client';
 import { createPublicClient } from 'viem';
 import {
     toWebAuthnAccount,
@@ -44,8 +45,24 @@ interface PasskeySetupProps {
 // This component handles the wallet setup after user registration
 export function PasskeySetup({ username }: PasskeySetupProps) {
     const router = useRouter();
+    const supabase = createClient();
     const [isCreating, setIsCreating] = useState(false);
+    const [isSkipping, setIsSkipping] = useState(false);
     const [error, setError] = useState<string | null>(null);
+
+    // Bo qua passkey de test giao dien - danh dau wallet_setup_complete de
+    // dashboard/page.tsx khong tu dong day nguoc ve day (xem app/api/setup-wallets/route.ts,
+    // day la field that duoc dung tren luong that, khong phai bia moi). Khong
+    // co vi that nen Home hien placeholder "Creating wallet..." (da co san).
+    const skipPasskey = async () => {
+        setIsSkipping(true);
+        try {
+            await supabase.auth.updateUser({ data: { wallet_setup_complete: true } });
+        } catch (err) {
+            console.warn("Could not set wallet_setup_complete:", err);
+        }
+        router.push('/dashboard');
+    };
 
     const clientKey = process.env.NEXT_PUBLIC_CIRCLE_CLIENT_KEY;
     const clientUrl = process.env.NEXT_PUBLIC_CIRCLE_CLIENT_URL;
@@ -147,8 +164,8 @@ export function PasskeySetup({ username }: PasskeySetupProps) {
                         {error}
                     </p>
                 ) : (
-                    <TextLink onClick={() => router.push('/dashboard')}>
-                        Skip for now
+                    <TextLink onClick={skipPasskey} disabled={isSkipping}>
+                        {isSkipping ? 'Skipping...' : 'Skip for now'}
                     </TextLink>
                 )
             }
