@@ -197,7 +197,7 @@ export function Field({
     <input
       className={
         "w-full h-[6cqh] min-h-[48px] rounded-xl border-0 bg-surface shadow-field " +
-        "px-4 text-lead text-center text-foreground placeholder:text-hint " +
+        "px-4 text-lead text-left text-foreground placeholder:text-hint " +
         "outline-none focus:ring-2 focus:ring-primary " +
         className
       }

@@ -73,7 +73,7 @@ export default function Splash() {
         }
         foot={<TextLink onClick={() => router.push("/sign-in")}>Skip</TextLink>}
       >
-        <ol className="w-full flex flex-col gap-[1.5cqh]">
+        <ol className="w-fit flex flex-col gap-[1.5cqh]">
           {INSTALL_STEPS.map((label, index) => (
             <li key={label} className="flex items-center gap-3">
               <span className="w-[2.8cqh] h-[2.8cqh] rounded-full bg-accent text-background shrink-0 flex items-center justify-center text-small font-extrabold">
