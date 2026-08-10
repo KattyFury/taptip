@@ -110,7 +110,7 @@ export default function CodeConfirmation() {
         <>
           Enter the code sent to
           <br />
-          <span className="text-accent break-all">{email}</span>
+          <span className="text-lead text-accent break-all">{email}</span>
         </>
       }
       action={
