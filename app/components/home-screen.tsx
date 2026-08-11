@@ -27,37 +27,10 @@ interface Props {
   historyContent: React.ReactNode;
 }
 
-/** So nguyen, gioi han 0-9999 - dung chung cho ca man chinh lan popup Menu. */
-function toBalanceInt(token: number): number {
+/** So nguyen, khong am - dung chung cho ca man chinh lan popup Menu. */
+function formatBalance(token: number): number {
   if (isNaN(token)) return 0;
-  return Math.max(0, Math.min(9999, Math.floor(token)));
-}
-
-/**
- * "$XXXX" luon du 4 chu so de do rong khong nhay khi so du doi - chu so 0
- * dan dau khong co nghia thi ve vo hinh (invisible, van chiem cho) thay vi
- * an han, giu dung vi tri can giua cua ca cum.
- */
-function BalanceDigits({
-  amount,
-  className = "",
-}: {
-  amount: number;
-  className?: string;
-}) {
-  const trueDigits = toBalanceInt(amount).toString();
-  const padded = trueDigits.padStart(4, "0");
-  const leadingZeros = padded.length - trueDigits.length;
-
-  return (
-    <span className={"font-num tabular-nums " + className}>
-      {padded.split("").map((digit, i) => (
-        <span key={i} className={i < leadingZeros ? "invisible" : undefined}>
-          {digit}
-        </span>
-      ))}
-    </span>
-  );
+  return Math.max(0, Math.floor(token));
 }
 
 function shortenAddress(address: string): string {
@@ -130,17 +103,16 @@ function HomeScreenContent({ primaryWallet, accountName, historyContent }: Props
           3 luat bat buoc: xem components/screen.tsx.
           ==================================================================== */}
 
-      {/* 0.00 - 1.00 : so du. Nhan "Balance: $" dung yen, 4 chu so co do rong
-          co dinh (xem BalanceDigits) de ca cum khong nhun khi so du doi. */}
+      {/* 0.00 - 1.00 : so du, don gian can giua - "Balance:" mau xanh accent. */}
       <div
         style={{ flex: "1 1 0", minHeight: 0 }}
         className="flex items-center justify-center"
       >
         <div className="flex items-baseline gap-1">
-          <span className="text-lead font-bold text-accent shrink-0">
-            Balance: $
+          <span className="text-lead font-bold text-accent">Balance:</span>
+          <span className="text-figure font-bold font-num">
+            ${formatBalance(balance.token)}
           </span>
-          <BalanceDigits amount={balance.token} className="text-figure font-bold" />
         </div>
       </div>
 
@@ -227,16 +199,17 @@ function HomeScreenContent({ primaryWallet, accountName, historyContent }: Props
       />
 
       {/* 9.00 - 10.00 : icon menu o GOC TRAI-DUOI, tam doc dung vach 9.5.
-          overflow-hidden + relative: khoanh vung dung cho ca mang tron trang
-          tri lan vung bam nut Menu, khong cho tran len hang 9. */}
+          overflow-y-hidden (KHONG dung overflow-hidden ca 2 truc) - chi cat
+          phan tran len hang 9, con be ngang van cho mang tron lan qua trai
+          nhu thiet ke goc (khong tao khoang trong 16-20px gia o canh trai). */}
       <div
         style={{ flex: "1 1 0", minHeight: 0 }}
-        className="relative z-10 flex items-center justify-start overflow-hidden"
+        className="relative z-10 flex items-center justify-start overflow-y-hidden overflow-x-visible"
       >
         {/* Mang tron vang trang tri o goc trai-duoi. Tam dat o (1.7cqh, day
             khung) nen chi lo ra mot phan tu - nam duoi icon menu. Kich thuoc
             quy doi sang cqh (truoc la px cung) de khong bao gio lan qua hang
-            9 tren man hinh khac ty le luc test - overflow-hidden cua hang
+            9 tren man hinh khac ty le luc test - overflow-y-hidden cua hang
             nay cat dut phan con lai bat ke sai so lam tron. */}
         <div
           aria-hidden
@@ -256,10 +229,7 @@ function HomeScreenContent({ primaryWallet, accountName, historyContent }: Props
           </button>
 
           <DialogContent
-            className={
-              (menuView === "history" ? "max-h-[70%] gap-3" : "gap-3") +
-              " relative"
-            }
+            className={menuView === "history" ? "max-h-[70%] gap-3" : "gap-3"}
           >
             {menuView === "main" && (
               <>
@@ -277,10 +247,10 @@ function HomeScreenContent({ primaryWallet, accountName, historyContent }: Props
                 </DialogHeader>
 
                 <div className="flex items-baseline justify-center gap-1 py-2">
-                  <span className="text-[17px] font-bold text-accent shrink-0">
-                    Balance: $
+                  <span className="text-[17px] font-bold text-accent">Balance:</span>
+                  <span className="text-[28px] font-bold font-num">
+                    ${formatBalance(balance.token)}
                   </span>
-                  <BalanceDigits amount={balance.token} className="text-[28px] font-bold" />
                 </div>
 
                 <div className="flex flex-col gap-1 text-center">
