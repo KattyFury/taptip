@@ -45,9 +45,15 @@ export function useBalance() {
 }
 
 // Balance Provider component
-export function BalanceProvider({ children }: { children: ReactNode }) {
+interface BalanceProviderProps {
+  children: ReactNode;
+  /** Dia chi vi da biet san tu server - xem ghi chu trong use-wallet-balances.ts */
+  walletAddress?: string;
+}
+
+export function BalanceProvider({ children, walletAddress }: BalanceProviderProps) {
   // Use the existing hook
-  const { balance, isRefreshing, refreshBalances } = useWalletBalances();
+  const { balance, isRefreshing, refreshBalances } = useWalletBalances(walletAddress);
 
   // Create the value object once
   const value = {

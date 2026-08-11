@@ -24,8 +24,19 @@ import { toast } from "sonner";
 import axios from "axios";
 import { createSupabaseBrowserClient } from "@/lib/supabase/browser-client";
 
-export function useWalletBalances() {
-  const { account, isConnected, isInitialized } = useWeb3();
+/**
+ * knownAddress: dia chi vi da biet san tu server (primaryWallet.wallet_address),
+ * khong phu thuoc pipeline WebAuthn/passkey phia client. Truoc day hook nay chi
+ * fetch khi Web3Context bao isConnected=true (tuc la toan bo chuoi khoi tao
+ * WebAuthn -> toCircleSmartAccount -> bundler chay xong khong loi) - bat ky
+ * truc trac nao trong chuoi do bi console.error nuot mat, so du ket vinh vien
+ * o 0 ma khong bao gio bao loi cho user. Uu tien knownAddress, fallback ve
+ * account.address (Web3Context) neu khong duoc truyen vao.
+ */
+export function useWalletBalances(knownAddress?: string) {
+  const { account } = useWeb3();
+  const effectiveAddress = knownAddress || account.address || null;
+
   // Create Supabase client once per hook instance
   const supabaseRef = useRef(createSupabaseBrowserClient());
 
@@ -98,10 +109,10 @@ export function useWalletBalances() {
 
   // Load initial balances from DB, then refresh from API
   const loadBalances = useCallback(async () => {
-    if (!isConnected || isRefreshingRef.current) return;
-
-    if (!account.address) {
-      setBalance((prev) => ({ ...prev, loading: false }));
+    if (!effectiveAddress || isRefreshingRef.current) {
+      if (!effectiveAddress) {
+        setBalance((prev) => ({ ...prev, loading: false }));
+      }
       return;
     }
 
@@ -115,7 +126,7 @@ export function useWalletBalances() {
 
     try {
       // STEP 1: Try to get balance from DB first (fast)
-      const dbBalance = await fetchBalanceFromDB(account.address);
+      const dbBalance = await fetchBalanceFromDB(effectiveAddress);
 
       // Update state with DB value immediately (faster UX)
       setBalance((prev) => ({
@@ -125,7 +136,7 @@ export function useWalletBalances() {
       }));
 
       // STEP 2: Then fetch from API to ensure latest value (slower but accurate)
-      const apiBalance = await fetchBalanceFromAPI(account.address);
+      const apiBalance = await fetchBalanceFromAPI(effectiveAddress);
 
       // Update state with API value and finish loading
       const finalBalance = parseFloat(apiBalance) || 0;
@@ -145,17 +156,17 @@ export function useWalletBalances() {
     } finally {
       isRefreshingRef.current = false;
     }
-  }, [account, fetchBalanceFromDB, fetchBalanceFromAPI, isConnected]);
+  }, [effectiveAddress, fetchBalanceFromDB, fetchBalanceFromAPI]);
 
   // Helper to check if account has changed
-  const hasAccountChanged = useCallback(() => {
+  const hasAddressChanged = useCallback(() => {
     const prev = prevAddressRef.current;
-    const current = account.address;
+    const current = effectiveAddress;
 
     prevAddressRef.current = current;
 
     return prev !== current;
-  }, [account]);
+  }, [effectiveAddress]);
 
   // Track previous balance for realtime toast dedup
   const prevBalanceRef = useRef<number | null>(null);
@@ -189,11 +200,12 @@ export function useWalletBalances() {
     [],
   );
 
-  // Initialize balances when account changes or on first load
+  // Initialize balances as soon as we know a wallet address - khong con cho
+  // Web3Context/WebAuthn ket noi xong, dia chi da biet san tu server la du.
   useEffect(() => {
-    if (!isInitialized) return;
+    if (!effectiveAddress) return;
 
-    const accountChanged = hasAccountChanged();
+    const addressChanged = hasAddressChanged();
     const isFirstLoad = !balancesLoadedRef.current;
 
     const freshInitialization =
@@ -209,10 +221,10 @@ export function useWalletBalances() {
       }, 1000);
 
       return () => clearTimeout(timeoutId);
-    } else if (isFirstLoad || accountChanged) {
+    } else if (isFirstLoad || addressChanged) {
       loadBalances();
     }
-  }, [isConnected, isInitialized, loadBalances, hasAccountChanged]);
+  }, [effectiveAddress, loadBalances, hasAddressChanged]);
 
   // Set up realtime subscription for wallet updates
   useEffect(() => {
@@ -221,7 +233,7 @@ export function useWalletBalances() {
       realtimeChannelRef.current = null;
     }
 
-    if (!account.address) return;
+    if (!effectiveAddress) return;
 
     const walletChannel = supabaseRef.current
       .channel("wallet-updates")
@@ -238,7 +250,7 @@ export function useWalletBalances() {
 
           if (
             blockchain === "ARC" &&
-            address === account.address?.toLowerCase()
+            address === effectiveAddress?.toLowerCase()
           ) {
             updateWalletBalance(payload);
           }
@@ -254,7 +266,7 @@ export function useWalletBalances() {
         realtimeChannelRef.current = null;
       }
     };
-  }, [account.address, updateWalletBalance]);
+  }, [effectiveAddress, updateWalletBalance]);
 
   return {
     balance,

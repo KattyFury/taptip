@@ -12,7 +12,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import * as Icon from "@/components/icons";
-import { useBalance } from "@/contexts/balanceContext";
+import { useBalance, BalanceProvider } from "@/contexts/balanceContext";
 import SendFlow from "@/components/send-flow";
 import { encodeTapTipQr } from "@/lib/utils/qr-payment";
 import { signOutAction } from "@/app/actions";
@@ -65,7 +65,18 @@ function shortenAddress(address: string): string {
   return `${address.slice(0, 6)}...${address.slice(-4)}`;
 }
 
-export default function HomeScreen({ primaryWallet, accountName, historyContent }: Props) {
+// BalanceProvider rieng, dia chi biet san tu server (primaryWallet.wallet_address)
+// - khong con phu thuoc Web3Context ket noi WebAuthn xong moi thay so du. Che
+// len BalanceProvider goc o app/layout.tsx (khong dia chi, khong lam gi).
+export default function HomeScreen(props: Props) {
+  return (
+    <BalanceProvider walletAddress={props.primaryWallet.wallet_address}>
+      <HomeScreenContent {...props} />
+    </BalanceProvider>
+  );
+}
+
+function HomeScreenContent({ primaryWallet, accountName, historyContent }: Props) {
   const { balance } = useBalance();
   const [menuOpen, setMenuOpen] = useState(false);
   const [menuView, setMenuView] = useState<
