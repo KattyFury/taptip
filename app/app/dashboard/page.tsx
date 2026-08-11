@@ -74,6 +74,7 @@ export default async function Dashboard() {
   return (
     <HomeScreen
       primaryWallet={primaryWallet}
+      accountName={profile.name}
       historyContent={<TransactionsTab primaryWallet={primaryWallet} profile={profile} />}
     />
   );

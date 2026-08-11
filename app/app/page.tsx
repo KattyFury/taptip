@@ -18,25 +18,44 @@
 
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 import { useRouter } from "next/navigation";
 import { Screen, SingleAction, PrimaryButton, TextLink } from "@/components/screen";
 import * as Icon from "@/components/icons";
 
 const SPLASH_DURATION_MS = 1600;
 
-const INSTALL_STEPS = [
-  "Tap Option in Safari",
-  "Tap Share",
-  "Tap Add to Home Screen",
-  "Tap Add - you're done!",
-];
+// Tung dong co the co doan in dam - dung <strong> thay vi string thuong.
+const INSTALL_STEPS: Record<"ios" | "android", ReactNode[]> = {
+  ios: [
+    <>Open <strong className="font-extrabold">TapTip in Safari</strong></>,
+    <>Tap Option in Safari</>,
+    <>Tap <strong className="font-extrabold">Share</strong> ⤴</>,
+    <>Tap <strong className="font-extrabold">Add to Home Screen</strong></>,
+    <>Tap <strong className="font-extrabold">Add</strong> — you&apos;re done!</>,
+  ],
+  android: [
+    <>Open <strong className="font-extrabold">TapTip in Chrome</strong></>,
+    <>Tap <strong className="font-extrabold">⋮</strong> in the top-right corner</>,
+    <>Tap <strong className="font-extrabold">Add to Home screen</strong></>,
+    <>Tap <strong className="font-extrabold">Add</strong> — you&apos;re done!</>,
+  ],
+};
+
+// Doan Android ("android") - moi thu con lai (iOS/iPadOS/desktop Safari...)
+// mac dinh ve iOS, vi phan lon nguoi test/dung app hien tai la iPhone.
+function detectPlatform(): "ios" | "android" {
+  if (typeof navigator === "undefined") return "ios";
+  return /android/i.test(navigator.userAgent) ? "android" : "ios";
+}
 
 export default function Splash() {
   const router = useRouter();
   const [step, setStep] = useState<"splash" | "add-to-home">("splash");
+  const [platform, setPlatform] = useState<"ios" | "android">("ios");
 
   useEffect(() => {
+    setPlatform(detectPlatform());
     const timer = setTimeout(() => setStep("add-to-home"), SPLASH_DURATION_MS);
     return () => clearTimeout(timer);
   }, []);
@@ -63,7 +82,7 @@ export default function Splash() {
     <div className="h-full px-5">
       <Screen
         icon={<Icon.Add className="w-full h-full" />}
-        title="Add TapTip to your Home Screen"
+        title="Add TapTip to Home Screen"
         action={
           <SingleAction>
             <PrimaryButton onClick={() => router.push("/sign-in")}>
@@ -74,8 +93,8 @@ export default function Splash() {
         foot={<TextLink onClick={() => router.push("/sign-in")}>Skip</TextLink>}
       >
         <ol className="w-fit flex flex-col gap-[1.5cqh]">
-          {INSTALL_STEPS.map((label, index) => (
-            <li key={label} className="flex items-center gap-3">
+          {INSTALL_STEPS[platform].map((label, index) => (
+            <li key={index} className="flex items-center gap-3">
               <span className="w-[2.8cqh] h-[2.8cqh] rounded-full bg-accent text-background shrink-0 flex items-center justify-center text-small font-extrabold">
                 {index + 1}
               </span>

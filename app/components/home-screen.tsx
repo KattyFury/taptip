@@ -6,6 +6,7 @@ import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
+  DialogClose,
   DialogContent,
   DialogHeader,
   DialogTitle,
@@ -22,10 +23,49 @@ interface Props {
   primaryWallet: {
     wallet_address: string;
   };
+  accountName: string;
   historyContent: React.ReactNode;
 }
 
-export default function HomeScreen({ primaryWallet, historyContent }: Props) {
+/** So nguyen, gioi han 0-9999 - dung chung cho ca man chinh lan popup Menu. */
+function toBalanceInt(token: number): number {
+  if (isNaN(token)) return 0;
+  return Math.max(0, Math.min(9999, Math.floor(token)));
+}
+
+/**
+ * "$XXXX" luon du 4 chu so de do rong khong nhay khi so du doi - chu so 0
+ * dan dau khong co nghia thi ve vo hinh (invisible, van chiem cho) thay vi
+ * an han, giu dung vi tri can giua cua ca cum.
+ */
+function BalanceDigits({
+  amount,
+  className = "",
+}: {
+  amount: number;
+  className?: string;
+}) {
+  const trueDigits = toBalanceInt(amount).toString();
+  const padded = trueDigits.padStart(4, "0");
+  const leadingZeros = padded.length - trueDigits.length;
+
+  return (
+    <span className={"font-num tabular-nums " + className}>
+      {padded.split("").map((digit, i) => (
+        <span key={i} className={i < leadingZeros ? "invisible" : undefined}>
+          {digit}
+        </span>
+      ))}
+    </span>
+  );
+}
+
+function shortenAddress(address: string): string {
+  if (!address || address.length < 12) return address;
+  return `${address.slice(0, 6)}...${address.slice(-4)}`;
+}
+
+export default function HomeScreen({ primaryWallet, accountName, historyContent }: Props) {
   const { balance } = useBalance();
   const [menuOpen, setMenuOpen] = useState(false);
   const [menuView, setMenuView] = useState<
@@ -50,9 +90,6 @@ export default function HomeScreen({ primaryWallet, historyContent }: Props) {
     navigator.clipboard.writeText(primaryWallet.wallet_address);
     toast.success("Wallet address copied");
   };
-
-  const formattedBalance =
-    isNaN(balance.token) || balance.token === 0 ? "0" : balance.token.toFixed(2);
 
   const hasWallet =
     !!primaryWallet.wallet_address && primaryWallet.wallet_address !== "0x0";
@@ -82,15 +119,17 @@ export default function HomeScreen({ primaryWallet, historyContent }: Props) {
           3 luat bat buoc: xem components/screen.tsx.
           ==================================================================== */}
 
-      {/* 0.00 - 1.00 : so du */}
+      {/* 0.00 - 1.00 : so du. Nhan "Balance: $" dung yen, 4 chu so co do rong
+          co dinh (xem BalanceDigits) de ca cum khong nhun khi so du doi. */}
       <div
         style={{ flex: "1 1 0", minHeight: 0 }}
         className="flex items-center justify-center"
       >
-        <div className="flex items-baseline gap-2">
-          <span className="text-lead font-bold text-accent">Balance</span>
-          <span className="text-figure font-bold font-num">{formattedBalance}</span>
-          <span className="text-lead font-bold text-accent">USDC</span>
+        <div className="flex items-baseline gap-1">
+          <span className="text-lead font-bold text-accent shrink-0">
+            Balance: $
+          </span>
+          <BalanceDigits amount={balance.token} className="text-figure font-bold" />
         </div>
       </div>
 
@@ -126,14 +165,15 @@ export default function HomeScreen({ primaryWallet, historyContent }: Props) {
       {/* 4.50 - 4.75 */}
       <div style={{ flex: "0.25 1 0" }} />
 
-      {/* 4.75 - 5.75 : chu thich */}
+      {/* 4.75 - 5.75 : chu thich, 2 dong */}
       <div
         style={{ flex: "1 1 0", minHeight: 0 }}
         className="flex items-center justify-center"
       >
         <p className="text-lead font-bold text-accent text-center px-[30px]">
-          Let others scan this to send you a tip - only receives USDC on Arc
-          Testnet
+          Scan to send me a tip
+          <br />
+          Only USDC on Arc Testnet
         </p>
       </div>
 
@@ -154,7 +194,7 @@ export default function HomeScreen({ primaryWallet, historyContent }: Props) {
           onClick={startRandomTip}
           aria-label="Random tip amount"
         >
-          <Icon.Dice className="w-[1.82cqh] h-[1.82cqh] shrink-0" />
+          <Icon.Dice className="w-[3cqh] h-[3cqh] shrink-0" />
         </button>
         <button
           style={{ flex: "2 1 0", minWidth: 0 }}
@@ -164,7 +204,7 @@ export default function HomeScreen({ primaryWallet, historyContent }: Props) {
             setSendOpen(true);
           }}
         >
-          <Icon.Send className="w-[2.15cqh] h-[2.15cqh] shrink-0" />
+          <Icon.Tip className="w-[2.15cqh] h-[2.15cqh] shrink-0" />
           Tip
         </button>
       </div>
@@ -175,41 +215,77 @@ export default function HomeScreen({ primaryWallet, historyContent }: Props) {
         initialAmount={randomSendAmount}
       />
 
-      {/* Mang tron vang trang tri o goc trai-duoi. Tam dat o (16, day khung)
-          nen chi lo ra mot phan tu - nam duoi icon menu. */}
-      <div
-        aria-hidden
-        className="absolute left-4 bottom-0 w-[186px] h-[186px] rounded-full bg-primary -translate-x-1/2 translate-y-1/2 z-0"
-      />
-
-      {/* 9.00 - 10.00 : icon menu o GOC TRAI-DUOI, tam doc dung vach 9.5 */}
+      {/* 9.00 - 10.00 : icon menu o GOC TRAI-DUOI, tam doc dung vach 9.5.
+          overflow-hidden + relative: khoanh vung dung cho ca mang tron trang
+          tri lan vung bam nut Menu, khong cho tran len hang 9. */}
       <div
         style={{ flex: "1 1 0", minHeight: 0 }}
-        className="relative z-10 flex items-center justify-start"
+        className="relative z-10 flex items-center justify-start overflow-hidden"
       >
+        {/* Mang tron vang trang tri o goc trai-duoi. Tam dat o (1.7cqh, day
+            khung) nen chi lo ra mot phan tu - nam duoi icon menu. Kich thuoc
+            quy doi sang cqh (truoc la px cung) de khong bao gio lan qua hang
+            9 tren man hinh khac ty le luc test - overflow-hidden cua hang
+            nay cat dut phan con lai bat ke sai so lam tron. */}
+        <div
+          aria-hidden
+          className="absolute left-[1.7cqh] bottom-0 w-[20cqh] h-[20cqh] rounded-full bg-primary -translate-x-1/2 translate-y-1/2 z-0"
+        />
+
         <Dialog open={menuOpen} onOpenChange={closeMenu}>
+          {/* p + -ml bu lai phan padding: vung bam to gan bang mang tron ma
+              khong lam icon Menu doi vi tri hien thi (xem giai thich trong
+              HANDOFF.md). */}
           <button
             onClick={() => setMenuOpen(true)}
             aria-label="Open menu"
-            className="flex items-center justify-center"
+            className="relative z-10 flex items-center justify-center p-[3cqh] -ml-[3cqh]"
           >
             <Icon.Menu className="w-[3cqh] h-[3cqh] text-foreground" />
           </button>
 
           <DialogContent
-            className={menuView === "history" ? "max-h-[70%] gap-3" : undefined}
+            className={
+              (menuView === "history" ? "max-h-[70%] gap-3" : "gap-3") +
+              " relative"
+            }
           >
             {menuView === "main" && (
               <>
+                <DialogClose asChild>
+                  <button
+                    aria-label="Close menu"
+                    className="absolute top-4 right-4 text-foreground"
+                  >
+                    <Icon.Cancel className="w-[22px] h-[22px]" />
+                  </button>
+                </DialogClose>
+
                 <DialogHeader>
-                  <DialogTitle>Balance &amp; Wallet</DialogTitle>
+                  <DialogTitle>Menu</DialogTitle>
                 </DialogHeader>
-                <div className="text-[28px] font-bold font-num text-center py-2">
-                  {formattedBalance} USDC
+
+                <div className="flex items-baseline justify-center gap-1 py-2">
+                  <span className="text-[17px] font-bold text-accent shrink-0">
+                    Balance: $
+                  </span>
+                  <BalanceDigits amount={balance.token} className="text-[28px] font-bold" />
                 </div>
-                <div className="flex flex-col gap-[10px]">
+
+                <div className="flex flex-col gap-1 text-center">
+                  <p className="text-[17px] font-bold">Account: {accountName}</p>
+                  <div className="flex items-center justify-center gap-2 text-[14px] text-hint">
+                    <span>Address: {shortenAddress(primaryWallet.wallet_address)}</span>
+                    <button onClick={copyAddress} aria-label="Copy wallet address">
+                      <Icon.Copy className="w-[14px] h-[14px]" />
+                    </button>
+                  </div>
+                </div>
+
+                <div className="flex gap-[10px]">
                   <Button
                     variant="outline"
+                    className="flex-1"
                     onClick={() => {
                       copyAddress();
                       setMenuView("deposit");
@@ -217,25 +293,28 @@ export default function HomeScreen({ primaryWallet, historyContent }: Props) {
                   >
                     Deposit
                   </Button>
-                  <Button variant="outline" onClick={() => setMenuView("withdraw")}>
+                  <Button
+                    variant="outline"
+                    className="flex-1"
+                    onClick={() => setMenuView("withdraw")}
+                  >
                     Withdraw
                   </Button>
-                  <Button variant="outline" onClick={() => setMenuView("history")}>
-                    Tip history
-                  </Button>
                 </div>
-                <Button
-                  variant="link"
-                  size="text"
-                  onClick={() => setMenuOpen(false)}
-                >
-                  Close
+                <Button variant="outline" onClick={() => setMenuView("history")}>
+                  Tip History
                 </Button>
+
                 {/* Dang xuat khong co trong ban thiet ke handoff, nhung day la
                     loi ra duy nhat cua app - de tam o day cho khoi mat chuc
                     nang, cho ban thiet ke chot cho dat chinh thuc. */}
                 <form action={signOutAction} className="flex justify-center">
-                  <Button variant="link" size="text" type="submit" className="text-hint">
+                  <Button
+                    variant="link"
+                    size="text"
+                    type="submit"
+                    className="text-destructive"
+                  >
                     Sign out
                   </Button>
                 </form>

@@ -128,14 +128,20 @@ export function Dice({ className }: IconProps) {
   );
 }
 
-/** Mui ten ra khoi khung - nut Tip o Home */
-export function Send({ className }: IconProps) {
+/** Dong tien - nut Tip o Home. Nguon: D:\Files\Claude\icons\tip.svg */
+export function Tip({ className }: IconProps) {
   return (
     <Svg className={className}>
       <path
-        d="M49.9985 10L10 10L10 90L49.9985 90M30 50L90 50M70 70L90 50L70 30"
+        d="M80 23.3333V10L64.0835 10L35.9165 10L20 10V23.3333C14.4772 23.3333 10 29.3029 10 36.6667L10 76.6667C10 84.0305 14.4772 90 20 90H80C85.5229 90 90 84.0305 90 76.6667V36.6667C90 29.3029 85.5229 23.3333 80 23.3333Z"
+        {...S}
+        strokeLinejoin="round"
+      />
+      <path
+        d="M65.0889 35H42.5889C38.4467 35 35.0889 38.3579 35.0889 42.5C35.0889 46.6421 38.4467 50 42.5889 50H57.5889C61.731 50 65.0889 53.3579 65.0889 57.5C65.0889 61.6421 61.731 65 57.5889 65H35.0889"
         {...SRound}
       />
+      <path d="M50 25V75" {...SRound} />
     </Svg>
   );
 }
@@ -159,6 +165,19 @@ export function Back({ className }: IconProps) {
     <Svg className={className}>
       <path
         d="M30 50L10 70L30 90M10 70H50C60 70.1428 80 66.9235 80 40.5336C80 14.1437 50 10 50 10"
+        {...SRound}
+      />
+    </Svg>
+  );
+}
+
+/** Hai o vuong chong nhau - nut copy dia chi vi trong Menu */
+export function Copy({ className }: IconProps) {
+  return (
+    <Svg className={className}>
+      <rect x="35" y="35" width="55" height="55" rx="8" {...S} strokeLinejoin="round" />
+      <path
+        d="M65 35V20C65 14.4772 60.5228 10 55 10H20C14.4772 10 10 14.4772 10 20V55C10 60.5228 14.4772 65 20 65H35"
         {...SRound}
       />
     </Svg>
