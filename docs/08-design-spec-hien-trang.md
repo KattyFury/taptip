@@ -1,4 +1,4 @@
-# TapTip — Spec thiết kế hiện tại
+# TapTip – Spec thiết kế hiện tại
 
 Mô tả giao diện đang chạy trong `example/app/`. Mọi giá trị đọc trực tiếp từ code.
 
@@ -6,7 +6,7 @@ Mô tả giao diện đang chạy trong `example/app/`. Mọi giá trị đọc 
 
 ## 1. Sản phẩm
 
-**TapTip** — app tip/lì xì bằng USDC trên **Arc Testnet**. Mobile-first PWA (`display: standalone`), người dùng mục tiêu là người lớn tuổi ~60, không rành công nghệ.
+**TapTip** – app tip/lì xì bằng USDC trên **Arc Testnet**. Mobile-first PWA (`display: standalone`), người dùng mục tiêu là người lớn tuổi ~60, không rành công nghệ.
 
 Luồng chính: mở app → bấm Tip → chọn số tiền → quét QR người nhận → xong. Không có bottom nav, không có header, không có màn cài đặt. Mọi chức năng phụ nằm trong popup sau icon ☰ ở góc dưới trái.
 
@@ -94,7 +94,7 @@ Vì chỉ có 400 và 800, các class weight trung gian render theo luật font-
 
 | Token | Công thức | Giá trị thật |
 |---|---|---|
-| `--radius` | — | `0rem` |
+| `--radius` | – | `0rem` |
 | `--radius-sm` | `calc(0 - 4px)` | âm, trình duyệt bỏ qua → **0** |
 | `--radius-md` | `calc(0 - 2px)` | âm → **0** |
 | `--radius-lg` | `var(--radius)` | **0** |
@@ -102,9 +102,9 @@ Vì chỉ có 400 và 800, các class weight trung gian render theo luật font-
 
 Ba mức bo góc thực tế:
 
-1. **0** — input, ô OTP, nút mặc định shadcn (`rounded-md` → 0), badge (bị ép `rounded-none`), khối lỗi passkey.
-2. **12px** (`rounded-xl`) — thẻ QR, khung camera, dialog, thẻ tóm tắt giao dịch, khối `<details>`.
-3. **Pill 999px** (`rounded-full`) — nút hành động chính, chip gợi ý email, Badge base.
+1. **0** – input, ô OTP, nút mặc định shadcn (`rounded-md` → 0), badge (bị ép `rounded-none`), khối lỗi passkey.
+2. **12px** (`rounded-xl`) – thẻ QR, khung camera, dialog, thẻ tóm tắt giao dịch, khối `<details>`.
+3. **Pill 999px** (`rounded-full`) – nút hành động chính, chip gợi ý email, Badge base.
 
 Nút chính bo pill là ngoại lệ có chủ đích so với Modernist gốc (radius 0), để dễ nhắm chạm.
 
@@ -120,28 +120,28 @@ Chiều dọc mỗi màn chia **10 hàng bằng nhau**, mỗi hàng = 10% chiề
 
 1. **Neo theo tỷ lệ, không hardcode pixel.** Dùng `%`, `vh`, `vw`, `flex`. Chữ và icon cũng theo `vh` (`text-[4.5vh]`, `h-[2vh]`).
 
-2. **Chia hàng bằng `style={{ flex: "N 1 0" }}`, không dùng class `flex-[N]`.** Tailwind v4 trong repo này không build `flex-[1.5]`/`flex-[3]` ra CSS. Số `0` cuối (flexBasis) bắt buộc — nếu chỉ có `flexGrow` thì trình duyệt chỉ chia phần dư sau khi trừ kích thước nội dung, hàng chứa nội dung to (QR) sẽ chiếm nhiều hơn phần của nó.
+2. **Chia hàng bằng `style={{ flex: "N 1 0" }}`, không dùng class `flex-[N]`.** Tailwind v4 trong repo này không build `flex-[1.5]`/`flex-[3]` ra CSS. Số `0` cuối (flexBasis) bắt buộc – nếu chỉ có `flexGrow` thì trình duyệt chỉ chia phần dư sau khi trừ kích thước nội dung, hàng chứa nội dung to (QR) sẽ chiếm nhiều hơn phần của nó.
 
 3. **Không đặt `padding` trên phần tử hàng.** Padding là kích thước tối thiểu không co được, bị cộng thêm ngoài phần chia tỷ lệ, làm phình hàng và lệch cả lưới. Muốn khoảng thở thì cho con cao theo `%` (nút `h-[80%]` + hàng `items-center`).
 
-Hàng chứa nhiều nút cần `minWidth: 0` trên cả hàng lẫn từng nút — mặc định flex item có `min-width: auto` khiến hàng không co ngang được và tràn lề.
+Hàng chứa nhiều nút cần `minWidth: 0` trên cả hàng lẫn từng nút – mặc định flex item có `min-width: auto` khiến hàng không co ngang được và tràn lề.
 
-### 4.1 Mẫu A — màn một việc
+### 4.1 Mẫu A – màn một việc
 
 Dùng ở: splash/add-to-home, sign-in, OTP, onboarding, passkey.
 
 ```
 hàng 0–1   flex "1 1 0"    đệm trên
-hàng 1–6   flex "5 1 0"    nội dung — flex-col items-center justify-center
+hàng 1–6   flex "5 1 0"    nội dung – flex-col items-center justify-center
                            w-full max-w-xs mx-auto gap-4
 hàng 6–9   flex "3 1 0"    đệm dưới
-hàng 9–10  flex "1 1 0"    nút hành động — items-center
+hàng 9–10  flex "1 1 0"    nút hành động – items-center
 ```
 
 Nút hành động một mình: `w-2/3 mx-auto h-[80%] rounded-full text-lg font-semibold`.
 Hàng hai nút: hàng `flex gap-2 items-center` + `minWidth: 0`; nút phụ `flex "1 1 0"` (outline, chỉ icon), nút chính `flex "2 1 0"`.
 
-### 4.2 Mẫu B — Home
+### 4.2 Mẫu B – Home
 
 `components/home-screen.tsx`, container có `data-home-root`.
 
@@ -182,7 +182,7 @@ Component tồn tại nhưng không nơi nào import: `copy-button.tsx`, `theme-
 
 ## 6. Từng màn
 
-### 6.1 Splash — `app/page.tsx`
+### 6.1 Splash – `app/page.tsx`
 
 Container `flex flex-col h-full px-5`, cụm `flex-1 items-center justify-center gap-4`:
 - `<img src="/logo.png" className="h-[16vh] w-[16vh] object-contain">`
@@ -190,12 +190,12 @@ Container `flex flex-col h-full px-5`, cụm `flex-1 items-center justify-center
 
 Tự chuyển sang Add-to-Home sau **1600ms**. Không có nút.
 
-### 6.2 Add to Home Screen — `app/page.tsx`
+### 6.2 Add to Home Screen – `app/page.tsx`
 
 Lưới mẫu A, container `px-5`, cụm nội dung `max-w-xs gap-6`.
 
-- H1 `text-2xl font-bold text-center` — "Add TapTip to Home Screen"
-- Mô tả `text-muted-foreground text-center` — "Opens as fast as a real app, no need to go back through the browser."
+- H1 `text-2xl font-bold text-center` – "Add TapTip to Home Screen"
+- Mô tả `text-muted-foreground text-center` – "Opens as fast as a real app, no need to go back through the browser."
 - 4 dòng `flex items-center gap-3`, icon `h-[3.5vh] w-[3.5vh] text-primary shrink-0` + `<span className="text-sm">`:
 
 | Icon | Chữ |
@@ -207,57 +207,57 @@ Lưới mẫu A, container `px-5`, cụm nội dung `max-w-xs gap-6`.
 
 - Nút hàng 9: **Continue** → `/sign-in`
 
-### 6.3 Đăng nhập email — `app/(auth-pages)/sign-in/page.tsx`
+### 6.3 Đăng nhập email – `app/(auth-pages)/sign-in/page.tsx`
 
 Lưới mẫu A.
 
-- H1 `text-2xl font-bold text-center` — "Enter your email to get started"
+- H1 `text-2xl font-bold text-center` – "Enter your email to get started"
 - `Input type="email" placeholder="Email" className="text-center"`
-- **Chip gợi ý domain** — hiện khi đã gõ phần trước `@` và email chưa khớp `/^\S+@\S+\.\S+$/`. Hai chip `@gmail.com`, `@icloud.com`, container `flex flex-wrap gap-2 justify-center`, mỗi chip `text-sm px-3 py-1 border rounded-full text-muted-foreground hover:bg-accent`, hiển thị đầy đủ `{phần đã gõ}{domain}`. Bấm là điền luôn vào ô.
+- **Chip gợi ý domain** – hiện khi đã gõ phần trước `@` và email chưa khớp `/^\S+@\S+\.\S+$/`. Hai chip `@gmail.com`, `@icloud.com`, container `flex flex-wrap gap-2 justify-center`, mỗi chip `text-sm px-3 py-1 border rounded-full text-muted-foreground hover:bg-accent`, hiển thị đầy đủ `{phần đã gõ}{domain}`. Bấm là điền luôn vào ô.
 - Nút hàng 9: **"Send OTP"**, loading đổi thành **"Sending..."**, disabled khi email không hợp lệ hoặc đang gửi
 - Lỗi: `alert()` của trình duyệt
 
-### 6.4 Nhập mã OTP — `app/(auth-pages)/code-confirmation/page.tsx`
+### 6.4 Nhập mã OTP – `app/(auth-pages)/code-confirmation/page.tsx`
 
 Lưới mẫu A.
 
-- H1 `text-2xl font-bold text-center` — "Enter the code sent to"
+- H1 `text-2xl font-bold text-center` – "Enter the code sent to"
 - Dòng email `text-muted-foreground text-center`
-- `InputOTP maxLength={6}` autofocus, chia **3 ô — Dot — 3 ô**
+- `InputOTP maxLength={6}` autofocus, chia **3 ô – Dot – 3 ô**
 - Lỗi inline: `<small className="text-sm text-red-600 font-medium leading-none text-center">`
 - Hàng 9 hai nút: ← `variant="outline"` `flex "1 1 0"` `h-[80%] rounded-full` (chỉ icon `ArrowLeft h-4 w-4`) + **"Continue"** `flex "2 1 0"` `h-[80%] rounded-full text-lg font-semibold`, loading đổi thành **"Verifying..."**, disabled khi mã ≠ 6 số
 - Sau verify: có profile → `/dashboard`, chưa có → `/onboarding`
 
-### 6.5 Tạo hồ sơ — `app/(auth-pages)/onboarding/page.tsx`
+### 6.5 Tạo hồ sơ – `app/(auth-pages)/onboarding/page.tsx`
 
 Lưới mẫu A.
 
-- H1 `text-2xl font-bold text-center` — "Create your profile"
+- H1 `text-2xl font-bold text-center` – "Create your profile"
 - `Input placeholder="Your name" className="text-center"`
 - Nút hàng 9: **"Continue"**, loading đổi thành **"Saving..."**, disabled khi tên rỗng
 
-### 6.6 Thiết lập Passkey — `components/passkey-setup.tsx`
+### 6.6 Thiết lập Passkey – `components/passkey-setup.tsx`
 
 Route `/dashboard/setup-wallet`. Lưới mẫu A.
 
 - Icon `ScanFace h-[8vh] w-[8vh] text-primary`
-- H2 `text-xl font-semibold text-center` — "Set Up Passkey"
-- Mô tả `text-muted-foreground text-center` — "Sign in with Face ID / fingerprint instead of a password. Next time you open the app, this is all you need, nothing to remember."
+- H2 `text-xl font-semibold text-center` – "Set Up Passkey"
+- Mô tả `text-muted-foreground text-center` – "Sign in with Face ID / fingerprint instead of a password. Next time you open the app, this is all you need, nothing to remember."
 - Lỗi: khối `bg-destructive/10 border border-destructive text-destructive px-4 py-3 text-sm text-center`
 - Nút hàng 9: **"Enable passkey"**, loading đổi thành **"Setting up..."**
 - Không có nút bỏ qua
 
-### 6.7 Home — `components/home-screen.tsx`
+### 6.7 Home – `components/home-screen.tsx`
 
 Lưới mẫu B. Container ngoài `px-5 pb-4`.
 
 | Vùng | Chi tiết |
 |---|---|
-| **Số dư** | `text-[4.5vh] font-bold text-center` — `Balance: {n} USDC`, 2 chữ số thập phân, bằng 0 thì hiện `0` |
+| **Số dư** | `text-[4.5vh] font-bold text-center` – `Balance: {n} USDC`, 2 chữ số thập phân, bằng 0 thì hiện `0` |
 | **QR** | Thẻ `bg-white rounded-xl border p-[1.5vh]`, `style={{ height: "100%", aspectRatio: 1 }}`; bên trong `QRCodeSVG size={260} className="w-full h-full"`. Chưa có ví → khung `border rounded-xl` rỗng, chữ "Creating wallet..." `text-[1.8vh] text-muted-foreground text-center px-4` |
-| **Caption** | `text-[1.8vh] text-muted-foreground text-center px-8` — "Let others scan this to send you a tip - only receives USDC on Arc Testnet" |
-| **Nút trái** | **Random** — `variant="secondary"` `flex "1 1 0"` `h-[80%] rounded-full text-[1.6vh] px-[2vw] gap-1`, icon `Shuffle h-[1.8vh] shrink-0`, **`disabled` cố định** |
-| **Nút phải** | **Tip** — variant default `flex "2 1 0"` `h-[80%] rounded-full text-[2.2vh] font-semibold`, icon `Send h-[2.2vh] mr-1` |
+| **Caption** | `text-[1.8vh] text-muted-foreground text-center px-8` – "Let others scan this to send you a tip - only receives USDC on Arc Testnet" |
+| **Nút trái** | **Random** – `variant="secondary"` `flex "1 1 0"` `h-[80%] rounded-full text-[1.6vh] px-[2vw] gap-1`, icon `Shuffle h-[1.8vh] shrink-0`, **`disabled` cố định** |
+| **Nút phải** | **Tip** – variant default `flex "2 1 0"` `h-[80%] rounded-full text-[2.2vh] font-semibold`, icon `Send h-[2.2vh] mr-1` |
 | **Menu** | `Button variant="ghost" size="icon"`, icon `Menu h-[2.2vh]`, căn trái hàng 9–10 |
 
 ### 6.8 Popup menu ☰
@@ -266,43 +266,43 @@ Một `Dialog className="sm:max-w-md"`, 4 view qua state `menuView`. Đóng dial
 
 **`main`**
 - Title "Balance & Wallet"
-- Số dư `text-2xl font-bold text-center py-2` — `{n} USDC`
+- Số dư `text-2xl font-bold text-center py-2` – `{n} USDC`
 - 3 nút `variant="outline" w-full`: **Deposit** · **Withdraw** · **Tip history**
 - Nút `variant="ghost" w-full`: **Close**
 
-**`deposit`** — vào view này tự copy địa chỉ ví + toast "Wallet address copied"
+**`deposit`** – vào view này tự copy địa chỉ ví + toast "Wallet address copied"
 - Title "Deposit USDC (testnet)"
-- `<p className="text-sm text-muted-foreground">` — "Your wallet address has been copied:"
+- `<p className="text-sm text-muted-foreground">` – "Your wallet address has been copied:"
 - `<code className="text-xs break-all bg-muted p-2 rounded block">` chứa địa chỉ ví
-- `<ol className="text-sm list-decimal list-inside space-y-1">` — Open the Circle Faucet page / Paste the wallet address you just copied / Click Request on that page
+- `<ol className="text-sm list-decimal list-inside space-y-1">` – Open the Circle Faucet page / Paste the wallet address you just copied / Click Request on that page
 - Nút chính `w-full` **"Open Circle Faucet"** → `https://faucet.circle.com/` tab mới
 - Nút `ghost w-full` **Back**
 
 **`withdraw`**
 - Title "Withdraw"
-- `<p className="text-sm text-muted-foreground">` — "This feature isn't available yet - withdrawals only open on mainnet."
+- `<p className="text-sm text-muted-foreground">` – "This feature isn't available yet - withdrawals only open on mainnet."
 - Nút chính `w-full` **"Got it"**
 
 **`history`**
 - Title "Tip history"
 - `<Transactions>` bọc trong `max-h-[60vh] overflow-y-auto`
 
-### 6.9 Luồng gửi tiền — `components/send-flow.tsx`
+### 6.9 Luồng gửi tiền – `components/send-flow.tsx`
 
 Một `Dialog className="sm:max-w-md flex flex-col h-[600px] max-h-[80vh]"`, 4 bước qua state `step`.
 
-**Bước 1 · `amount`** — Title "Choose an amount"
+**Bước 1 · `amount`** – Title "Choose an amount"
 
 - Danh sách mức tiền từ `localStorage["taptip_presets"]`, mặc định `["1","5","10"]`, thêm mới thì sắp xếp tăng dần
 - Vùng danh sách `flex-1 overflow-y-auto flex flex-col gap-2`
 - Mỗi dòng `flex items-center gap-2`:
-  - Nút `variant="outline" flex-1 justify-between py-6` — trái `{value} USDC`, phải `<span className="text-xs text-muted-foreground">Not enough balance</span>` khi mức > số dư (kèm `disabled`)
+  - Nút `variant="outline" flex-1 justify-between py-6` – trái `{value} USDC`, phải `<span className="text-xs text-muted-foreground">Not enough balance</span>` khi mức > số dư (kèm `disabled`)
   - Nút `ghost size="icon"` icon `X h-4 w-4`
   - Bấm ✕ → dòng đổi thành **Delete** (`variant="destructive" size="sm"`) + **Cancel** (`ghost sm`)
 - Cuối danh sách: nút `ghost justify-start` icon `Plus mr-2 h-4 w-4` + **"Enter a different amount"** → đổi thành `Input type="number" placeholder="USDC amount"` autofocus + nút **Add**. Nhập sai → toast "Enter a valid amount"
 - Chọn mức tiền là sang bước `scan` ngay, không có nút Next
 
-**Bước 2 · `scan`** — Title `Scan QR to send {amount} USDC`
+**Bước 2 · `scan`** – Title `Scan QR to send {amount} USDC`
 
 - Khung camera `<div id="taptip-qr-region" className="w-full aspect-square bg-black rounded-xl overflow-hidden">`
 - `globals.css` ép `#taptip-qr-region video { width: 100% !important; height: 100% !important; object-fit: cover }` để không bị letterbox, và ẩn ảnh/thông báo mặc định của thư viện
@@ -315,15 +315,15 @@ Một `Dialog className="sm:max-w-md flex flex-col h-[600px] max-h-[80vh]"`, 4 b
 - Nút `variant="outline" w-2/3 mx-auto` icon `ImageIcon mr-2 h-4 w-4` + **"Upload photo from gallery"**
 - Hàng cuối `flex gap-2`: ← `outline flex-1 rounded-full` (icon `ArrowLeft h-4 w-4`) → về bước `amount`; **"Done"** `flex-[2] rounded-full` → đóng dialog
 
-**Bước 3 · `sending`** — không có Title
+**Bước 3 · `sending`** – không có Title
 
 `flex-1 flex flex-col items-center justify-center gap-4`:
 - `Loader2 h-10 w-10 animate-spin text-primary`
 - `<p>Processing transaction...</p>`
 
-`onInteractOutside` và `onEscapeKeyDown` đều `preventDefault()` ở bước này — không đóng được.
+`onInteractOutside` và `onEscapeKeyDown` đều `preventDefault()` ở bước này – không đóng được.
 
-**Bước 4 · `success`** — không có Title
+**Bước 4 · `success`** – không có Title
 
 `flex-1 flex flex-col items-center justify-center gap-4`:
 - `CheckCircle2 h-16 w-16 text-green-500`
@@ -331,7 +331,7 @@ Một `Dialog className="sm:max-w-md flex flex-col h-[600px] max-h-[80vh]"`, 4 b
 
 Tự quay lại bước `scan` sau **2000ms**, dialog không đóng. Gửi thất bại → toast "Send failed, try again" + về `scan`.
 
-### 6.10 Lịch sử tip — `components/transactions.tsx`
+### 6.10 Lịch sử tip – `components/transactions.tsx`
 
 Hiển thị trong popup `history`.
 
@@ -350,18 +350,18 @@ Hiển thị trong popup `history`.
   - **Số tiền:** nhận `+` `text-green-600`, gửi `-` `text-red-600`, 2 chữ số thập phân, không kèm đơn vị
   - **Trạng thái:** Complete / Pending / Failed. Arc đi thẳng PENDING → COMPLETE, không có CONFIRMED
 
-### 6.11 Chi tiết giao dịch — `app/dashboard/transaction/[id]/page.tsx`
+### 6.11 Chi tiết giao dịch – `app/dashboard/transaction/[id]/page.tsx`
 
 Route riêng, không phải popup. Container `flex flex-col p-4 max-w-full overflow-y-auto h-full`.
 
 - **Header dính** `sticky top-0 bg-background z-10 pb-2 mb-4 flex items-center`: nút `ghost size="icon" mr-2` icon **`X h-4 w-4`** → `/dashboard`, rồi `<h2 className="text-lg font-bold">Transaction Details</h2>`
 - **Thẻ tóm tắt** `bg-muted/30 rounded-xl p-3 mb-4`:
   - Hàng 1 `flex justify-between items-center mb-3`: `Badge` trạng thái `rounded-none px-2 py-1` + `<span className="text-xs text-muted-foreground">` loại GD ("Tip received" / "Tip sent")
-  - Hàng 2: nhãn `text-xs text-muted-foreground` / giá trị `text-sm` — **Amount** (`{n} USDC`) và **Network** ("Arc Testnet")
+  - Hàng 2: nhãn `text-xs text-muted-foreground` / giá trị `text-sm` – **Amount** (`{n} USDC`) và **Network** ("Arc Testnet")
   - Hàng 3 `flex justify-between text-xs`: cột trái **Created:** + ngày + giờ, cột phải căn phải **Last updated:** + ngày + giờ
 - **Hai khối gập** `<details className="group rounded-xl border p-2">`, summary `flex cursor-pointer list-none items-center justify-between font-medium` với `<span className="text-sm font-medium">` + `ChevronDown h-4 w-4 transition-transform group-open:rotate-180`:
-  - **"Transaction IDs"** — Transaction ID, Transaction Hash
-  - **"Addresses"** — From, To, Wallet ID, Wallet Address, Token Address
+  - **"Transaction IDs"** – Transaction ID, Transaction Hash
+  - **"Addresses"** – From, To, Wallet ID, Wallet Address, Token Address
   - Nhãn `text-xs text-muted-foreground`, giá trị `text-xs break-all mt-1`
 - Cuối: nút `variant="outline" w-full py-2 text-sm` **"View on ArcScan"** → `https://testnet.arcscan.app/tx/{txHash}`
 - **Đang tải:** 7 khối `Skeleton` xếp dọc (`h-12 w-3/4`, rồi 3 cặp `h-8 w-1/2` + `h-6 w-full`)
@@ -390,7 +390,7 @@ Route riêng, không phải popup. Container `flex flex-col p-4 max-w-full overf
 
 Toàn bộ UI **tiếng Anh**. `<html lang="en">`, ngày giờ theo locale `en-US` (`MM/DD/YYYY`, `hh:mm`).
 
-Giọng văn: câu ngắn, chủ động, không thuật ngữ blockchain ở luồng chính — dùng "tip", "balance", "wallet address"; không có "gas", "chain", "signature".
+Giọng văn: câu ngắn, chủ động, không thuật ngữ blockchain ở luồng chính – dùng "tip", "balance", "wallet address"; không có "gas", "chain", "signature".
 
 Số tiền hiển thị thẳng bằng USDC, chưa có quy đổi VNĐ.
 

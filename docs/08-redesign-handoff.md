@@ -1,8 +1,8 @@
-# TapTip — Bàn giao đợt thiết kế lại giao diện
+# TapTip – Bàn giao đợt thiết kế lại giao diện
 
 Áp `design_handoff_taptip/` (README + `TapTip Design Recreation.dc.html`) vào code thật trong `example/app/`, kèm 4 điều chỉnh do chủ dự án chốt trực tiếp (mục 2).
 
-**Trạng thái:** `npx tsc --noEmit` sạch · `npm run build` thành công (24 route) · **đã chạy dev server và đo lưới thật bằng Chrome headless** — xem mục 7.
+**Trạng thái:** `npx tsc --noEmit` sạch · `npm run build` thành công (24 route) · **đã chạy dev server và đo lưới thật bằng Chrome headless** – xem mục 7.
 
 ---
 
@@ -24,13 +24,13 @@
 | Nền ngoài khung | `--page-backdrop` | `#e5e3e1` |
 | Lớp tối sau modal | `--scrim` | `rgba(0,0,0,.55)` |
 
-**Chữ:** Nunito 400/700/800 cho mọi thứ; **Comfortaa 400/700 chỉ cho con số** (số dư, số tiền, ngày, giờ, chữ số OTP) — class `font-num`. Comfortaa hết nấc ở 700, không có 800.
+**Chữ:** Nunito 400/700/800 cho mọi thứ; **Comfortaa 400/700 chỉ cho con số** (số dư, số tiền, ngày, giờ, chữ số OTP) – class `font-num`. Comfortaa hết nấc ở 700, không có 800.
 
-**Bo góc:** chỉ 2 mức — `rounded-xl` = 12px (thẻ, modal, ô nhập, khối) và `rounded-full` (nút, chip). `rounded-md`/`rounded-lg` đều được map về 12px để primitive shadcn tự rơi vào đúng mức, không phải sửa từng call-site.
+**Bo góc:** chỉ 2 mức – `rounded-xl` = 12px (thẻ, modal, ô nhập, khối) và `rounded-full` (nút, chip). `rounded-md`/`rounded-lg` đều được map về 12px để primitive shadcn tự rơi vào đúng mức, không phải sửa từng call-site.
 
-**Đổ bóng:** 4 token — `shadow-btn` (nút/thẻ nổi), `shadow-modal`, `shadow-popover` (toast xử lý/thành công), `shadow-field` (lõm vào trong, cho ô nhập).
+**Đổ bóng:** 4 token – `shadow-btn` (nút/thẻ nổi), `shadow-modal`, `shadow-popover` (toast xử lý/thành công), `shadow-field` (lõm vào trong, cho ô nhập).
 
-**Modal:** lớp phủ 2 tầng — màng trắng 50% rồi đen 55% chồng lên.
+**Modal:** lớp phủ 2 tầng – màng trắng 50% rồi đen 55% chồng lên.
 
 Tất cả nằm ở [app/globals.css](../app/globals.css), có ghi 6 quy định dùng chung ngay đầu file.
 
@@ -50,11 +50,11 @@ Bản handoff để khối nội dung căn giữa vùng 1→6. Nay:
 9.0 → 10.0   hàng phụ (Skip / lỗi) flex "1 1 0"
 ```
 
-Cả hai khối đều `justify-start` để bắt đầu **đúng** tại vạch, không căn giữa. Định nghĩa **một chỗ duy nhất** ở [components/screen.tsx](../app/components/screen.tsx) — 6 màn dùng chung, sửa lưới chỉ sửa file đó.
+Cả hai khối đều `justify-start` để bắt đầu **đúng** tại vạch, không căn giữa. Định nghĩa **một chỗ duy nhất** ở [components/screen.tsx](../app/components/screen.tsx) – 6 màn dùng chung, sửa lưới chỉ sửa file đó.
 
 ### 2.2 Màn OTP: email là tiêu đề, không phải chữ phụ
 
-`Enter the code sent to` xuống dòng rồi `alice@gmail.com` — **cùng cỡ tiêu đề (28px/800)**, chỉ khác màu xanh `--accent` cho dễ đọc. Bản handoff để email là dòng phụ 21px/700.
+`Enter the code sent to` xuống dòng rồi `alice@gmail.com` – **cùng cỡ tiêu đề (28px/800)**, chỉ khác màu xanh `--accent` cho dễ đọc. Bản handoff để email là dòng phụ 21px/700.
 
 ### 2.3 Icon menu ở Home: góc trái-dưới, vạch 9.5
 
@@ -62,7 +62,7 @@ Hàng 9→10 đổi từ `justify-center` (kèm `margin-left:-40px` hack) sang `
 
 ### 2.4 Icon lấy từ `D:\Files\Claude\icon-storage`
 
-Toàn bộ icon inline hoá vào [components/icons.tsx](../app/components/icons.tsx) — 16 icon, viewBox 100×100, `stroke-width:10`, `currentColor`. Bộ này khớp đúng SVG trong prototype nên không lệch nét vẽ.
+Toàn bộ icon inline hoá vào [components/icons.tsx](../app/components/icons.tsx) – 16 icon, viewBox 100×100, `stroke-width:10`, `currentColor`. Bộ này khớp đúng SVG trong prototype nên không lệch nét vẽ.
 
 | Dùng ở | File nguồn |
 |---|---|
@@ -86,7 +86,7 @@ Toàn bộ icon inline hoá vào [components/icons.tsx](../app/components/icons.
 
 ---
 
-## 3. Đơn vị chữ — điểm kỹ thuật quan trọng
+## 3. Đơn vị chữ – điểm kỹ thuật quan trọng
 
 Code cũ dùng `vh`. Sai khi cửa sổ trình duyệt cao hơn 932px: khung bị cap ở 932 nhưng `vh` vẫn tăng → chữ phình to hơn lưới.
 
@@ -100,18 +100,18 @@ Nay khung điện thoại có class `.tt-frame` đặt `container-type: size`, v
 | `text-small` | `1.5cqh` | 14px |
 | `text-figure` | `4.94cqh` | 46px (số dư) |
 
-**Luật:** màn toàn khung dùng thang `cqh` ở trên; **trong modal dùng px cố định** như bản thiết kế — modal là thẻ tự co theo nội dung, không nằm trong lưới 10 hàng.
+**Luật:** màn toàn khung dùng thang `cqh` ở trên; **trong modal dùng px cố định** như bản thiết kế – modal là thẻ tự co theo nội dung, không nằm trong lưới 10 hàng.
 
 ---
 
 ## 4. File đã đụng
 
 **Mới:**
-- `components/icons.tsx` — bộ icon
-- `components/screen.tsx` — lưới 10 hàng + `PrimaryButton` / `IconButton` / `SingleAction` / `BackAction` / `TextLink` / `Field`
-- `components/ui/status-pill.tsx` — `StatusPill` + `DirectionBadge`
-- `components/transaction-detail.tsx` — thẻ chi tiết GD, dùng chung cho modal và trang riêng
-- `public/logo-full.svg` — chữ ký TapTip cho màn splash
+- `components/icons.tsx` – bộ icon
+- `components/screen.tsx` – lưới 10 hàng + `PrimaryButton` / `IconButton` / `SingleAction` / `BackAction` / `TextLink` / `Field`
+- `components/ui/status-pill.tsx` – `StatusPill` + `DirectionBadge`
+- `components/transaction-detail.tsx` – thẻ chi tiết GD, dùng chung cho modal và trang riêng
+- `public/logo-full.svg` – chữ ký TapTip cho màn splash
 
 **Viết lại:** `app/globals.css` · `app/layout.tsx` · `app/page.tsx` · `sign-in` · `code-confirmation` · `onboarding` · `passkey-setup.tsx` · `home-screen.tsx` · `send-flow.tsx` · `transactions.tsx` · `transaction/[id]/page.tsx` · `ui/button.tsx` · `ui/input.tsx` · `ui/input-otp.tsx` · `ui/dialog.tsx` · `ui/sonner.tsx` · `transactions-tab.tsx`
 
@@ -121,28 +121,28 @@ Nay khung điện thoại có class `.tt-frame` đặt `container-type: size`, v
 
 ## 5. Thay đổi về hành vi / cấu trúc
 
-- **Chi tiết giao dịch giờ là modal** nổi trên Lịch sử tip, đúng bản thiết kế. Không cần gọi API riêng — dữ liệu đã có sẵn trong dòng danh sách. Route `/dashboard/transaction/[id]` vẫn còn cho link trực tiếp, và **dùng chung** component `TransactionDetail` nên hai chỗ không thể lệch nhau.
+- **Chi tiết giao dịch giờ là modal** nổi trên Lịch sử tip, đúng bản thiết kế. Không cần gọi API riêng – dữ liệu đã có sẵn trong dòng danh sách. Route `/dashboard/transaction/[id]` vẫn còn cho link trực tiếp, và **dùng chung** component `TransactionDetail` nên hai chỗ không thể lệch nhau.
 - **Bỏ dark mode.** Đã xoá `ThemeProvider` và block `.dark` (vốn còn nguyên bảng xanh dương của sample app và không bật được). `sonner` đặt cứng `theme="light"`.
-- **Bỏ sạch `alert()`** ở màn đăng nhập và OTP — lỗi giờ hiện inline ở hàng 9-10, thống nhất với các màn khác.
-- **Padding cạnh gom về một mức.** Xoá `mt-[66px]` ở layout auth (pixel cứng, làm "10 hàng" của màn auth lệch thang đo so với Home). Giờ layout **chỉ đặt `px-5`**, không màn nào có padding dọc — lưới 10 hàng của mọi màn đều neo đúng đỉnh 0 / đáy 10 của khung (xem mục 7.2).
-- **Sửa lỗi hook có sẵn** ở `code-confirmation`: `useState` nằm sau một `return` có điều kiện — vi phạm Rules of Hooks, sẽ crash khi `email` rỗng rồi có. Đã đưa hook lên trước.
+- **Bỏ sạch `alert()`** ở màn đăng nhập và OTP – lỗi giờ hiện inline ở hàng 9-10, thống nhất với các màn khác.
+- **Padding cạnh gom về một mức.** Xoá `mt-[66px]` ở layout auth (pixel cứng, làm "10 hàng" của màn auth lệch thang đo so với Home). Giờ layout **chỉ đặt `px-5`**, không màn nào có padding dọc – lưới 10 hàng của mọi màn đều neo đúng đỉnh 0 / đáy 10 của khung (xem mục 7.2).
+- **Sửa lỗi hook có sẵn** ở `code-confirmation`: `useState` nằm sau một `return` có điều kiện – vi phạm Rules of Hooks, sẽ crash khi `email` rỗng rồi có. Đã đưa hook lên trước.
 - Modal Lịch sử tip **bỏ header "Activity" + nút logout** (không có trong bản thiết kế, và trông sai khi nằm trong modal).
 
 ---
 
-## 6. Ba chỗ chệch bản thiết kế — cần chốt
+## 6. Ba chỗ chệch bản thiết kế – cần chốt
 
-1. **Nút "Sign out"** — bản thiết kế không có chỗ nào đăng xuất, mà đây là lối ra duy nhất của app. Đang để tạm làm link chữ xám dưới "Close" trong menu. Cần designer chốt chỗ chính thức.
-2. **"Skip for now" ở màn Passkey** — có trong bản thiết kế, đã làm, trỏ về `/dashboard`. Nhưng `dashboard/page.tsx` thấy chưa có ví sẽ đá ngược lại `/dashboard/setup-wallet` → bấm Skip hiện tại **sẽ quay vòng**. Muốn Skip chạy thật thì phải sửa logic điều hướng ví, không phải việc của giao diện.
-3. **Cỡ tiêu đề màn Passkey** — bản thiết kế ghi 24px trong khi 5 màn kia 28px. Đã thống nhất về 28px cho cả 6 màn. Muốn giữ 24px thì báo.
+1. **Nút "Sign out"** – bản thiết kế không có chỗ nào đăng xuất, mà đây là lối ra duy nhất của app. Đang để tạm làm link chữ xám dưới "Close" trong menu. Cần designer chốt chỗ chính thức.
+2. **"Skip for now" ở màn Passkey** – có trong bản thiết kế, đã làm, trỏ về `/dashboard`. Nhưng `dashboard/page.tsx` thấy chưa có ví sẽ đá ngược lại `/dashboard/setup-wallet` → bấm Skip hiện tại **sẽ quay vòng**. Muốn Skip chạy thật thì phải sửa logic điều hướng ví, không phải việc của giao diện.
+3. **Cỡ tiêu đề màn Passkey** – bản thiết kế ghi 24px trong khi 5 màn kia 28px. Đã thống nhất về 28px cho cả 6 màn. Muốn giữ 24px thì báo.
 
 ---
 
 ## 7. Kết quả đo lưới thật
 
-Chạy `next dev` với env giả (Supabase/Circle placeholder — các màn onboarding và Home không cần gọi API thật), rồi dựng một route tạm `/preview` để đo `getBoundingClientRect()` từng khối, quy ra đơn vị hàng. Route tạm **đã xoá** sau khi đo xong.
+Chạy `next dev` với env giả (Supabase/Circle placeholder – các màn onboarding và Home không cần gọi API thật), rồi dựng một route tạm `/preview` để đo `getBoundingClientRect()` từng khối, quy ra đơn vị hàng. Route tạm **đã xoá** sau khi đo xong.
 
-**Khung `<Screen>` (6 màn onboarding) — khớp tuyệt đối:**
+**Khung `<Screen>` (6 màn onboarding) – khớp tuyệt đối:**
 
 ```
 [0] 0.00 -> 1.00   đệm trên
@@ -153,7 +153,7 @@ Chạy `next dev` với env giả (Supabase/Circle placeholder — các màn onb
 h1 font-size = 25.11px  (= 3cqh của khung cao 837px; ra đúng 28px ở khung 932px)
 ```
 
-**Màn Home — khớp tuyệt đối, icon menu đúng vạch 9.5:**
+**Màn Home – khớp tuyệt đối, icon menu đúng vạch 9.5:**
 
 ```
 [0] 0.00 -> 1.00   số dư
@@ -169,7 +169,7 @@ MENU centerY = 9.50   left = 20px   size = 25px (= 3cqh)
 
 ### Ba lỗi thật tìm ra nhờ đo, đã sửa
 
-1. **Nút không hiện chữ.** `PrimaryButton` / `IconButton` / `TextLink` destructure `children` ra khỏi props rồi chỉ spread `{...props}` vào `<button />` — `children` bị rơi mất. Nút "Continue", "Skip", mũi tên Quay lại đều render thành ô rỗng. Đã trả `{children}` vào trong thẻ.
+1. **Nút không hiện chữ.** `PrimaryButton` / `IconButton` / `TextLink` destructure `children` ra khỏi props rồi chỉ spread `{...props}` vào `<button />` – `children` bị rơi mất. Nút "Continue", "Skip", mũi tên Quay lại đều render thành ô rỗng. Đã trả `{children}` vào trong thẻ.
 2. **Home lệch lưới, menu rơi về vạch 9.32.** Container lưới có `pb-4` (theo prototype gốc). Padding ăn vào chiều cao → 10 hàng không còn chia trọn khung. Đã bỏ `pb-4`; đây là **chệch có chủ ý so với prototype** để lưới neo đúng đỉnh 0 / đáy 10 theo yêu cầu.
 3. **Toaster nằm trong container căn giữa.** `sonner` render một `<section>` tham gia layout; để nó làm con của flex căn giữa thì nó ăn mất một phần bề ngang. Đã tách ra ngoài, khung điện thoại được bọc trong div căn giữa riêng.
 
@@ -181,14 +181,14 @@ MENU centerY = 9.50   left = 20px   size = 25px (= 3cqh)
 
 ## 8. Chưa kiểm tra được với dữ liệu thật
 
-Các màn còn lại (Lịch sử tip, chi tiết giao dịch, luồng gửi sau khi quét) cần dữ liệu ví thật. Máy này **không có `.env.local`** — file bị gitignore, không theo repo về. Quét cả cây `build_on_arc` không thấy. Thư mục recovery Circle entity-secret `C:\tmp\taptip-entity-secret-recovery2` cũng đã bị dọn mất.
+Các màn còn lại (Lịch sử tip, chi tiết giao dịch, luồng gửi sau khi quét) cần dữ liệu ví thật. Máy này **không có `.env.local`** – file bị gitignore, không theo repo về. Quét cả cây `build_on_arc` không thấy. Thư mục recovery Circle entity-secret `C:\tmp\taptip-entity-secret-recovery2` cũng đã bị dọn mất.
 
 Nên chỉ verify được tới mức: typecheck sạch, build production thành công, và CSS build ra có đủ token (`#fc0`, `#0b53bf`, `container:screen/size`, `3cqh`, `4.94cqh`, `shadow-btn`, `font-num`, `tt-caret`).
 
 **Muốn xem thật cần:**
-1. `NEXT_PUBLIC_SUPABASE_URL` + `NEXT_PUBLIC_SUPABASE_ANON_KEY` — lấy lại từ Supabase dashboard
-2. `CIRCLE_API_KEY`, `NEXT_PUBLIC_CIRCLE_CLIENT_KEY` — lấy lại từ Circle console
-3. `CIRCLE_ENTITY_SECRET` — mất recovery file thì phải đăng ký entity secret mới bên Circle
+1. `NEXT_PUBLIC_SUPABASE_URL` + `NEXT_PUBLIC_SUPABASE_ANON_KEY` – lấy lại từ Supabase dashboard
+2. `CIRCLE_API_KEY`, `NEXT_PUBLIC_CIRCLE_CLIENT_KEY` – lấy lại từ Circle console
+3. `CIRCLE_ENTITY_SECRET` – mất recovery file thì phải đăng ký entity secret mới bên Circle
 
 Có `.env.local` rồi thì `npm run dev`, sau đó chụp từng màn:
 
@@ -207,11 +207,11 @@ Chụp ở đúng 430×932 để `cqh` khớp 1:1 với bản thiết kế gốc
 Ba luật lưới **giữ nguyên**, đã ghi đầy đủ trong docblock đầu [components/screen.tsx](../app/components/screen.tsx):
 
 1. Neo theo tỷ lệ, không hardcode pixel cho chiều dọc.
-2. Chia hàng bằng `style={{ flex: "N 1 0" }}`, **không** dùng class `flex-[N]` — Tailwind v4 trong repo này không build class đó ra CSS. Số `0` cuối bắt buộc.
-3. Không đặt `padding` trên phần tử hàng — cho con cao theo `%` thay vì.
+2. Chia hàng bằng `style={{ flex: "N 1 0" }}`, **không** dùng class `flex-[N]` – Tailwind v4 trong repo này không build class đó ra CSS. Số `0` cuối bắt buộc.
+3. Không đặt `padding` trên phần tử hàng – cho con cao theo `%` thay vì.
 
 Hàng nhiều nút cần `minWidth: 0` trên cả hàng lẫn từng nút.
 
-Ngoài ra: đừng viết màu trực tiếp trong component (`text-green-600`, `#fff`…) — thêm token vào `globals.css` trước rồi mới dùng.
+Ngoài ra: đừng viết màu trực tiếp trong component (`text-green-600`, `#fff`…) – thêm token vào `globals.css` trước rồi mới dùng.
 
 > Tài liệu [08-design-spec-hien-trang.md](08-design-spec-hien-trang.md) mô tả giao diện **trước** đợt này, giờ đã lỗi thời.
