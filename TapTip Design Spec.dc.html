@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="_ds/modernist-956656e8-e0c7-46c5-a75d-411d91396fbb/styles.css">
+  <script src="_ds/modernist-956656e8-e0c7-46c5-a75d-411d91396fbb/_ds_bundle.js"></script>
+  <script src="./doc-page.js"></script>
+  <style>doc-page:not(:defined){visibility:hidden}
+    body{font-family:var(--font-body)}
+    table{width:100%;border-collapse:collapse;font-size:13px;margin:0 0 16px}
+    th{text-align:left;font-size:11px;letter-spacing:0.06em;text-transform:uppercase;color:color-mix(in srgb, var(--color-text) 60%, transparent);padding:8px 10px;border-bottom:2px solid var(--color-divider)}
+    td{padding:8px 10px;border-bottom:1px solid var(--color-divider);vertical-align:top}
+    code{background:var(--color-neutral-100);padding:2px 6px;border-radius:4px;font-size:12px}
+    .tok{display:inline-flex;align-items:center;gap:8px;margin:4px 16px 4px 0}
+    .sw{width:18px;height:18px;border:1px solid var(--color-divider);flex:none}
+    .note{border-left:3px solid var(--color-accent);padding:4px 0 4px 14px;margin:12px 0;font-size:13px;color:color-mix(in srgb, var(--color-text) 70%, transparent)}
+  </style>
+</helmet>
+<doc-page margin="0.85in">
+
+  <h6 style="color:var(--color-accent)">TapTip · Giai đoạn 2</h6>
+  <h1>Spec bàn giao thiết kế</h1>
+  <p style="font-size:14px;color:color-mix(in srgb, var(--color-text) 65%, transparent)">Ngày: 09/08/2026 · Repo: <code>KattyFury/build-on-arc</code> (<code>example/app</code>) · Prototype tương tác: <code>TapTip Home.dc.html</code></p>
+  <div class="hr"></div>
+
+  <h2>1. Hệ lưới — bắt buộc</h2>
+  <p>Chia chiều dọc màn hình thành <strong>10 hàng bằng nhau</strong> (mỗi hàng = 10% chiều cao). Ba luật kỹ thuật dưới đây đã gây lệch layout trong bản cũ — giữ đúng khi code lại:</p>
+  <ol>
+    <li><strong>Neo theo tỷ lệ</strong> — dùng <code>%</code>, <code>vh</code>, <code>vw</code>, <code>flex</code>. Không hardcode pixel. Chữ/icon cũng theo <code>vh</code>.</li>
+    <li><strong>Chia hàng dùng <code>style=&#123;&#123; flex: "N 1 0" &#125;&#125;</code></strong> — không dùng class Tailwind <code>flex-[N]</code> (không build được trong Tailwind v4 của repo này). Số <code>0</code> cuối (flexBasis) bắt buộc, nếu không hàng có nội dung to (QR) sẽ tự chiếm nhiều hơn phần của nó.</li>
+    <li><strong>Không đặt <code>padding</code> trên phần tử hàng</strong> — muốn khoảng thở thì cho phần tử con cao theo <code>%</code> (ví dụ nút <code>h-[80%]</code>, hàng <code>items-center</code>).</li>
+  </ol>
+
+  <h2>2. Design tokens</h2>
+  <p><strong>Màu</strong> (Modernist):
+    <span class="tok"><span class="sw" style="background:#f3f2f2"></span><code>--color-bg #f3f2f2</code></span>
+    <span class="tok"><span class="sw" style="background:#201e1d"></span><code>--color-text #201e1d</code></span>
+    <span class="tok"><span class="sw" style="background:#ec3013"></span><code>--color-accent #ec3013</code></span>
+    <span class="tok"><span class="sw" style="background:#eae9e9"></span><code>--color-surface #eae9e9</code></span>
+  </p>
+  <p><strong>Font:</strong> Archivo cho cả heading và body (<code>--font-heading</code> weight 800, <code>--font-body</code> 400).</p>
+  <p><strong>Bo góc</strong> — ngoại lệ có chủ đích so với Modernist gốc (radius 0 mặc định):</p>
+  <ul>
+    <li>QR code, popup/bottom-sheet, thẻ minh hoạ: <code>12px</code></li>
+    <li>Nút hành động chính (Tiếp tục, Tip, Gửi mã OTP…): pill <code>999px</code> — theo đúng code gốc <code>rounded-full</code>, giữ mục tiêu chạm dễ cho người 60 tuổi</li>
+    <li>Mọi thứ khác (rule, chip trạng thái, ô OTP, input) — theo token Modernist bình thường</li>
+  </ul>
+  <div class="note">Quyết định của bạn: bo góc theo brief dù trái mặc định "0 bo góc" của Modernist. Nếu muốn xiết lại vuông vức hơn ở phần nào, báo tôi.</div>
+
+  <h2>3. Đặc điểm chung mọi popup</h2>
+  <p>Nền mờ phía sau (<code>color-mix(in srgb, var(--color-neutral-900) 55%, transparent)</code>), bo góc 12px, chạm ngoài để đóng — <strong>trừ</strong> popup "Đang xử lý giao dịch".</p>
+
+  <div class="hr"></div>
+  <h2>4. Từng màn</h2>
+
+  <h3>Nhóm 1 — Đăng nhập &amp; khởi tạo</h3>
+  <p>Nguyên tắc chung: nội dung chính căn giữa vùng hàng 1–6, nút hành động ở hàng 9.</p>
+  <table>
+    <thead><tr><th>Màn</th><th>Nội dung</th><th>Hành động</th><th>File repo</th></tr></thead>
+    <tbody>
+      <tr><td>Splash</td><td>Logo TapTip căn giữa hàng 1–6</td><td>Tự chuyển màn sau ~1.6s → Add to Home</td><td>chưa có file — cần tạo mới</td></tr>
+      <tr><td>Add to Home Screen</td><td>Ảnh minh hoạ Safari + hướng dẫn Share → Add to Homescreen → OK</td><td>Nút "Tiếp tục" full-width hàng 9</td><td>chưa có file — cần tạo mới</td></tr>
+      <tr><td>Đăng nhập — email</td><td>Tiêu đề "Nhập email để bắt đầu" + ô nhập email</td><td>Hàng 9: "Gửi mã OTP" full-width</td><td><code>app/(auth-pages)/sign-in/page.tsx</code></td></tr>
+      <tr><td>Nhập mã OTP</td><td>"Nhập mã đã gửi tới" + email + 6 ô mã (tự nhảy ô kế khi gõ)</td><td>Hàng 9: "Quay lại" (1/3) + "Tiếp tục" (2/3)</td><td><code>app/(auth-pages)/code-confirmation/page.tsx</code></td></tr>
+      <tr><td>Tạo hồ sơ</td><td>"Tạo hồ sơ của bạn" + ô nhập tên</td><td>Hàng 9: "Tiếp tục" full-width</td><td><code>app/(auth-pages)/onboarding/page.tsx</code> — ❌ còn style + tiếng Anh sample app, cần làm lại toàn bộ</td></tr>
+      <tr><td>Thiết lập Passkey</td><td>Icon khuôn mặt + "Thiết lập Passkey" + mô tả Face ID/vân tay. Không có nút bỏ qua.</td><td>Hàng 9: "Bật passkey" full-width → Home</td><td><code>components/passkey-setup.tsx</code></td></tr>
+    </tbody>
+  </table>
+
+  <h3>Nhóm 2 — Home ✅ đã khớp lưới, giữ nguyên tỷ lệ</h3>
+  <table>
+    <thead><tr><th>Thành phần</th><th>Vị trí (đơn vị hàng)</th></tr></thead>
+    <tbody>
+      <tr><td>Số dư: "Số dư: 40.00 USDC"</td><td>0.00 → 1.00</td></tr>
+      <tr><td>QR code (vuông, nền trắng, bo góc 12px)</td><td>1.50 → 4.50</td></tr>
+      <tr><td>Chú thích ("Cho người khác quét để nhận tip…")</td><td>4.75 → 5.75</td></tr>
+      <tr><td>2 nút hành động (cao 80%, tâm 8.50)</td><td>8.00 → 9.00</td></tr>
+      <tr><td>Icon menu ☰ (góc trái)</td><td>9.00 → 10.00</td></tr>
+    </tbody>
+  </table>
+  <p>2 nút: <strong>"Ngẫu nhiên"</strong> (icon xúc xắc, 1/3 trái, <strong>disabled — giữ nguyên</strong>) + <strong>"Tip"</strong> (icon gửi, 2/3 phải). Không có bottom nav. Icon ☰ mở popup: Số dư / Nạp / Rút / Lịch sử tip / Thoát. File: <code>components/home-screen.tsx</code>.</p>
+
+  <h3>Nhóm 3 — Luồng gửi tiền (popup nhiều bước, trên <code>components/send-flow.tsx</code>)</h3>
+  <table>
+    <thead><tr><th>Bước</th><th>Nội dung</th></tr></thead>
+    <tbody>
+      <tr><td>1 — Chọn số tiền</td><td>Mỗi hàng 1 mức tiền tăng dần; mức &gt; số dư thì mờ/disabled; ✕ mỗi hàng cần xác nhận trước khi xoá; cuối danh sách "+ Nhập số khác"</td></tr>
+      <tr><td>2 — Quét QR</td><td>Khung camera vuông (không letterbox); ô quét viền góc = 70% cạnh ngắn, căn giữa; dưới khung: "Nhập ảnh từ kho ảnh"; hàng cuối: "Quay lại" (1/3) + "Hoàn tất" (2/3)</td></tr>
+      <tr><td>3 — Đang xử lý</td><td>Icon loading xoay + "Đang xử lý giao dịch..."</td></tr>
+      <tr><td>4 — Xong</td><td>Icon ✓ xanh + số tiền vừa trừ (VD "-1.00 USDC"); tự tắt sau 2s, quay lại màn quét để tip tiếp người khác</td></tr>
+    </tbody>
+  </table>
+
+  <h3>Nhóm 4 — Nạp / Rút / Lịch sử (trong popup menu)</h3>
+  <table>
+    <thead><tr><th>Màn</th><th>Nội dung</th><th>File</th></tr></thead>
+    <tbody>
+      <tr><td>Nạp (testnet)</td><td>Tự copy địa chỉ ví, hiện địa chỉ; hướng dẫn 3 bước (Mở Circle Faucet → Dán địa chỉ → Bấm Request); nút "Mở trang Circle Faucet" + "Quay lại"</td><td>trong <code>home-screen.tsx</code></td></tr>
+      <tr><td>Rút</td><td>"Tính năng chưa khả dụng — rút chỉ mở ở mainnet" + nút "Đã hiểu"</td><td>trong <code>home-screen.tsx</code></td></tr>
+      <tr><td>Lịch sử tip</td><td>Nhóm theo ngày (dd/mm/yyyy); mỗi dòng: "Tip: &lt;tên&gt;" hoặc mã giao dịch rút gọn + giờ + trạng thái; số tiền đỏ khi gửi, xanh khi nhận; cuộn xem thêm</td><td><code>components/transactions.tsx</code> — ❌ còn style + tiếng Anh sample app, cần làm lại</td></tr>
+    </tbody>
+  </table>
+
+  <div class="hr"></div>
+  <h2>5. Lưu ý nội dung (không phải thẩm mỹ)</h2>
+  <ul>
+    <li>Toàn bộ chữ hiển thị phải là tiếng Việt — vài màn còn sót tiếng Anh từ sample app (Tạo hồ sơ, Lịch sử giao dịch, Chi tiết giao dịch).</li>
+    <li>Nút "Ngẫu nhiên" giữ nguyên trạng thái tắt — logic làm sau.</li>
+    <li>Số tiền hiển thị thẳng bằng USDC. Quy đổi VNĐ chưa làm (cần tỷ giá thật, không hardcode).</li>
+    <li>Ranh giới sản phẩm: không hoàn tiền/huỷ giao dịch, không hỗ trợ token khác ngoài USDC, không chat/lời nhắn kèm, không giới hạn số tiền mỗi lần gửi.</li>
+  </ul>
+
+  <h2>6. Tham chiếu</h2>
+  <p>Xem toàn bộ luồng tương tác được ở file <code>TapTip Home.dc.html</code> trong project này — đã dựng đủ 11 màn/bước theo đúng bảng trên, dùng làm tài liệu tham chiếu pixel khi code lại từng file trong repo.</p>
+
+</doc-page>
+
+</x-dc>
+</body>
+</html>

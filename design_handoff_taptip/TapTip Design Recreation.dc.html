@@ -1,0 +1,444 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;700;800&family=Comfortaa:wght@400;700&family=Material+Symbols+Outlined&display=swap" rel="stylesheet">
+  <style>
+    *{box-sizing:border-box;}
+    body{margin:0;}
+    @keyframes tt-spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
+  </style>
+</helmet>
+<div style="--bg:#ffffff;--fg:#000000;--primary:#FFCC00;--primary-fg:#000000;--surface:#f5f5f5;--muted-fg:#0B53BF;--hint-fg:rgba(0,0,0,0.6);--border:rgba(0,0,0,0.14);--green:#16a34a;--red:#dc2626;--green-light-bg:#dcfce7;--green-light-fg:#166534;--yellow-light-bg:#fef9c3;--yellow-light-fg:#854d0e;--red-light-bg:#fee2e2;--red-light-fg:#991b1b;font-family:'Nunito',sans-serif;background:#e5e3e1;color:var(--fg);min-height:100vh;padding:48px;">
+  <div style="max-width:1400px;margin:0 auto 40px;">
+    <div style="font-family:'Nunito',sans-serif;font-weight:800;font-size:28px;">TapTip — Design Recreation</div>
+    <div style="color:var(--muted-fg);font-size:15px;margin-top:6px;">Static screen gallery recreated from the design spec. Tap the label of each screen in the editor to change copy directly.</div>
+  </div>
+  <div style="display:flex;flex-wrap:wrap;gap:44px;max-width:1400px;margin:0 auto;">
+
+    <!-- SPLASH -->
+    <div style="display:flex;flex-direction:column;align-items:center;gap:12px;">
+      <div style="font-weight:800;font-size:13px;letter-spacing:.03em;text-transform:uppercase;">Splash</div>
+      <div style="width:300px;height:650px;overflow:hidden;border-radius:4px;">
+        <div style="width:430px;height:932px;transform:scale(0.6977);transform-origin:top left;background:var(--bg);box-shadow:0 20px 40px rgba(0,0,0,.15);display:flex;flex-direction:column;overflow:hidden;position:relative;"><div style="position:absolute;inset:0;background-image:repeating-linear-gradient(to bottom,#ff0000 0,#ff0000 3px,transparent 3px,transparent 10%);pointer-events:none;z-index:50;"></div>
+          <div style="flex:1 1 0;"></div>
+          <div style="flex:5 1 0;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:0 20px;">
+            <img src="assets/logo-full.svg" alt="TapTip" style="width:260px;height:auto;"/>
+          </div>
+          <div style="flex:4 1 0;"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ADD TO HOME -->
+    <div style="display:flex;flex-direction:column;align-items:center;gap:12px;">
+      <div style="font-weight:800;font-size:13px;letter-spacing:.03em;text-transform:uppercase;">Add to Home Screen</div>
+      <div style="width:300px;height:650px;overflow:hidden;border-radius:4px;">
+        <div style="width:430px;height:932px;transform:scale(0.6977);transform-origin:top left;background:var(--bg);box-shadow:0 20px 40px rgba(0,0,0,.15);display:flex;flex-direction:column;overflow:hidden;position:relative;padding:0 20px;"><div style="position:absolute;inset:0;background-image:repeating-linear-gradient(to bottom,#ff0000 0,#ff0000 3px,transparent 3px,transparent 10%);pointer-events:none;z-index:50;"></div>
+          <div style="flex:1 1 0;"></div>
+          <div style="flex:5 1 0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:20px;width:100%;max-width:320px;margin:0 auto;"><span style="display:inline-flex;width:56px;height:56px;color:#0B53BF;flex-shrink:0;"><svg width="100%" height="100%" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M90 10H10V90H90V10Z" stroke="currentColor" stroke-width="10" stroke-linejoin="round"></path><path d="M70 50L30.0098 49.9883" stroke="currentColor" stroke-width="10" stroke-linecap="round" stroke-linejoin="round"></path><path d="M50.0049 30L49.9951 70" stroke="currentColor" stroke-width="10" stroke-linecap="round" stroke-linejoin="round"></path></svg></span>
+            <div style="font-weight:800;font-size:28px;text-align:center;">Add TapTip to your Home Screen</div>
+            <div style="display:flex;flex-direction:column;gap:14px;width:100%;">
+              <div style="display:flex;align-items:center;gap:12px;"><span style="width:26px;height:26px;border-radius:999px;background:#0B53BF;color:#fff;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:800;">1</span><span style="font-size:17px;">Tap Option in Safari</span></div>
+              <div style="display:flex;align-items:center;gap:12px;"><span style="width:26px;height:26px;border-radius:999px;background:#0B53BF;color:#fff;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:800;">2</span><span style="font-size:17px;">Tap Share</span></div>
+              <div style="display:flex;align-items:center;gap:12px;"><span style="width:26px;height:26px;border-radius:999px;background:#0B53BF;color:#fff;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:800;">3</span><span style="font-size:17px;">Tap Add to Home Screen</span></div>
+              <div style="display:flex;align-items:center;gap:12px;"><span style="width:26px;height:26px;border-radius:999px;background:#0B53BF;color:#fff;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:800;">4</span><span style="font-size:17px;">Tap Add – you're done!</span></div>
+            </div>
+          </div>
+          <div style="flex:2 1 0;"></div>
+          <div style="flex:1 1 0;display:flex;align-items:center;">
+            <div style="width:66.6%;margin:0 auto;height:66.6%;border-radius:999px;background:var(--primary);color:var(--primary-fg);display:flex;align-items:center;justify-content:center;font-size:20px;font-weight:800;box-shadow:0 3px 8px rgba(0,0,0,0.2);">Continue</div>
+          </div>
+          <div style="flex:1 1 0;display:flex;align-items:center;justify-content:center;"><div style="color:#0B53BF;font-size:18px;font-weight:800;text-align:center;">Skip</div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SIGN IN -->
+    <div style="display:flex;flex-direction:column;align-items:center;gap:12px;">
+      <div style="font-weight:800;font-size:13px;letter-spacing:.03em;text-transform:uppercase;">Sign in</div>
+      <div style="width:300px;height:650px;overflow:hidden;border-radius:4px;">
+        <div style="width:430px;height:932px;transform:scale(0.6977);transform-origin:top left;background:var(--bg);box-shadow:0 20px 40px rgba(0,0,0,.15);display:flex;flex-direction:column;overflow:hidden;position:relative;padding:0 20px;"><div style="position:absolute;inset:0;background-image:repeating-linear-gradient(to bottom,#ff0000 0,#ff0000 3px,transparent 3px,transparent 10%);pointer-events:none;z-index:50;"></div>
+          <div style="flex:1 1 0;"></div>
+          <div style="flex:5 1 0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;width:100%;max-width:320px;margin:0 auto;"><span style="display:inline-flex;width:56px;height:56px;color:#0B53BF;flex-shrink:0;"><svg width="100%" height="100%" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M50.0015 90L90 90L90 10L50.0015 10M70 50L10 50M50.0015 70L70 50L50.0015 30" stroke="currentColor" stroke-width="10" stroke-linecap="round" stroke-linejoin="round"></path></svg></span>
+            <div style="font-weight:800;font-size:28px;text-align:center;">Enter your email to get started</div>
+            <input value="alice" readonly style="width:100%;height:40px;border-radius:12px;border:none;background:var(--surface);box-shadow:inset 0 2px 5px rgba(0,0,0,0.15);padding:0 12px;font-size:17px;text-align:center;font-family:'Nunito',sans-serif;color:var(--fg);"/>
+            <div style="display:flex;flex-wrap:wrap;gap:8px;justify-content:center;">
+              <div style="font-size:17px;padding:5px 14px;border:1px solid var(--border);border-radius:999px;color:var(--hint-fg);">alice@gmail.com</div>
+              <div style="font-size:17px;padding:5px 14px;border:1px solid var(--border);border-radius:999px;color:var(--hint-fg);">alice@icloud.com</div>
+            </div>
+          </div>
+          <div style="flex:2 1 0;"></div>
+          <div style="flex:1 1 0;display:flex;align-items:center;gap:8px;min-width:0;">
+            <div style="flex:1 1 0;min-width:0;height:66.6%;border-radius:999px;border:1px solid var(--border);display:flex;align-items:center;justify-content:center;box-shadow:0 3px 8px rgba(0,0,0,0.2);"><span style="display:inline-flex;width:18px;height:18px;color:#000000;vertical-align:middle;flex-shrink:0;"><svg width="100%" height="100%" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M30 50L10 70L30 90M10 70H50C60 70.1428 80 66.9235 80 40.5336C80 14.1437 50 10 50 10" stroke="currentColor" stroke-width="10" stroke-linecap="round" stroke-linejoin="round"></path></svg></span></div>
+            <div style="flex:2 1 0;min-width:0;height:66.6%;border-radius:999px;background:var(--primary);color:var(--primary-fg);display:flex;align-items:center;justify-content:center;font-size:20px;font-weight:800;box-shadow:0 3px 8px rgba(0,0,0,0.2);">Send OTP</div>
+          </div>
+          <div style="flex:1 1 0;"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- OTP -->
+    <div style="display:flex;flex-direction:column;align-items:center;gap:12px;">
+      <div style="font-weight:800;font-size:13px;letter-spacing:.03em;text-transform:uppercase;">Enter OTP</div>
+      <div style="width:300px;height:650px;overflow:hidden;border-radius:4px;">
+        <div style="width:430px;height:932px;transform:scale(0.6977);transform-origin:top left;background:var(--bg);box-shadow:0 20px 40px rgba(0,0,0,.15);display:flex;flex-direction:column;overflow:hidden;position:relative;padding:0 20px;"><div style="position:absolute;inset:0;background-image:repeating-linear-gradient(to bottom,#ff0000 0,#ff0000 3px,transparent 3px,transparent 10%);pointer-events:none;z-index:50;"></div>
+          <div style="flex:1 1 0;"></div>
+          <div style="flex:5 1 0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;width:100%;max-width:320px;margin:0 auto;"><span style="display:inline-flex;width:56px;height:56px;color:#0B53BF;flex-shrink:0;"><svg width="100%" height="100%" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M90 20H10V80H90V20ZM10 20L50 50L90 20" stroke="currentColor" stroke-width="10" stroke-linejoin="round"></path></svg></span>
+            <div style="font-weight:800;font-size:28px;text-align:center;">Enter the code sent to</div>
+            <div style="color:var(--muted-fg);text-align:center;font-size:21px;font-weight:700;">alice@gmail.com</div>
+            <div style="display:flex;align-items:center;gap:8px;">
+              <div style="width:40px;height:40px;border:none;background:var(--surface);box-shadow:inset 0 2px 5px rgba(0,0,0,0.15);border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:17px;font-family:'Comfortaa',sans-serif;">4</div>
+              <div style="width:40px;height:40px;border:none;background:var(--surface);box-shadow:inset 0 2px 5px rgba(0,0,0,0.15);border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:17px;font-family:'Comfortaa',sans-serif;">8</div>
+              <div style="width:40px;height:40px;border:none;background:var(--surface);box-shadow:inset 0 2px 5px rgba(0,0,0,0.15);border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:17px;font-family:'Comfortaa',sans-serif;">2</div>
+              <span style="color:var(--fg);font-size:20px;">•</span>
+              <div style="width:40px;height:40px;border:none;background:var(--surface);box-shadow:inset 0 2px 5px rgba(0,0,0,0.15);border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:17px;font-family:'Comfortaa',sans-serif;">9</div>
+              <div style="width:40px;height:40px;border:none;background:var(--surface);box-shadow:inset 0 2px 5px rgba(0,0,0,0.15);border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:17px;font-family:'Comfortaa',sans-serif;">1</div>
+              <div style="width:40px;height:40px;border:2px solid var(--primary);background:var(--surface);box-shadow:inset 0 2px 5px rgba(0,0,0,0.15);border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:17px;"><span style="width:1px;height:16px;background:var(--fg);"></span></div>
+            </div>
+          </div>
+          <div style="flex:2 1 0;"></div>
+          <div style="flex:1 1 0;display:flex;align-items:center;gap:8px;min-width:0;">
+            <div style="flex:1 1 0;min-width:0;height:66.6%;border-radius:999px;border:1px solid var(--border);display:flex;align-items:center;justify-content:center;box-shadow:0 3px 8px rgba(0,0,0,0.2);"><span style="display:inline-flex;width:18px;height:18px;color:#000000;vertical-align:middle;flex-shrink:0;"><svg width="100%" height="100%" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M30 50L10 70L30 90M10 70H50C60 70.1428 80 66.9235 80 40.5336C80 14.1437 50 10 50 10" stroke="currentColor" stroke-width="10" stroke-linecap="round" stroke-linejoin="round"></path></svg></span></div>
+            <div style="flex:2 1 0;min-width:0;height:66.6%;border-radius:999px;background:var(--primary);color:var(--primary-fg);display:flex;align-items:center;justify-content:center;font-size:20px;font-weight:800;box-shadow:0 3px 8px rgba(0,0,0,0.2);">Continue</div>
+          </div>
+          <div style="flex:1 1 0;display:flex;align-items:center;justify-content:center;"><div style="color:var(--red);font-size:15px;font-weight:800;text-align:center;">Invalid code, try again.</div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ONBOARDING -->
+    <div style="display:flex;flex-direction:column;align-items:center;gap:12px;">
+      <div style="font-weight:800;font-size:13px;letter-spacing:.03em;text-transform:uppercase;">Onboarding</div>
+      <div style="width:300px;height:650px;overflow:hidden;border-radius:4px;">
+        <div style="width:430px;height:932px;transform:scale(0.6977);transform-origin:top left;background:var(--bg);box-shadow:0 20px 40px rgba(0,0,0,.15);display:flex;flex-direction:column;overflow:hidden;position:relative;padding:0 20px;"><div style="position:absolute;inset:0;background-image:repeating-linear-gradient(to bottom,#ff0000 0,#ff0000 3px,transparent 3px,transparent 10%);pointer-events:none;z-index:50;"></div>
+          <div style="flex:1 1 0;"></div>
+          <div style="flex:5 1 0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;width:100%;max-width:320px;margin:0 auto;"><span style="display:inline-flex;width:56px;height:56px;color:#0B53BF;flex-shrink:0;"><svg width="100%" height="100%" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg"><rect x="10" y="10" width="80" height="80" stroke="currentColor" stroke-width="10" stroke-linejoin="round"></rect><circle cx="50" cy="40.3223" r="15" stroke="currentColor" stroke-width="10"></circle><path d="M20 90C23.2422 78 33.7813 60 50 60C66.2187 60 76.7578 78 80 90" stroke="currentColor" stroke-width="10" stroke-linecap="round" stroke-linejoin="round"></path></svg></span>
+            <div style="font-weight:800;font-size:28px;text-align:center;">Create your username</div>
+            <input value="Alice Nguyen" readonly style="width:100%;height:40px;border-radius:12px;border:none;background:var(--surface);box-shadow:inset 0 2px 5px rgba(0,0,0,0.15);padding:0 12px;font-size:17px;text-align:center;font-family:'Nunito',sans-serif;color:var(--fg);"/>
+          </div>
+          <div style="flex:2 1 0;"></div>
+          <div style="flex:1 1 0;display:flex;align-items:center;gap:8px;min-width:0;">
+            <div style="flex:1 1 0;min-width:0;height:66.6%;border-radius:999px;border:1px solid var(--border);display:flex;align-items:center;justify-content:center;box-shadow:0 3px 8px rgba(0,0,0,0.2);"><span style="display:inline-flex;width:18px;height:18px;color:#000000;vertical-align:middle;flex-shrink:0;"><svg width="100%" height="100%" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M30 50L10 70L30 90M10 70H50C60 70.1428 80 66.9235 80 40.5336C80 14.1437 50 10 50 10" stroke="currentColor" stroke-width="10" stroke-linecap="round" stroke-linejoin="round"></path></svg></span></div>
+            <div style="flex:2 1 0;min-width:0;height:66.6%;border-radius:999px;background:var(--primary);color:var(--primary-fg);display:flex;align-items:center;justify-content:center;font-size:20px;font-weight:800;box-shadow:0 3px 8px rgba(0,0,0,0.2);">Continue</div>
+          </div>
+          <div style="flex:1 1 0;"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- PASSKEY -->
+    <div style="display:flex;flex-direction:column;align-items:center;gap:12px;">
+      <div style="font-weight:800;font-size:13px;letter-spacing:.03em;text-transform:uppercase;">Passkey setup</div>
+      <div style="width:300px;height:650px;overflow:hidden;border-radius:4px;">
+        <div style="width:430px;height:932px;transform:scale(0.6977);transform-origin:top left;background:var(--bg);box-shadow:0 20px 40px rgba(0,0,0,.15);display:flex;flex-direction:column;overflow:hidden;position:relative;padding:0 20px;"><div style="position:absolute;inset:0;background-image:repeating-linear-gradient(to bottom,#ff0000 0,#ff0000 3px,transparent 3px,transparent 10%);pointer-events:none;z-index:50;"></div>
+          <div style="flex:1 1 0;"></div>
+          <div style="flex:1 1 0;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;gap:10px;"><span style="display:inline-flex;width:56px;height:56px;color:#0B53BF;flex-shrink:0;"><svg width="100%" height="100%" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M30 10H10V30" stroke="currentColor" stroke-width="10" stroke-linecap="round" stroke-linejoin="round"></path><path d="M90 30L90 10L70 10" stroke="currentColor" stroke-width="10" stroke-linecap="round" stroke-linejoin="round"></path><path d="M70 90L90 90L90 70" stroke="currentColor" stroke-width="10" stroke-linecap="round" stroke-linejoin="round"></path><path d="M10 70L10 90L30 90" stroke="currentColor" stroke-width="10" stroke-linecap="round" stroke-linejoin="round"></path><path d="M30 65C32.0139 68.3333 38.8333 75 50 75C61.1667 75 67.9861 68.3333 70 65" stroke="currentColor" stroke-width="10" stroke-linecap="round" stroke-linejoin="round"></path><path d="M35.0521 30V40" stroke="currentColor" stroke-width="10" stroke-linecap="round" stroke-linejoin="round"></path><path d="M50 45V55" stroke="currentColor" stroke-width="10" stroke-linecap="round" stroke-linejoin="round"></path><path d="M65.0098 30V40" stroke="currentColor" stroke-width="10" stroke-linecap="round" stroke-linejoin="round"></path></svg></span>
+            <div style="font-weight:800;font-size:24px;text-align:center;">Set up a passkey</div></div>
+          <div style="flex:4 1 0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;width:100%;max-width:320px;margin:0 auto;">
+          </div>
+          <div style="flex:2 1 0;"></div>
+          <div style="flex:1 1 0;display:flex;align-items:center;gap:8px;min-width:0;">
+            <div style="flex:1 1 0;min-width:0;height:66.6%;border-radius:999px;border:1px solid var(--border);display:flex;align-items:center;justify-content:center;box-shadow:0 3px 8px rgba(0,0,0,0.2);"><span style="display:inline-flex;width:18px;height:18px;color:#000000;vertical-align:middle;flex-shrink:0;"><svg width="100%" height="100%" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M30 50L10 70L30 90M10 70H50C60 70.1428 80 66.9235 80 40.5336C80 14.1437 50 10 50 10" stroke="currentColor" stroke-width="10" stroke-linecap="round" stroke-linejoin="round"></path></svg></span></div>
+            <div style="flex:2 1 0;min-width:0;height:66.6%;border-radius:999px;background:var(--primary);color:var(--primary-fg);display:flex;align-items:center;justify-content:center;font-size:20px;font-weight:800;box-shadow:0 3px 8px rgba(0,0,0,0.2);">Set up passkey</div>
+          </div>
+          <div style="flex:1 1 0;display:flex;align-items:center;justify-content:center;"><div style="color:#0B53BF;font-size:18px;font-weight:800;text-align:center;">Skip for now</div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- HOME -->
+    <div style="display:flex;flex-direction:column;align-items:center;gap:12px;">
+      <div style="font-weight:800;font-size:13px;letter-spacing:.03em;text-transform:uppercase;">Home</div>
+      <div style="width:300px;height:650px;overflow:hidden;border-radius:4px;">
+        <div style="width:430px;height:932px;transform:scale(0.6977);transform-origin:top left;background:var(--bg);box-shadow:0 20px 40px rgba(0,0,0,.15);display:flex;flex-direction:column;overflow:hidden;position:relative;padding:0 20px 16px;"><div style="position:absolute;inset:0;background-image:repeating-linear-gradient(to bottom,#ff0000 0,#ff0000 3px,transparent 3px,transparent 10%);pointer-events:none;z-index:50;"></div>
+          <div style="flex:1 1 0;display:flex;align-items:center;justify-content:center;"><div style="display:flex;align-items:baseline;gap:8px;"><span style="font-size:21px;font-weight:700;color:var(--muted-fg);">Balance</span><span style="font-weight:800;font-size:46px;font-family:'Comfortaa',sans-serif;">24.50</span><span style="font-size:21px;font-weight:700;color:var(--muted-fg);">USDC</span></div></div>
+          <div style="flex:0.5 1 0;"></div>
+          <div style="flex:3 1 0;display:flex;align-items:center;justify-content:center;">
+            <div style="height:100%;aspect-ratio:1;background:#ffffff;border:1px solid var(--border);border-radius:12px;padding:14px;">
+              <div style="width:100%;height:100%;display:grid;grid-template-columns:repeat(9,1fr);grid-template-rows:repeat(9,1fr);">
+                <sc-for list="{{ qrCells }}" as="cell" hint-placeholder-count="81">
+                  <div style="background:{{ cell.bg }};"></div>
+                </sc-for>
+              </div>
+            </div>
+          </div>
+          <div style="flex:0.25 1 0;"></div>
+          <div style="flex:1 1 0;display:flex;align-items:center;justify-content:center;"><div style="color:var(--muted-fg);font-size:21px;font-weight:700;text-align:center;padding:0 30px;">Let others scan this to send you a tip - only receives USDC on Arc Testnet</div></div>
+          <div style="flex:2.25 1 0;"></div>
+          <div style="flex:1 1 0;display:flex;align-items:center;gap:8px;min-width:0;">
+            <div style="flex:1 1 0;min-width:0;height:66.6%;border-radius:999px;background:var(--surface);color:var(--fg);opacity:.5;display:flex;align-items:center;justify-content:center;gap:6px;font-size:18px;font-weight:800;box-shadow:0 3px 8px rgba(0,0,0,0.2);"><span style="display:inline-flex;width:17px;height:17px;color:currentColor;vertical-align:middle;flex-shrink:0;"><svg width="100%" height="100%" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg"><rect x="10" y="10" width="80" height="80" rx="16" stroke="currentColor" stroke-width="10"></rect><circle cx="30" cy="30" r="8" fill="currentColor"></circle><circle cx="70" cy="30" r="8" fill="currentColor"></circle><circle cx="50" cy="50" r="8" fill="currentColor"></circle><circle cx="30" cy="70" r="8" fill="currentColor"></circle><circle cx="70" cy="70" r="8" fill="currentColor"></circle></svg></span></div>
+            <div style="flex:2 1 0;min-width:0;height:66.6%;border-radius:999px;background:var(--primary);color:var(--primary-fg);display:flex;align-items:center;justify-content:center;gap:6px;font-size:24px;font-weight:800;box-shadow:0 3px 8px rgba(0,0,0,0.2);"><span style="display:inline-flex;width:20px;height:20px;color:currentColor;vertical-align:middle;flex-shrink:0;"><svg width="100%" height="100%" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M49.9985 10L10 10L10 90L49.9985 90M30 50L90 50M70 70L90 50L70 30" stroke="currentColor" stroke-width="10" stroke-linecap="round" stroke-linejoin="round"></path></svg></span>Tip</div>
+          </div>
+          <div style="position:absolute;left:16px;bottom:0;width:186px;height:186px;border-radius:50%;background:var(--primary);transform:translate(-50%,50%);z-index:0;"></div>
+          <div style="flex:1 1 0;display:flex;align-items:center;justify-content:center;position:relative;"><span style="margin-left:-40px;display:inline-flex;width:28px;height:28px;color:#000000;vertical-align:middle;flex-shrink:0;"><svg width="100%" height="100%" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M10 90H90M90 70H10M10 50H90M90 30H10M10 10H90" stroke="currentColor" stroke-width="10" stroke-linecap="round"></path></svg></span></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- MENU MAIN -->
+    <div style="display:flex;flex-direction:column;align-items:center;gap:12px;">
+      <div style="font-weight:800;font-size:13px;letter-spacing:.03em;text-transform:uppercase;">Menu — Balance &amp; Wallet</div>
+      <div style="width:300px;height:650px;overflow:hidden;border-radius:4px;">
+        <div style="width:430px;height:932px;transform:scale(0.6977);transform-origin:top left;background:var(--bg);box-shadow:0 20px 40px rgba(0,0,0,.15);position:relative;overflow:hidden;"><div style="position:absolute;inset:0;background-image:repeating-linear-gradient(to bottom,#ff0000 0,#ff0000 3px,transparent 3px,transparent 10%);pointer-events:none;z-index:50;"></div>
+          <div style="position:absolute;inset:0;background:#ffffff;opacity:.5;"></div>
+          <div style="position:absolute;inset:0;background:rgba(0,0,0,.55);"></div>
+          <div style="position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:calc(100% - 40px);background:var(--bg);border-radius:12px;box-shadow:0 20px 40px rgba(0,0,0,.3);padding:24px;display:flex;flex-direction:column;gap:16px;">
+            <div style="font-weight:800;font-size:20px;text-align:center;">Balance &amp; Wallet</div>
+            <div style="font-weight:800;font-size:28px;text-align:center;padding:8px 0;font-family:'Comfortaa',sans-serif;">24.50 USDC</div>
+            <div style="display:flex;flex-direction:column;gap:10px;">
+              <div style="width:100%;height:40px;border:1px solid var(--border);border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:17px;font-weight:800;box-shadow:0 3px 8px rgba(0,0,0,0.2);">Deposit</div>
+              <div style="width:100%;height:40px;border:1px solid var(--border);border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:17px;font-weight:800;box-shadow:0 3px 8px rgba(0,0,0,0.2);">Withdraw</div>
+              <div style="width:100%;height:40px;border:1px solid var(--border);border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:17px;font-weight:800;box-shadow:0 3px 8px rgba(0,0,0,0.2);">Tip history</div>
+            </div>
+            <div style="width:100%;height:40px;display:flex;align-items:center;justify-content:center;font-size:17px;font-weight:800;color:var(--muted-fg);">Close</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- MENU DEPOSIT -->
+    <div style="display:flex;flex-direction:column;align-items:center;gap:12px;">
+      <div style="font-weight:800;font-size:13px;letter-spacing:.03em;text-transform:uppercase;">Menu — Deposit</div>
+      <div style="width:300px;height:650px;overflow:hidden;border-radius:4px;">
+        <div style="width:430px;height:932px;transform:scale(0.6977);transform-origin:top left;background:var(--bg);box-shadow:0 20px 40px rgba(0,0,0,.15);position:relative;overflow:hidden;"><div style="position:absolute;inset:0;background-image:repeating-linear-gradient(to bottom,#ff0000 0,#ff0000 3px,transparent 3px,transparent 10%);pointer-events:none;z-index:50;"></div>
+          <div style="position:absolute;inset:0;background:#ffffff;opacity:.5;"></div>
+          <div style="position:absolute;inset:0;background:rgba(0,0,0,.55);"></div>
+          <div style="position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:calc(100% - 40px);background:var(--bg);border-radius:12px;box-shadow:0 20px 40px rgba(0,0,0,.3);padding:24px;display:flex;flex-direction:column;gap:14px;">
+            <div style="font-weight:800;font-size:20px;text-align:center;">Deposit USDC (testnet)</div>
+            <div style="font-size:21px;font-weight:700;color:var(--muted-fg);">Your wallet address has been copied:</div>
+            <div style="font-size:14px;background:var(--surface);padding:10px;border-radius:12px;word-break:break-all;font-family:monospace;">0x7a3fC2e9B841D6a5F0c3E9821b4C7Fa39E2b9D4c</div>
+            <ol style="font-size:17px;padding-left:20px;margin:0;display:flex;flex-direction:column;gap:6px;">
+              <li>Open the Circle Faucet page</li>
+              <li>Paste the wallet address you just copied</li>
+              <li>Click Request on that page</li>
+            </ol>
+            <div style="width:100%;height:44px;background:var(--primary);color:var(--primary-fg);border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:17px;font-weight:800;box-shadow:0 3px 8px rgba(0,0,0,0.2);">Open Circle Faucet</div>
+            <div style="width:100%;height:36px;display:flex;align-items:center;justify-content:center;font-size:17px;font-weight:800;color:var(--muted-fg);">Back</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- MENU HISTORY -->
+    <div style="display:flex;flex-direction:column;align-items:center;gap:12px;">
+      <div style="font-weight:800;font-size:13px;letter-spacing:.03em;text-transform:uppercase;">Menu — Tip History</div>
+      <div style="width:300px;height:650px;overflow:hidden;border-radius:4px;">
+        <div style="width:430px;height:932px;transform:scale(0.6977);transform-origin:top left;background:var(--bg);box-shadow:0 20px 40px rgba(0,0,0,.15);position:relative;overflow:hidden;"><div style="position:absolute;inset:0;background-image:repeating-linear-gradient(to bottom,#ff0000 0,#ff0000 3px,transparent 3px,transparent 10%);pointer-events:none;z-index:50;"></div>
+          <div style="position:absolute;inset:0;background:#ffffff;opacity:.5;"></div>
+          <div style="position:absolute;inset:0;background:rgba(0,0,0,.55);"></div>
+          <div style="position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:calc(100% - 40px);max-height:70%;overflow:hidden;background:var(--bg);border-radius:12px;box-shadow:0 20px 40px rgba(0,0,0,.3);padding:24px;display:flex;flex-direction:column;gap:12px;">
+            <div style="font-weight:800;font-size:20px;text-align:center;">Tip history</div>
+            <input placeholder="Search transactions..." readonly style="width:100%;height:36px;border:none;background:var(--surface);box-shadow:inset 0 2px 5px rgba(0,0,0,0.15);border-radius:12px;padding:0 10px;font-size:15px;font-family:'Nunito',sans-serif;"/>
+            <div style="display:flex;flex-direction:column;gap:20px;overflow-y:auto;">
+              <div>
+                <div style="font-weight:800;font-size:18px;margin-bottom:8px;font-family:'Comfortaa',sans-serif;">08/09/2026</div>
+                <div style="display:flex;flex-direction:column;gap:12px;">
+                  <div style="display:flex;flex-direction:column;gap:6px;padding:10px 0;">
+                    <div style="display:flex;align-items:center;gap:8px;">
+                      <span style="display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;border-radius:999px;background:var(--green-light-bg);padding:5px;box-sizing:border-box;flex-shrink:0;"><svg width="100%" height="100%" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M50 10L50 90M70 70L50 90L30 70" stroke="black" stroke-width="10" stroke-linecap="round" stroke-linejoin="round"></path></svg></span>
+                      <span style="font-weight:800;font-size:17px;flex:1;">Tip: Maria Chen</span>
+                      <span style="font-weight:800;font-size:17px;color:var(--green);font-family:'Comfortaa',sans-serif;">+12.00 <span style="font-size:12px;font-weight:800;font-family:'Nunito',sans-serif;">USDC</span></span>
+                    </div>
+                    <div style="display:flex;align-items:center;gap:8px;padding-left:30px;">
+                      <span style="font-size:14px;color:var(--muted-fg);font-family:'Comfortaa',sans-serif;">14:32</span>
+                      <span style="font-size:12px;font-weight:800;padding:2px 8px;border-radius:12px;background:var(--green-light-bg);color:var(--green-light-fg);">Complete</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div>
+                <div style="font-weight:800;font-size:18px;margin-bottom:8px;font-family:'Comfortaa',sans-serif;">08/05/2026</div>
+                <div style="display:flex;flex-direction:column;gap:12px;">
+                  <div style="display:flex;flex-direction:column;gap:6px;padding:10px 0;">
+                    <div style="display:flex;align-items:center;gap:8px;">
+                      <span style="display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;border-radius:999px;background:var(--red-light-bg);padding:5px;box-sizing:border-box;flex-shrink:0;"><svg width="100%" height="100%" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M50 90L50 10M30 30L50 10L70 30" stroke="black" stroke-width="10" stroke-linecap="round" stroke-linejoin="round"></path></svg></span>
+                      <span style="font-weight:800;font-size:17px;flex:1;">Tip: James Rivera</span>
+                      <span style="font-weight:800;font-size:17px;color:var(--red);font-family:'Comfortaa',sans-serif;">-5.00 <span style="font-size:12px;font-weight:800;font-family:'Nunito',sans-serif;">USDC</span></span>
+                    </div>
+                    <div style="display:flex;align-items:center;gap:8px;padding-left:30px;">
+                      <span style="font-size:14px;color:var(--muted-fg);font-family:'Comfortaa',sans-serif;">09:14</span>
+                      <span style="font-size:12px;font-weight:800;padding:2px 8px;border-radius:12px;background:var(--green-light-bg);color:var(--green-light-fg);">Complete</span>
+                    </div>
+                  </div>
+                  <div style="display:flex;flex-direction:column;gap:6px;padding:10px 0;">
+                    <div style="display:flex;align-items:center;gap:8px;">
+                      <span style="display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;border-radius:999px;background:var(--green-light-bg);padding:5px;box-sizing:border-box;flex-shrink:0;"><svg width="100%" height="100%" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M50 10L50 90M70 70L50 90L30 70" stroke="black" stroke-width="10" stroke-linecap="round" stroke-linejoin="round"></path></svg></span>
+                      <span style="font-weight:800;font-size:17px;flex:1;">Unknown address</span>
+                      <span style="font-weight:800;font-size:17px;color:var(--green);font-family:'Comfortaa',sans-serif;">+3.50 <span style="font-size:12px;font-weight:800;font-family:'Nunito',sans-serif;">USDC</span></span>
+                    </div>
+                    <div style="display:flex;align-items:center;gap:8px;padding-left:30px;">
+                      <span style="font-size:14px;color:var(--muted-fg);font-family:'Comfortaa',sans-serif;">18:47</span>
+                      <span style="font-size:12px;font-weight:800;padding:2px 8px;border-radius:12px;background:var(--yellow-light-bg);color:var(--yellow-light-fg);">Pending</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div>
+                <div style="font-weight:800;font-size:18px;margin-bottom:8px;font-family:'Comfortaa',sans-serif;">08/01/2026</div>
+                <div style="display:flex;flex-direction:column;gap:12px;">
+                  <div style="display:flex;flex-direction:column;gap:6px;padding:10px 0;">
+                    <div style="display:flex;align-items:center;gap:8px;">
+                      <span style="display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;border-radius:999px;background:var(--red-light-bg);padding:5px;box-sizing:border-box;flex-shrink:0;"><svg width="100%" height="100%" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M50 90L50 10M30 30L50 10L70 30" stroke="black" stroke-width="10" stroke-linecap="round" stroke-linejoin="round"></path></svg></span>
+                      <span style="font-weight:800;font-size:17px;flex:1;">0x4b7E...1a9F</span>
+                      <span style="font-weight:800;font-size:17px;color:var(--red);font-family:'Comfortaa',sans-serif;">-10.00 <span style="font-size:12px;font-weight:800;font-family:'Nunito',sans-serif;">USDC</span></span>
+                    </div>
+                    <div style="display:flex;align-items:center;gap:8px;padding-left:30px;">
+                      <span style="font-size:14px;color:var(--muted-fg);font-family:'Comfortaa',sans-serif;">11:03</span>
+                      <span style="font-size:12px;font-weight:800;padding:2px 8px;border-radius:12px;background:var(--red-light-bg);color:var(--red-light-fg);">Failed</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SEND AMOUNT -->
+    <div style="display:flex;flex-direction:column;align-items:center;gap:12px;">
+      <div style="font-weight:800;font-size:13px;letter-spacing:.03em;text-transform:uppercase;">Send — Choose amount</div>
+      <div style="width:300px;height:650px;overflow:hidden;border-radius:4px;">
+        <div style="width:430px;height:932px;transform:scale(0.6977);transform-origin:top left;background:var(--bg);box-shadow:0 20px 40px rgba(0,0,0,.15);position:relative;overflow:hidden;"><div style="position:absolute;inset:0;background-image:repeating-linear-gradient(to bottom,#ff0000 0,#ff0000 3px,transparent 3px,transparent 10%);pointer-events:none;z-index:50;"></div>
+          <div style="position:absolute;inset:0;background:#ffffff;opacity:.5;"></div>
+          <div style="position:absolute;inset:0;background:rgba(0,0,0,.55);"></div>
+          <div style="position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:calc(100% - 40px);height:600px;background:var(--bg);border-radius:12px;box-shadow:0 20px 40px rgba(0,0,0,.3);padding:24px;display:flex;flex-direction:column;gap:14px;">
+            <div style="font-weight:800;font-size:20px;text-align:center;">Choose an amount</div>
+            <div style="flex:1;display:flex;flex-direction:column;gap:10px;overflow-y:auto;">
+              <div style="display:flex;align-items:center;gap:8px;">
+                <div style="flex:1;border:1px solid var(--border);border-radius:12px;padding:16px;display:flex;justify-content:space-between;font-size:17px;box-shadow:0 3px 8px rgba(0,0,0,0.2);"><span style="font-family:'Comfortaa',sans-serif;">1 USDC</span></div>
+                <div style="width:36px;height:36px;display:flex;align-items:center;justify-content:center;"><span style="display:inline-flex;width:18px;height:18px;color:#0B53BF;vertical-align:middle;flex-shrink:0;"><svg width="100%" height="100%" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M90 10H10V90H90V10Z" stroke="currentColor" stroke-width="10" stroke-linejoin="round"></path><path d="M64.1436 64.1387L35.8745 35.853" stroke="currentColor" stroke-width="10" stroke-linecap="round" stroke-linejoin="round"></path><path d="M64.147 35.8574L35.8558 64.1348" stroke="currentColor" stroke-width="10" stroke-linecap="round" stroke-linejoin="round"></path></svg></span></div>
+              </div>
+              <div style="display:flex;align-items:center;gap:8px;">
+                <div style="flex:1;border:1px solid var(--border);border-radius:12px;padding:16px;display:flex;justify-content:space-between;font-size:17px;box-shadow:0 3px 8px rgba(0,0,0,0.2);"><span style="font-family:'Comfortaa',sans-serif;">5 USDC</span></div>
+                <div style="width:36px;height:36px;display:flex;align-items:center;justify-content:center;"><span style="display:inline-flex;width:18px;height:18px;color:#0B53BF;vertical-align:middle;flex-shrink:0;"><svg width="100%" height="100%" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M90 10H10V90H90V10Z" stroke="currentColor" stroke-width="10" stroke-linejoin="round"></path><path d="M64.1436 64.1387L35.8745 35.853" stroke="currentColor" stroke-width="10" stroke-linecap="round" stroke-linejoin="round"></path><path d="M64.147 35.8574L35.8558 64.1348" stroke="currentColor" stroke-width="10" stroke-linecap="round" stroke-linejoin="round"></path></svg></span></div>
+              </div>
+              <div style="display:flex;align-items:center;gap:8px;">
+                <div style="flex:1;border:1px solid var(--border);border-radius:12px;padding:16px;display:flex;justify-content:space-between;font-size:17px;box-shadow:0 3px 8px rgba(0,0,0,0.2);"><span style="font-family:'Comfortaa',sans-serif;">10 USDC</span></div>
+                <div style="width:36px;height:36px;display:flex;align-items:center;justify-content:center;"><span style="display:inline-flex;width:18px;height:18px;color:#0B53BF;vertical-align:middle;flex-shrink:0;"><svg width="100%" height="100%" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M90 10H10V90H90V10Z" stroke="currentColor" stroke-width="10" stroke-linejoin="round"></path><path d="M64.1436 64.1387L35.8745 35.853" stroke="currentColor" stroke-width="10" stroke-linecap="round" stroke-linejoin="round"></path><path d="M64.147 35.8574L35.8558 64.1348" stroke="currentColor" stroke-width="10" stroke-linecap="round" stroke-linejoin="round"></path></svg></span></div>
+              </div>
+              <div style="display:flex;align-items:center;gap:8px;opacity:.5;">
+                <div style="flex:1;border:1px solid var(--border);border-radius:12px;padding:16px;display:flex;justify-content:space-between;font-size:17px;box-shadow:0 3px 8px rgba(0,0,0,0.2);"><span style="font-family:'Comfortaa',sans-serif;">50 USDC</span><span style="font-size:13px;color:var(--hint-fg);">Not enough balance</span></div>
+                <div style="width:36px;height:36px;display:flex;align-items:center;justify-content:center;"><span style="display:inline-flex;width:18px;height:18px;color:#0B53BF;vertical-align:middle;flex-shrink:0;"><svg width="100%" height="100%" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M90 10H10V90H90V10Z" stroke="currentColor" stroke-width="10" stroke-linejoin="round"></path><path d="M64.1436 64.1387L35.8745 35.853" stroke="currentColor" stroke-width="10" stroke-linecap="round" stroke-linejoin="round"></path><path d="M64.147 35.8574L35.8558 64.1348" stroke="currentColor" stroke-width="10" stroke-linecap="round" stroke-linejoin="round"></path></svg></span></div>
+              </div>
+              <div style="display:flex;align-items:center;gap:8px;font-size:17px;color:var(--fg);padding:8px 0;"><span style="display:inline-flex;width:16px;height:16px;color:#0B53BF;vertical-align:middle;flex-shrink:0;"><svg width="100%" height="100%" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M90 10H10V90H90V10Z" stroke="currentColor" stroke-width="10" stroke-linejoin="round"></path><path d="M70 50L30.0098 49.9883" stroke="currentColor" stroke-width="10" stroke-linecap="round" stroke-linejoin="round"></path><path d="M50.0049 30L49.9951 70" stroke="currentColor" stroke-width="10" stroke-linecap="round" stroke-linejoin="round"></path></svg></span>Enter a different amount</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SEND SCAN -->
+    <div style="display:flex;flex-direction:column;align-items:center;gap:12px;">
+      <div style="font-weight:800;font-size:13px;letter-spacing:.03em;text-transform:uppercase;">Send — Scan QR</div>
+      <div style="width:300px;height:650px;overflow:hidden;border-radius:4px;">
+        <div style="width:430px;height:932px;transform:scale(0.6977);transform-origin:top left;background:var(--bg);box-shadow:0 20px 40px rgba(0,0,0,.15);position:relative;overflow:hidden;"><div style="position:absolute;inset:0;background-image:repeating-linear-gradient(to bottom,#ff0000 0,#ff0000 3px,transparent 3px,transparent 10%);pointer-events:none;z-index:50;"></div>
+          <div style="position:absolute;inset:0;background:#ffffff;opacity:.5;"></div>
+          <div style="position:absolute;inset:0;background:rgba(0,0,0,.55);"></div>
+          <div style="position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:calc(100% - 40px);height:600px;background:var(--bg);border-radius:12px;box-shadow:0 20px 40px rgba(0,0,0,.3);padding:24px;display:flex;flex-direction:column;gap:14px;">
+            <div style="font-weight:800;font-size:20px;text-align:center;"><span>Scan QR to send </span><span style="font-family:'Comfortaa',sans-serif;">5</span><span> USDC</span></div>
+            <div style="width:100%;aspect-ratio:1;background:#000;border-radius:12px;overflow:hidden;position:relative;">
+              <div style="position:absolute;left:15%;top:15%;width:70%;height:70%;border:3px solid #fff;border-radius:8px;"></div>
+            </div>
+            <div style="display:flex;justify-content:center;">
+              <div style="border:1px solid var(--border);border-radius:999px;padding:8px 16px;display:flex;align-items:center;gap:8px;font-size:15px;box-shadow:0 3px 8px rgba(0,0,0,0.2);"><span style="display:inline-flex;width:16px;height:16px;color:#0B53BF;vertical-align:middle;flex-shrink:0;"><svg width="100%" height="100%" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg"><g clip-path="url(#clip0_3689_2)"><rect x="10" y="10" width="80" height="80" stroke="currentColor" stroke-width="10" stroke-linejoin="round"></rect><path d="M10 90L60 50L88.7904 70" stroke="currentColor" stroke-width="10" stroke-linecap="round" stroke-linejoin="round"></path><circle cx="35" cy="35" r="10" stroke="currentColor" stroke-width="10"></circle></g><defs><clipPath id="clip0_3689_2"><rect width="100" height="100" fill="white"></rect></clipPath></defs></svg></span>Upload photo from gallery</div>
+            </div>
+            <div style="flex:1;"></div>
+            <div style="display:flex;gap:8px;">
+              <div style="flex:1;border:1px solid var(--border);border-radius:999px;height:40px;display:flex;align-items:center;justify-content:center;box-shadow:0 3px 8px rgba(0,0,0,0.2);"><span style="display:inline-flex;width:16px;height:16px;color:#000000;vertical-align:middle;flex-shrink:0;"><svg width="100%" height="100%" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M30 50L10 70L30 90M10 70H50C60 70.1428 80 66.9235 80 40.5336C80 14.1437 50 10 50 10" stroke="currentColor" stroke-width="10" stroke-linecap="round" stroke-linejoin="round"></path></svg></span></div>
+              <div style="flex:2;background:var(--fg);color:var(--bg);border-radius:999px;height:40px;display:flex;align-items:center;justify-content:center;font-size:17px;font-weight:800;box-shadow:0 3px 8px rgba(0,0,0,0.2);">Done</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SEND SENDING -->
+    <div style="display:flex;flex-direction:column;align-items:center;gap:12px;">
+      <div style="font-weight:800;font-size:13px;letter-spacing:.03em;text-transform:uppercase;">Send — Processing (over Scan QR)</div>
+      <div style="width:300px;height:650px;overflow:hidden;border-radius:4px;">
+        <div style="width:430px;height:932px;transform:scale(0.6977);transform-origin:top left;background:var(--bg);box-shadow:0 20px 40px rgba(0,0,0,.15);position:relative;overflow:hidden;"><div style="position:absolute;inset:0;background-image:repeating-linear-gradient(to bottom,#ff0000 0,#ff0000 3px,transparent 3px,transparent 10%);pointer-events:none;z-index:50;"></div>
+          <div style="position:absolute;inset:0;background:#ffffff;opacity:.5;"></div>
+          <div style="position:absolute;inset:0;background:rgba(0,0,0,.55);"></div>
+          <div style="position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:calc(100% - 40px);height:600px;background:var(--bg);border-radius:12px;box-shadow:0 20px 40px rgba(0,0,0,.3);padding:24px;display:flex;flex-direction:column;gap:14px;opacity:.4;">
+            <div style="font-weight:800;font-size:20px;text-align:center;"><span>Scan QR to send </span><span style="font-family:'Comfortaa',sans-serif;">5</span><span> USDC</span></div>
+            <div style="width:100%;aspect-ratio:1;background:#000;border-radius:12px;"></div>
+          </div>
+          <div style="position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:calc(100% - 100px);background:var(--bg);border-radius:12px;box-shadow:0 12px 30px rgba(0,0,0,.4);padding:28px 20px;display:flex;flex-direction:column;align-items:center;gap:16px;">
+            <span style="display:inline-flex;width:56px;height:56px;color:var(--muted-fg);vertical-align:middle;flex-shrink:0;"><svg width="100%" height="100%" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" clip-rule="evenodd" d="M79.525 30C72.2523 40.4968 62.0867 50 50 50C37.9133 50 27.7477 40.4968 20.475 30H50H79.525Z" fill="currentColor"></path><path d="M20.475 30C15.5651 22.9133 11.9737 15.3738 10 10H90C88.0263 15.3738 84.4349 22.9133 79.525 30C72.2523 40.4968 62.0867 50 50 50C37.9133 50 27.7477 40.4968 20.475 30ZM79.525 30H50H20.475" stroke="currentColor" stroke-width="10" stroke-linecap="round" stroke-linejoin="round"></path><path d="M50 90L90 90C85.1029 76.6667 70.2469 50 50 50C29.7531 50 14.8971 76.6667 10 90L50 90ZM50 50L50 90" stroke="currentColor" stroke-width="10" stroke-linecap="round" stroke-linejoin="round"></path></svg></span>
+            <div style="font-size:20px;font-weight:700;">Processing transaction...</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SEND SUCCESS -->
+    <div style="display:flex;flex-direction:column;align-items:center;gap:12px;">
+      <div style="font-weight:800;font-size:13px;letter-spacing:.03em;text-transform:uppercase;">Send — Success (over Scan QR)</div>
+      <div style="width:300px;height:650px;overflow:hidden;border-radius:4px;">
+        <div style="width:430px;height:932px;transform:scale(0.6977);transform-origin:top left;background:var(--bg);box-shadow:0 20px 40px rgba(0,0,0,.15);position:relative;overflow:hidden;"><div style="position:absolute;inset:0;background-image:repeating-linear-gradient(to bottom,#ff0000 0,#ff0000 3px,transparent 3px,transparent 10%);pointer-events:none;z-index:50;"></div>
+          <div style="position:absolute;inset:0;background:#ffffff;opacity:.5;"></div>
+          <div style="position:absolute;inset:0;background:rgba(0,0,0,.55);"></div>
+          <div style="position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:calc(100% - 40px);height:600px;background:var(--bg);border-radius:12px;box-shadow:0 20px 40px rgba(0,0,0,.3);padding:24px;display:flex;flex-direction:column;gap:14px;opacity:.4;">
+            <div style="font-weight:800;font-size:20px;text-align:center;"><span>Scan QR to send </span><span style="font-family:'Comfortaa',sans-serif;">5</span><span> USDC</span></div>
+            <div style="width:100%;aspect-ratio:1;background:#000;border-radius:12px;"></div>
+          </div>
+          <div style="position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:calc(100% - 100px);background:var(--bg);border-radius:12px;box-shadow:0 12px 30px rgba(0,0,0,.4);padding:28px 20px;display:flex;flex-direction:column;align-items:center;gap:16px;">
+            <span style="display:inline-flex;width:56px;height:56px;color:var(--green);vertical-align:middle;flex-shrink:0;"><svg width="100%" height="100%" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M34.9183 50L49.9999 65.0078L64.9403 40.0195" stroke="currentColor" stroke-width="10" stroke-linecap="round" stroke-linejoin="round"></path><circle cx="50" cy="50" r="40" stroke="currentColor" stroke-width="10"></circle></svg></span>
+            <div style="font-size:20px;font-weight:700;font-family:'Comfortaa',sans-serif;">-5.00 USDC</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TRANSACTION DETAIL -->
+    <div style="display:flex;flex-direction:column;align-items:center;gap:12px;">
+      <div style="font-weight:800;font-size:13px;letter-spacing:.03em;text-transform:uppercase;">Transaction detail (over Tip History)</div>
+      <div style="width:300px;height:650px;overflow:hidden;border-radius:4px;">
+        <div style="width:430px;height:932px;transform:scale(0.6977);transform-origin:top left;background:var(--bg);box-shadow:0 20px 40px rgba(0,0,0,.15);position:relative;overflow:hidden;"><div style="position:absolute;inset:0;background-image:repeating-linear-gradient(to bottom,#ff0000 0,#ff0000 3px,transparent 3px,transparent 10%);pointer-events:none;z-index:50;"></div>
+          <div style="position:absolute;inset:0;background:#ffffff;opacity:.5;"></div>
+          <div style="position:absolute;inset:0;background:rgba(0,0,0,.55);"></div>
+          <div style="position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:calc(100% - 40px);max-height:70%;overflow:hidden;background:var(--bg);border-radius:12px;box-shadow:0 20px 40px rgba(0,0,0,.3);padding:24px;display:flex;flex-direction:column;gap:12px;opacity:.4;">
+            <div style="font-weight:800;font-size:20px;text-align:center;">Tip history</div>
+            <input placeholder="Search transactions..." readonly style="width:100%;height:36px;border:none;background:var(--surface);box-shadow:inset 0 2px 5px rgba(0,0,0,0.15);border-radius:12px;padding:0 10px;font-size:15px;font-family:'Nunito',sans-serif;"/>
+            <div style="font-weight:800;font-size:18px;font-family:'Comfortaa',sans-serif;">08/05/2026</div>
+          </div>
+          <div style="position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:calc(100% - 40px);max-height:80%;overflow-y:auto;background:var(--bg);border-radius:12px;box-shadow:0 20px 40px rgba(0,0,0,.3);padding:24px;">
+            <div style="display:grid;grid-template-columns:24px 1fr 24px;align-items:center;margin-bottom:16px;"><span></span><div style="font-weight:800;font-size:20px;text-align:center;">Transaction Details</div><span style="display:inline-flex;width:20px;height:20px;color:#0B53BF;vertical-align:middle;flex-shrink:0;"><svg width="100%" height="100%" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M90 10H10V90H90V10Z" stroke="currentColor" stroke-width="10" stroke-linejoin="round"></path><path d="M64.1436 64.1387L35.8745 35.853" stroke="currentColor" stroke-width="10" stroke-linecap="round" stroke-linejoin="round"></path><path d="M64.147 35.8574L35.8558 64.1348" stroke="currentColor" stroke-width="10" stroke-linecap="round" stroke-linejoin="round"></path></svg></span></div>
+            <div style="background:var(--surface);border-radius:12px;padding:14px;margin-bottom:16px;display:flex;flex-direction:column;gap:14px;">
+              <div style="display:flex;justify-content:space-between;align-items:center;">
+                <span style="font-size:12px;font-weight:800;padding:2px 8px;background:var(--green-light-bg);color:var(--green-light-fg);">Complete</span>
+                <span style="font-size:14px;color:var(--muted-fg);">Tip sent</span>
+              </div>
+              <div><div style="font-size:13px;color:var(--muted-fg);">Amount</div><div style="font-size:20px;font-weight:800;font-family:'Comfortaa',sans-serif;">5.00 USDC</div></div>
+              <div><div style="font-size:13px;color:var(--muted-fg);">To</div><div style="font-size:17px;font-weight:800;">James Rivera</div></div>
+              <div style="font-size:13px;color:var(--muted-fg);">08/05/2026 <span style="font-family:'Comfortaa',sans-serif;">09:14</span></div>
+            </div>
+            <div style="border:1px solid var(--border);border-radius:12px;height:40px;display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:800;box-shadow:0 3px 8px rgba(0,0,0,0.2);">View on ArcScan</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+class Component extends DCLogic {
+  renderVals() {
+    const pattern = [1,1,1,0,1,0,1,1,1, 1,0,1,0,1,0,1,0,1, 1,1,0,1,1,1,0,1,1, 0,0,1,0,0,0,1,0,0, 1,1,1,1,0,1,1,1,1, 0,0,0,1,1,1,0,0,0, 1,1,0,0,1,0,0,1,1, 1,0,1,1,0,1,1,0,1, 1,1,1,0,1,0,1,1,1];
+    return { qrCells: pattern.map(v => ({ bg: v ? '#000' : '#fff' })) };
+  }
+}
+</script>
+</body>
+</html>

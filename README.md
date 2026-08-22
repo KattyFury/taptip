@@ -1,23 +1,23 @@
-# example – dự án mẫu của series
+# TapTip
 
-> ⚠️ Đây là dự án **của tác giả series**, để bạn đọc tham chiếu. Dự án của bạn build ở thư mục
-> riêng, đừng build đè vào đây.
+Tip & Lì xì nhanh trên Arc. Gửi tip bất cứ lúc nào + lì xì dịp Tết, đăng nhập bằng email + passkey, ví ẩn phía sau bằng Circle Wallets, app trả gas thay user. Yêu cầu số một là **tốc độ**.
 
-**Tip & Lì xì nhanh trên Arc** – gửi tip bất cứ lúc nào, lì xì dịp Tết. Cả người gửi lẫn người
-nhận không cần biết gì về crypto, chỉ đăng nhập bằng email. Yêu cầu số một là **tốc độ**.
+Fork [`circlefin/arc-p2p-payments`](https://github.com/circlefin/arc-p2p-payments) (Next.js + Supabase + Circle Modular Wallets/Passkey).
 
-Dự án này được build **song song với series**: viết xong bước nào thì đem đúng bước đó ra dùng
-để build tiếp. Prompt hụt chỗ nào thì sửa lại bước đó rồi ghi vào mục *"Prompt này từng hụt chỗ
-nào"* – nên `git log` của repo cũng là nhật ký prompt tiến hoá.
+**Trạng thái:** logic + giao diện đã xong (Giai đoạn 1 + 2), đã deploy testnet. Tạm gác, quay lại sau. Chi tiết đầy đủ: [`HANDOFF.md`](HANDOFF.md).
 
-## Đi tới đâu rồi
+## Cấu trúc
 
-| Bước | Kết quả | File |
-|---|---|---|
-| 1. Lên ý tưởng | ✅ pass cả 4 câu | [`docs/01-ideation.md`](docs/01-ideation.md) |
-| 2. Hoàn thiện ý tưởng (PRD) | ⏳ chưa | – |
-| 3. Plan chi tiết | ⏳ chưa | – |
-| 4. Wireframe | ⏳ chưa | – |
-| 5. Setup + build | ⏳ chưa | – |
+- [`app/`](app/) – code Next.js
+- [`docs/`](docs/) – PRD, Product Discovery, wireframe... (sinh ra từ series [build-on-arc](https://github.com/KattyFury/build-on-arc))
+- [`design_handoff_taptip/`](design_handoff_taptip/), [`TapTip Design Spec.dc.html`](TapTip%20Design%20Spec.dc.html) – gói bàn giao thiết kế
 
-Chưa có dòng code nào, và đó là chủ ý: hết Bước 4 mới bắt đầu code.
+## Chạy local
+
+```bash
+cd app
+npm install
+npm run dev
+```
+
+Cần `.env.local` (Supabase + Circle credentials) – không commit, xem `HANDOFF.md` để biết cần key gì.
