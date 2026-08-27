@@ -4,6 +4,7 @@ import { useState } from "react";
 import { QRCodeSVG } from "qrcode.react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import {
   Dialog,
   DialogClose,
@@ -16,14 +17,21 @@ import { useBalance, BalanceProvider } from "@/contexts/balanceContext";
 import SendFlow from "@/components/send-flow";
 import { encodeTapTipQr } from "@/lib/utils/qr-payment";
 import { signOutAction } from "@/app/actions";
+import { createSupabaseBrowserClient } from "@/lib/supabase/browser-client";
 
 const CIRCLE_FAUCET_URL = "https://faucet.circle.com/";
+
+const supabase = createSupabaseBrowserClient();
 
 interface Props {
   primaryWallet: {
     wallet_address: string;
   };
-  accountName: string;
+  profile: {
+    id: string;
+    name: string;
+    daily_tip_limit: number | null;
+  };
   historyContent: React.ReactNode;
 }
 
@@ -49,14 +57,68 @@ export default function HomeScreen(props: Props) {
   );
 }
 
-function HomeScreenContent({ primaryWallet, accountName, historyContent }: Props) {
+function HomeScreenContent({ primaryWallet, profile: initialProfile, historyContent }: Props) {
   const { balance } = useBalance();
+  const [profile, setProfile] = useState(initialProfile);
   const [menuOpen, setMenuOpen] = useState(false);
   const [menuView, setMenuView] = useState<
-    "main" | "deposit" | "withdraw" | "history"
+    "main" | "deposit" | "withdraw" | "history" | "settings"
   >("main");
   const [sendOpen, setSendOpen] = useState(false);
   const [randomSendAmount, setRandomSendAmount] = useState<string | undefined>();
+
+  // Form Cai dat: tach state rieng khoi profile, chi ghi de khi bam Save -
+  // sua dang do khong bi mat neu balance/props render lai giua chung.
+  const [settingsName, setSettingsName] = useState(initialProfile.name);
+  const [settingsLimit, setSettingsLimit] = useState(
+    initialProfile.daily_tip_limit != null ? String(initialProfile.daily_tip_limit) : "",
+  );
+  const [settingsSaving, setSettingsSaving] = useState(false);
+  const [settingsError, setSettingsError] = useState<string | null>(null);
+
+  const openSettings = () => {
+    setSettingsName(profile.name);
+    setSettingsLimit(profile.daily_tip_limit != null ? String(profile.daily_tip_limit) : "");
+    setSettingsError(null);
+    setMenuView("settings");
+  };
+
+  const saveSettings = async () => {
+    const trimmedName = settingsName.trim();
+    if (!trimmedName) {
+      setSettingsError("Name can't be empty");
+      return;
+    }
+
+    let limitValue: number | null = null;
+    if (settingsLimit.trim() !== "") {
+      const parsed = parseFloat(settingsLimit);
+      if (isNaN(parsed) || parsed <= 0) {
+        setSettingsError("Daily limit must be a positive number");
+        return;
+      }
+      limitValue = parsed;
+    }
+
+    setSettingsSaving(true);
+    setSettingsError(null);
+
+    const { error } = await supabase
+      .from("profiles")
+      .update({ name: trimmedName, daily_tip_limit: limitValue })
+      .eq("id", profile.id);
+
+    setSettingsSaving(false);
+
+    if (error) {
+      console.error("Error saving settings:", error);
+      setSettingsError("Could not save, try again.");
+      return;
+    }
+
+    setProfile({ ...profile, name: trimmedName, daily_tip_limit: limitValue });
+    setMenuView("main");
+  };
 
   const startRandomTip = () => {
     const balanceNum = isNaN(balance.token) ? 0 : balance.token;
@@ -196,6 +258,8 @@ function HomeScreenContent({ primaryWallet, accountName, historyContent }: Props
         open={sendOpen}
         onOpenChange={setSendOpen}
         initialAmount={randomSendAmount}
+        profileId={profile.id}
+        dailyLimit={profile.daily_tip_limit}
       />
 
       {/* 9.00 - 10.00 : icon menu o GOC TRAI-DUOI, tam doc dung vach 9.5.
@@ -254,7 +318,7 @@ function HomeScreenContent({ primaryWallet, accountName, historyContent }: Props
                 </div>
 
                 <div className="flex flex-col gap-1 text-center">
-                  <p className="text-[17px] font-bold">Account: {accountName}</p>
+                  <p className="text-[17px] font-bold">Account: {profile.name}</p>
                   <div className="flex items-center justify-center gap-2 text-[14px] text-hint">
                     <span>Address: {shortenAddress(primaryWallet.wallet_address)}</span>
                     <button onClick={copyAddress} aria-label="Copy wallet address">
@@ -284,6 +348,9 @@ function HomeScreenContent({ primaryWallet, accountName, historyContent }: Props
                 </div>
                 <Button variant="outline" onClick={() => setMenuView("history")}>
                   Tip History
+                </Button>
+                <Button variant="outline" onClick={openSettings}>
+                  Settings
                 </Button>
 
                 {/* Dang xuat khong co trong ban thiet ke handoff, nhung day la
@@ -358,6 +425,55 @@ function HomeScreenContent({ primaryWallet, accountName, historyContent }: Props
                   <DialogTitle>Tip history</DialogTitle>
                 </DialogHeader>
                 {historyContent}
+                <Button
+                  variant="link"
+                  size="text"
+                  onClick={() => setMenuView("main")}
+                >
+                  Back
+                </Button>
+              </>
+            )}
+
+            {menuView === "settings" && (
+              <>
+                <DialogHeader>
+                  <DialogTitle>Settings</DialogTitle>
+                </DialogHeader>
+
+                <div className="flex flex-col gap-1">
+                  <label className="text-[14px] text-hint">Name</label>
+                  <Input
+                    value={settingsName}
+                    onChange={(e) => setSettingsName(e.target.value)}
+                    placeholder="Your name"
+                  />
+                </div>
+
+                <div className="flex flex-col gap-1">
+                  <label className="text-[14px] text-hint">
+                    Daily tip limit (USDC)
+                  </label>
+                  <Input
+                    type="number"
+                    value={settingsLimit}
+                    onChange={(e) => setSettingsLimit(e.target.value)}
+                    placeholder="No limit"
+                  />
+                  <p className="text-[13px] text-hint">
+                    Leave empty for no limit. Resets every day.
+                  </p>
+                </div>
+
+                {settingsError && (
+                  <p className="text-[15px] font-extrabold text-danger text-center">
+                    {settingsError}
+                  </p>
+                )}
+
+                <Button size="block" disabled={settingsSaving} onClick={saveSettings}>
+                  {settingsSaving ? "Saving..." : "Save"}
+                </Button>
                 <Button
                   variant="link"
                   size="text"

@@ -15,6 +15,7 @@ import { useWeb3 } from "@/components/web3-provider";
 import { useBalance } from "@/contexts/balanceContext";
 import { toast } from "sonner";
 import { decodeTapTipQr } from "@/lib/utils/qr-payment";
+import { createSupabaseBrowserClient } from "@/lib/supabase/browser-client";
 
 // Gia tri tinh bang USDC truc tiep, chua lam quy doi VND (can ty gia that,
 // khong hardcode).
@@ -28,9 +29,19 @@ interface Props {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   initialAmount?: string;
+  profileId: string;
+  dailyLimit: number | null;
 }
 
-export default function SendFlow({ open, onOpenChange, initialAmount }: Props) {
+const supabase = createSupabaseBrowserClient();
+
+export default function SendFlow({
+  open,
+  onOpenChange,
+  initialAmount,
+  profileId,
+  dailyLimit,
+}: Props) {
   const { sendUSDC } = useWeb3();
   const { balance, refreshBalances } = useBalance();
   const [step, setStep] = useState<Step>("amount");
@@ -43,6 +54,12 @@ export default function SendFlow({ open, onOpenChange, initialAmount }: Props) {
   );
   const [scanError, setScanError] = useState<string | null>(null);
   const [lastAmount, setLastAmount] = useState<string | null>(null);
+
+  // So da gui hom nay: doc tu DB luc mo popup, cong them phan gui THAT trong
+  // chinh phien nay (spentToday tu DB co the tre vai giay do phu thuoc
+  // webhook Circle, sentThisSession bu lai khoang tre do trong cung 1 lan mo).
+  const [spentToday, setSpentToday] = useState(0);
+  const [sentThisSession, setSentThisSession] = useState(0);
 
   const scannerRef = useRef<Html5Qrcode | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -64,6 +81,8 @@ export default function SendFlow({ open, onOpenChange, initialAmount }: Props) {
         setAmount(initialAmount);
         setStep("scan");
       }
+      setSentThisSession(0);
+      fetchSpentToday();
     } else {
       setStep("amount");
       setAmount(null);
@@ -74,6 +93,30 @@ export default function SendFlow({ open, onOpenChange, initialAmount }: Props) {
       stopScanner();
     }
   }, [open, initialAmount]);
+
+  const fetchSpentToday = async () => {
+    if (!profileId) return;
+    const startOfDay = new Date();
+    startOfDay.setHours(0, 0, 0, 0);
+
+    const { data, error } = await supabase
+      .from("transactions")
+      .select("amount")
+      .eq("profile_id", profileId)
+      .eq("transaction_type", "USDC_TRANSFER_OUT")
+      .gte("created_at", startOfDay.toISOString());
+
+    if (error) {
+      console.error("Could not load today's sent total:", error);
+      return;
+    }
+
+    const total = (data ?? []).reduce(
+      (sum, row: any) => sum + (parseFloat(row.amount) || 0),
+      0,
+    );
+    setSpentToday(total);
+  };
 
   useEffect(() => {
     if (step === "scan") {
@@ -92,6 +135,8 @@ export default function SendFlow({ open, onOpenChange, initialAmount }: Props) {
   };
 
   const balanceNum = isNaN(balance.token) ? 0 : balance.token;
+  const remainingToday =
+    dailyLimit == null ? Infinity : dailyLimit - spentToday - sentThisSession;
 
   const choosePreset = (value: string) => {
     setAmount(value);
@@ -201,6 +246,13 @@ export default function SendFlow({ open, onOpenChange, initialAmount }: Props) {
       setScanError("Missing amount, go back and choose an amount.");
       return;
     }
+    if (parseFloat(amount) > remainingToday) {
+      setScanError(
+        `Daily tip limit reached - ${Math.max(0, remainingToday).toFixed(2)} USDC left today.`,
+      );
+      setStep("amount");
+      return;
+    }
 
     stopScanner();
     setStep("sending");
@@ -214,6 +266,7 @@ export default function SendFlow({ open, onOpenChange, initialAmount }: Props) {
     }
 
     setLastAmount(amount);
+    setSentThisSession((prev) => prev + parseFloat(amount));
     setStep("success");
     refreshBalances().catch((err) => {
       console.error("Failed to refresh balance after send:", err);
@@ -246,9 +299,18 @@ export default function SendFlow({ open, onOpenChange, initialAmount }: Props) {
               <DialogTitle>Choose an amount</DialogTitle>
             </DialogHeader>
 
+            {dailyLimit != null && (
+              <p className="text-[13px] text-hint text-center">
+                {Math.max(0, remainingToday).toFixed(2)} USDC left today
+                (limit {dailyLimit} USDC)
+              </p>
+            )}
+
             <div className="flex-1 min-h-0 overflow-y-auto flex flex-col gap-[10px]">
               {presets.map((value, index) => {
-                const disabled = parseFloat(value) > balanceNum;
+                const exceedsBalance = parseFloat(value) > balanceNum;
+                const exceedsDailyLimit = parseFloat(value) > remainingToday;
+                const disabled = exceedsBalance || exceedsDailyLimit;
                 const confirming = confirmDeleteIndex === index;
                 return (
                   <div
@@ -265,7 +327,7 @@ export default function SendFlow({ open, onOpenChange, initialAmount }: Props) {
                       <span className="font-num">{value} USDC</span>
                       {disabled && (
                         <span className="text-[13px] text-hint">
-                          Not enough balance
+                          {exceedsBalance ? "Not enough balance" : "Over daily limit"}
                         </span>
                       )}
                     </button>

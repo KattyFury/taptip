@@ -11,7 +11,25 @@
 
 ---
 
-## Trạng thái nghỉ 08-11 – đọc trước khi làm gì tiếp
+## Trạng thái nghỉ 08-27 – đọc trước khi làm gì tiếp (MỚI NHẤT, đọc mục này trước)
+
+**Đang giữa chừng viết lại v2 – KHÔNG phải bug, là quyết định chủ động.** Đừng hoảng khi thấy `.env.local` trống và code vẫn còn gọi Supabase – đúng như vậy, chưa xong.
+
+**Vì sao viết lại (2 lý do cộng dồn, không phải 1):**
+1. Circle account cũ **mất cả entity secret lẫn file recovery**, không tìm thấy ở đâu trên máy này. Tra lại Circle docs xác nhận: mất cả hai thì **hết đường phục hồi** – không đăng ký được entity secret mới cho account cũ (giới hạn theo account, không phải theo API key). Bắt buộc phải tạo account Circle mới bất kể có viết lại gì khác hay không.
+2. Nhân tiện phải động vào Circle, quyết định luôn bỏ Supabase – lý do thật: **free tier tự pause sau ~7 ngày không hoạt động**, lần nghỉ 08-11 → 08-27 (16 ngày) đã bị pause, unpause được nhưng gây khó chịu lặp lại mỗi lần tạm gác dự án. Chuyển sang **Cloudflare D1 + KV** (cùng hạ tầng với nơi đang deploy, không có khái niệm pause). Vẫn giữ đăng nhập email OTP (viết lại thủ công, gửi qua Resend đã setup sẵn), bỏ Supabase Realtime (2 chỗ đang dùng – `components/transactions.tsx`, `hooks/use-wallet-balances.ts` – đổi thành fetch lại khi mở màn thay vì tự đẩy).
+
+**Đã đi xa hơn: không chỉ đổi hạ tầng, làm luôn PRD v2.** Lý do: đằng nào cũng viết lại code, tận dụng luôn để rà lại toàn bộ luồng sản phẩm dựa trên bài học thật từ v1 (xem danh sách 6 điểm mâu thuẫn/phát sinh trong `docs/prd-v2-prompt-draft.md`, bản Desktop `TapTip_PRD_v2_PROMPT.md`) – gồm cả câu hỏi day dứt: tính năng "giới hạn tip/ngày" mới thêm (xem dưới) có mâu thuẫn với ranh giới v1 "KHÔNG giới hạn số tiền mỗi lần gửi" không.
+
+**Đang chờ:** user chạy prompt PRD v2 ở Claude Chat (đã đưa sẵn, đúng quy ước "Chat để nghĩ, Code để giữ và để làm" của series `build-on-arc`), mang bản chốt về lưu `docs/02-v2-hoan-thien-y-tuong.md`. Sau đó mới tới Bước 3 (Planning 2 vòng – vòng 2 lần này phải chốt tường minh D1+KV thay Supabase) rồi Bước 4 (Wireframe nếu luồng đổi), rồi mới code lại thật.
+
+**Việc đã làm hôm nay KHÔNG bị bỏ phí dù đổi hạ tầng** – tính năng Settings (sửa tên + đặt giới hạn tip/ngày, xem mục "Tính năng mới (08-27)" bên dưới) vẫn là quyết định sản phẩm đúng, chỉ cần port từ Supabase sang D1 khi viết lại, không phải nghĩ lại từ đầu. Riêng migration `daily_tip_limit` đã chạy thật trên Supabase project `taptip` (`kekdoqyehyozqvuhwsoh`) qua SQL Editor – **project đó sắp bị bỏ luôn**, đừng tưởng nhầm đây là nguồn sự thật cho schema D1 sau này, chỉ là lịch sử.
+
+**`.env.local` hiện tại:** chỉ có khung (`app/.env.local`), toàn bộ giá trị còn trống – account Circle mới + Supabase URL/anon key chưa điền vì đang tạm dừng để làm PRD v2 trước, tránh code 2 lần.
+
+---
+
+## Trạng thái nghỉ 08-11 – lịch sử, không còn là trạng thái hiện tại
 
 **Repo sạch, đã qua hết Giai đoạn 1 (logic/flow) + Giai đoạn 2 (giao diện theo `TapTip Design Spec.dc.html`) + một loạt fix UI/bug theo phản hồi thật.** Link thật đang chạy đúng.
 
@@ -150,6 +168,39 @@ Trước khi viết bất kỳ code nào đụng tới Circle Wallets hoặc Arc
 - **Circle Developer-Controlled Wallets (Entity Secret)** → load skill `circle:use-developer-controlled-wallets` TRƯỚC.
 - **Bất kỳ thứ gì khác của Circle** → xem danh sách skill tại https://docs.arc.io/ai/skills.
 - **Câu hỏi chung về Arc** → Arc MCP (`docs.arc.io/mcp`), dùng `search_arc_docs`/`query_docs_filesystem_arc_docs` trước khi đoán.
+
+## Tính năng mới (08-27): Sửa tên + giới hạn tip/ngày trong Cài đặt
+
+Thêm màn "Settings" vào popup Menu (Menu → Settings), sửa được 2 thứ:
+- **Tên** (`profiles.name`) – đã có sẵn từ lúc onboarding, giờ sửa lại được.
+- **Giới hạn tip mỗi ngày** (`profiles.daily_tip_limit`, cột mới, migration
+  `20260827080000_add_daily_tip_limit_to_profiles.sql`) – để trống = không
+  giới hạn (mặc định, giữ đúng ranh giới PRD gốc "không giới hạn số tiền mỗi
+  lần gửi" cho tới khi user tự bật).
+
+**Cách tính "đã tip bao nhiêu hôm nay":** đọc tổng `amount` trong bảng
+`transactions` (`transaction_type = USDC_TRANSFER_OUT`, `created_at` từ đầu
+ngày local) mỗi lần mở popup Tip, cộng thêm phần **gửi thật trong chính
+phiên popup đang mở** (`sentThisSession`, cộng dồn ngay sau mỗi lần gửi
+thành công). Lý do cần cộng thêm phần session: `transactions` được ghi vào
+DB qua webhook Circle (xem `app/api/webhooks/circle/route.ts`), có độ trễ
+vài giây so với lúc gửi thật – nếu chỉ tin số đọc từ DB, gửi liên tiếp nhanh
+trong cùng 1 lần mở popup có thể lách qua giới hạn.
+
+**Giới hạn đã biết – chưa xử lý:** kiểm tra chỉ nằm ở client (không có RLS,
+không có check phía server khi gọi Circle gửi tiền – toàn bộ luồng gửi vẫn
+100% client-side qua WebAuthn passkey như cũ). Người dùng mở 2 thiết bị cùng
+lúc, hoặc tự sửa code JS, đều lách được giới hạn. Chấp nhận được ở mức hiện
+tại vì đúng tinh thần bảo mật đã chấp nhận từ Product Discovery (ưu tiên tốc
+độ, tiền testnet) – nhưng nếu sau này cần giới hạn "cứng" thật sự, phải kiểm
+tra lại tổng đã gửi ở phía server ngay trước khi ký giao dịch, không chỉ ở
+UI.
+
+**File đã sửa:** `supabase/migrations/20260827080000_...sql`,
+`types/database.types.ts`, `components/icons.tsx` (icon `Settings` mới),
+`components/home-screen.tsx`, `components/send-flow.tsx`,
+`app/dashboard/page.tsx` (đổi prop `accountName` string → `profile` object
+đầy đủ). `npx tsc --noEmit` sạch sau khi sửa.
 
 ## Git
 

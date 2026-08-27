@@ -20,6 +20,7 @@ export interface Profile {
   id: string;
   auth_user_id: string;
   name: string;
+  daily_tip_limit: number | null;
   created_at: string;
 }
 

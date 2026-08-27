@@ -159,6 +159,20 @@ export function Menu({ className }: IconProps) {
   );
 }
 
+/** 3 thanh truot - mo man Cai dat tu Menu */
+export function Settings({ className }: IconProps) {
+  return (
+    <Svg className={className}>
+      <path d="M10 25H90" {...SRound} />
+      <circle cx="35" cy="25" r="8" fill="currentColor" />
+      <path d="M10 50H90" {...SRound} />
+      <circle cx="65" cy="50" r="8" fill="currentColor" />
+      <path d="M10 75H90" {...SRound} />
+      <circle cx="45" cy="75" r="8" fill="currentColor" />
+    </Svg>
+  );
+}
+
 /** Mui ten quay lai - nut phu hang hanh dong */
 export function Back({ className }: IconProps) {
   return (
