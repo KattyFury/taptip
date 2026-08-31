@@ -20,6 +20,7 @@
 
 import { encodedRedirect } from "@/lib/utils/utils";
 import { createClient } from "@/lib/utils/supabase/server";
+import { destroySession } from "@/lib/auth/session";
 import { cookies, headers } from "next/headers";
 import { redirect } from "next/navigation";
 
@@ -166,7 +167,6 @@ export const resetPasswordAction = async (formData: FormData) => {
 };
 
 export const signOutAction = async () => {
-  const supabase = await createClient();
-  await supabase.auth.signOut();
+  await destroySession();
   return redirect("/sign-in");
 };

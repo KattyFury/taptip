@@ -29,10 +29,8 @@ import {
 import { GlobalContext } from "@/contexts/global-context";
 import { useContext, useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
-import { createClient } from "@/lib/utils/supabase/client";
 
 export default function CodeConfirmation() {
-  const supabase = createClient();
   const router = useRouter();
   const { email } = useContext(GlobalContext);
 
@@ -65,35 +63,25 @@ export default function CodeConfirmation() {
     setLoading(true);
     setError(null);
 
-    const {
-      data: { session },
-      error: verifyError,
-    } = await supabase.auth.verifyOtp({
-      email,
-      token: confirmationCode,
-      type: "email",
+    const response = await fetch("/api/auth/verify-otp", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email, code: confirmationCode }),
     });
 
-    if (verifyError) {
+    setLoading(false);
+
+    if (!response.ok) {
       setError("Invalid code, try again.");
       setConfirmationCode("");
-      setLoading(false);
       return;
     }
 
-    if (!session) {
-      setError("Could not initialize session");
-      setLoading(false);
-      return;
-    }
+    const { needsOnboarding } = (await response.json()) as {
+      needsOnboarding: boolean;
+    };
 
-    const { data: profile } = await supabase
-      .from("profiles")
-      .select()
-      .eq("auth_user_id", session.user.id)
-      .single();
-
-    if (!profile) {
+    if (needsOnboarding) {
       router.push("/onboarding");
       return;
     }

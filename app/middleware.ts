@@ -17,7 +17,7 @@
  */
 
 import { NextResponse, type NextRequest } from "next/server";
-import { createSupabaseReqResClient } from "@/lib/supabase/server-client";
+import { getKv } from "@/lib/cloudflare";
 
 // Dung middleware.ts (Edge runtime, deprecated nhung con ho tro) thay vi
 // proxy.ts moi cua Next 16 - proxy.ts bat buoc chay Node.js runtime, va
@@ -49,19 +49,17 @@ export async function middleware(request: NextRequest) {
     );
   }
 
-  const supabase = await createSupabaseReqResClient(request, response);
+  const sessionToken = request.cookies.get("taptip_session")?.value;
+  const kv = await getKv();
+  const userId = sessionToken ? await kv.get(`session:${sessionToken}`) : null;
 
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  if (!user && request.nextUrl.pathname.startsWith("/dashboard")) {
+  if (!userId && request.nextUrl.pathname.startsWith("/dashboard")) {
     return NextResponse.redirect(new URL("/sign-in", request.url));
   }
 
   // "/" la man Splash + Add to Home Screen (app/page.tsx) - chi danh cho
   // nguoi chua dang nhap. Da dang nhap thi bo qua, vao thang dashboard.
-  if (user && request.nextUrl.pathname === "/") {
+  if (userId && request.nextUrl.pathname === "/") {
     return NextResponse.redirect(new URL("/dashboard", request.url))
   }
 

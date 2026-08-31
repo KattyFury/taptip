@@ -20,7 +20,6 @@
 
 import { Screen, BackAction, PrimaryButton, Field } from "@/components/screen";
 import * as Icon from "@/components/icons";
-import { createClient } from "@/lib/utils/supabase/client";
 import { GlobalContext } from "@/contexts/global-context";
 import { useRouter } from "next/navigation";
 import { ChangeEventHandler, useContext, useMemo, useState } from "react";
@@ -28,7 +27,6 @@ import { ChangeEventHandler, useContext, useMemo, useState } from "react";
 const EMAIL_DOMAIN_SUGGESTIONS = ["@gmail.com", "@icloud.com"];
 
 export default function SignIn() {
-  const supabase = createClient()
   const router = useRouter()
   const [email, setEmail] = useState('')
   const [loading, setLoading] = useState(false)
@@ -59,12 +57,17 @@ export default function SignIn() {
     setLoading(true)
     setError(null)
 
-    const { error: otpError } = await supabase.auth.signInWithOtp({ email })
+    const response = await fetch('/api/auth/send-otp', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email }),
+    })
 
     setLoading(false)
 
-    if (otpError) {
-      setError(otpError.message)
+    if (!response.ok) {
+      const { error: otpError } = (await response.json().catch(() => ({ error: 'Could not send code' }))) as { error: string }
+      setError(otpError)
       return
     }
 
