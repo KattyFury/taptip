@@ -198,6 +198,16 @@ export function Copy({ className }: IconProps) {
   );
 }
 
+/** But chi - sua muc tien trong popup Tip Setting */
+export function Edit({ className }: IconProps) {
+  return (
+    <Svg className={className}>
+      <path d="M20 80L25 60L65 20C68 17 73 17 76 20L80 24C83 27 83 32 80 35L40 75L20 80Z" {...SRound} />
+      <path d="M55 30L70 45" {...SRound} />
+    </Svg>
+  );
+}
+
 /** X trong khung - xoa muc tien, dong modal chi tiet giao dich */
 export function Cancel({ className }: IconProps) {
   return (

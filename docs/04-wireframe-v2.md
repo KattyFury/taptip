@@ -2,51 +2,51 @@
 
 Platform: PWA, lưới 10 hàng, khung 375×812 (giữ nguyên v1). Chỉ vẽ lại màn có thay đổi thật — màn nào không nhắc tới ở đây thì giữ nguyên `docs/04-wireframe.md` (bản v1).
 
-## Group A — Home ✅ đã chốt
+Mockup trực quan đã chốt (đen + `#FFCC00`, font Comfortaa cho số/Nunito cho chữ, khớp `app/layout.tsx`): https://claude.ai/code/artifact/537d3724-a68c-4e84-a8b1-6691d7868a1f
 
-**Trạng thái bình thường** (mỗi hàng ≈ 81px):
-- **Hàng 1–2:** chia ngang 2/3–1/3. 2/3 trái: "Balance" (hàng 1, cỡ nhỏ) + số dư (hàng 2, cỡ rất lớn, font tự co nhỏ khi số dài ra, không xuống dòng/tràn). 1/3 phải: nút Options, căn giữa theo chiều dọc cả 2 hàng.
-- **Hàng 3–6:** QR ví mình, căn giữa. Dưới QR: "Số tài khoản: `0x_NNNNN`" (5 số cuối) + icon copy cạnh bên. Click vào số → hiện địa chỉ đầy đủ. Click icon copy → copy thẳng vào clipboard, chỉ có toast xác nhận.
-- **Hàng 7–8:** vùng thông báo. Mặc định trống hoàn toàn. Khi có thông báo: dạng bong bóng tin nhắn, chữ dài được phép tràn dòng (wrap), có nút "x" để đóng.
-- **Hàng 9–10:** vùng nổi lên như 1 gờ tách biệt (shadow/bo góc riêng), nằm gọn trong 2 hàng, không tràn qua hàng 8. Chia 1/3 trái = nút "Tip Setting", 2/3 phải = nút "Tip" (to, chính).
+## Group A — Home ✅ đã chốt (bản sửa 2026-08-31, khác bản đầu)
 
-**Trạng thái xấu:**
-- Đang tải: hàng 1–2 skeleton loading; QR (hàng 3–6) vẫn hiện ngay vì không phụ thuộc balance.
-- Lỗi/mất mạng khi fetch balance: hàng 1–2 hiện "—" + icon lỗi nhỏ, chạm để thử lại, không chặn phần còn lại màn hình.
-- Không cần trạng thái xin quyền ở màn này.
+- **Hàng 1:** trái "Balance" (label nhỏ), phải icon Menu (hình vuông bo góc, nền `#FFCC00`).
+- **Hàng 2:** số dư lớn, rõ (VD `$124.50`), font Comfortaa đậm.
+- **Hàng 3-4-5:** QR ví mình, to full khối 3 hàng, khung bo góc đen.
+- **Hàng 6:** "Số tài khoản: `0x_a91c4`" (gạch chân vàng) + icon copy.
+- **Hàng 7-8:** vùng thông báo, khung bo góc nét đứt, mặc định trống.
+- **Hàng 9-10:** panel nổi bo góc trên, chia 1/3 trái "Tip Setting" (outline) — 2/3 phải "Tip" (nền `#FFCC00`, chữ đen, nút chính).
 
-## Group B — Màn quét QR ✅ chốt
+## Group B — Màn quét QR (Scan) ✅ chốt (bản sửa 2026-08-31, khác bản đầu)
 
-**Trạng thái bình thường:**
-- **Hàng 1:** nút thoát về Home (góc trái), nền trong suốt nổi trên camera.
-- **Hàng 2–7:** khung quét camera full width, khung vuông viewfinder ở giữa để canh QR.
-- **Hàng 8–9:** dải 4 ô chọn số tiền (nổi trên camera, nền card mờ đục) — luôn hiện đủ 4 ô, ô chưa có giá trị mờ/disable. 1 ô tô sáng theo mặc định đã chọn.
-- **Hàng 10:** trống (safe area).
+- **Hàng 1:** header, chữ "Tip" căn giữa (không phải nút back).
+- **Hàng 2:** trống (đệm).
+- **Hàng 3-4-5:** camera quét, to full khối 3 hàng, khung bo góc, viewfinder viền vàng.
+- **Hàng 6-7-8:** trống.
+- **Hàng 9:** dải 4 nút chọn số tiền `$1 $3 $10 $50`, nút đang chọn nền `#FFCC00`.
+- **Hàng 10:** chữ "Thoát" màu đỏ, căn giữa.
 
-**Popup tiến độ:** khối nhỏ ở giữa màn hình (khoảng hàng 4–6), nền camera phía sau mờ đi — không che hết màn hình, không che dải chọn số tiền.
+## Group C — Menu dropdown (từ icon Menu ở Home) ✅ chốt
 
-**Báo lỗi (QR không hợp lệ / số dư không đủ):** banner nhỏ ngay phía trên dải chọn số tiền (hàng 7), tự biến mất sau khoảng 2-3 giây, không cần bấm tắt.
+Dropdown neo góc phải-trên, xổ xuống ngay dưới icon Menu. 4 mục theo thứ tự: **Nạp → Rút → Lịch sử giao dịch → Đăng xuất** (mục cuối chữ đỏ). Chạm ra ngoài dropdown là đóng.
 
-**Trạng thái xấu — quyền camera:**
-- Chưa cấp quyền/bị từ chối: thay khung camera (hàng 2–7) bằng thông báo "Cần quyền camera để quét mã" + nút "Cấp quyền"; dải chọn số tiền vẫn hiện nhưng disable hết.
-- Đang chờ xin quyền (popup hệ thống lần đầu): giữ khung hàng 2–7 nhưng nền tối/placeholder, không hiện gì trong lúc chờ Allow/Deny.
+## Quy tắc chung cho MỌI popup nội dung (Tip Setting, Lịch sử giao dịch, và các popup Nạp/Rút sau này) ✅ chốt
 
-## Group C — Options dropdown (nút Options ở Home) ✅ chốt
-Dropdown menu nhỏ, neo góc phải-trên, xổ xuống ngay dưới nút Options (không phải popup 3/4). 2 mục: "Lịch sử giao dịch", "Đăng xuất". Chạm ra ngoài dropdown là đóng.
+- **Không phải bottom-sheet.** Popup là khối nổi giữa, **chiều ngang cố định = 3/4 chiều ngang màn hình**, chiều cao **tự co theo nội dung** (không cố định).
+- **Luôn căn giữa theo chiều ngang**, và **tâm popup luôn thẳng hàng với tâm hàng 4** của lưới 10 hàng (không phải căn giữa toàn màn hình theo chiều dọc).
+- Nền sau popup mờ đi (dim overlay). Bo góc lớn (~20px), shadow rõ.
+- Tất cả popup nội dung dùng chung 1 khuôn dạng này — không tự vẽ kiểu riêng cho từng popup.
 
-## Group D — Popup Tip Setting ✅ chốt
-Popup 3/4 màn hình (chuẩn chung của app: click ra ngoài hoặc bấm X là đóng).
-- Hàng đầu popup: tiêu đề "Tip Setting" + nút X góc phải.
-- 4 hàng tiếp theo, mỗi hàng 1 ô: số tiền hiện tại (bấm vào sửa, bàn phím số hiện lên) + radio chọn ô đó làm mặc định. Ô thứ 4 trống ban đầu — chưa nhập số thì radio disable.
-- Không có nút Lưu riêng — tự lưu ngay khi rời ô nhập.
-- Trạng thái xấu: lưu lỗi (mất mạng) → toast nhỏ "Không lưu được, thử lại" tại ô đó, giá trị cũ giữ nguyên.
+## Group D — Popup Tip Setting ✅ chốt (bản sửa 2026-08-31, khác bản đầu — không còn radio + không có header/nút X)
 
-## Group E — Popup Lịch sử giao dịch ✅ chốt
-Popup 3/4 màn hình, cùng chuẩn đóng.
-- Hàng đầu: tiêu đề "Lịch sử giao dịch" + nút X.
-- Còn lại: danh sách cuộn, mỗi dòng: icon chiều (gửi/nhận), đối tác (`0x_NNNNN` hoặc "Nạp từ ví ngoài"), số tiền, giờ:phút.
-- Trạng thái xấu: đang tải (skeleton list); trống ("Chưa có giao dịch nào"); lỗi mạng ("Không tải được lịch sử" + nút thử lại).
+Theo đúng khuôn popup chung ở trên. Nội dung: 4 hàng, mỗi hàng:
+- Số tiền (trái, Comfortaa đậm) — hàng đang là mặc định có thêm badge "Mặc định" (nền `#FFCC00`) cạnh số tiền.
+- Icon chỉnh sửa (phải, hình bút chì trong vòng tròn viền đen) — bấm vào để sửa số tiền / đặt làm mặc định cho hàng đó.
+
+Không có nút Lưu riêng — sửa xong tự lưu. Không có tiêu đề "Tip Setting" hay nút X hiển thị riêng — đóng bằng cách chạm ra ngoài popup (theo quy tắc chung).
+
+## Group E — Popup Lịch sử giao dịch ✅ chốt (bản sửa 2026-08-31, khác bản đầu — dùng khuôn popup chung, bỏ header)
+
+Theo đúng khuôn popup chung ở trên. Nội dung: danh sách giao dịch, mỗi dòng: icon chiều (gửi màu đỏ/nhận màu xanh, nền nhạt tương ứng), đối tác (`0x_NNNNN` hoặc "Nạp từ ví ngoài"), số tiền (Comfortaa, màu theo chiều), giờ:phút.
+
+**Trạng thái xấu** (đã mô tả ở bản đầu, vẫn áp dụng): đang tải (skeleton list); trống ("Chưa có giao dịch nào"); lỗi mạng ("Không tải được lịch sử" + nút thử lại).
 
 ---
 
-Bước 4 (Wireframe) hoàn tất — đủ 5 nhóm màn thay đổi so với v1. Bước tiếp theo: Bước 5 (Setup môi trường) rồi Bước 6 (Build).
+Bước 4 (Wireframe) hoàn tất. Bước 6 (Build) đang code UI Home/Scan/popup theo đúng mockup này.
