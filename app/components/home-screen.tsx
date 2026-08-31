@@ -85,15 +85,15 @@ function HomeScreenContent({ primaryWallet }: Props) {
       {/* Hang 1 */}
       <div
         style={{ flex: "1 1 0", minHeight: 0 }}
-        className="flex items-center justify-between px-5"
+        className="relative flex items-center justify-between px-5"
       >
-        <span className="text-small font-bold text-hint">Balance</span>
+        <span className="text-small font-bold text-hint uppercase tracking-wide">Balance</span>
         <button
           onClick={() => setMenuOpen((v) => !v)}
           aria-label="Mở menu"
-          className="w-[6cqh] h-[6cqh] min-w-[34px] min-h-[34px] rounded-xl bg-primary flex items-center justify-center"
+          className="w-[6cqh] h-[6cqh] min-w-[38px] min-h-[38px] rounded-full border border-foreground bg-background flex items-center justify-center"
         >
-          <Icon.Menu className="w-[3cqh] h-[3cqh] min-w-[16px] min-h-[16px] text-primary-foreground" />
+          <Icon.Menu className="w-[2.5cqh] h-[2.5cqh] min-w-[14px] min-h-[14px] text-foreground" />
         </button>
 
         {menuOpen && (
@@ -103,30 +103,34 @@ function HomeScreenContent({ primaryWallet }: Props) {
               onClick={() => setMenuOpen(false)}
               aria-hidden="true"
             />
-            <div className="absolute right-5 top-full z-50 mt-1.5 w-[200px] rounded-xl bg-background shadow-modal overflow-hidden">
+            <div className="absolute right-5 top-full z-50 mt-1.5 w-[210px] rounded-xl bg-background shadow-modal overflow-hidden">
               <button
-                className="w-full text-left px-4 py-3 text-[14px] font-bold border-b border-border"
+                className="w-full flex items-center gap-3 text-left px-4 py-3 text-[14px] font-bold border-b border-border"
                 onClick={() => openFromMenu("deposit")}
               >
+                <Icon.ArrowDown className="w-4 h-4 shrink-0" />
                 Nạp
               </button>
               <button
-                className="w-full text-left px-4 py-3 text-[14px] font-bold border-b border-border"
+                className="w-full flex items-center gap-3 text-left px-4 py-3 text-[14px] font-bold border-b border-border"
                 onClick={() => openFromMenu("withdraw")}
               >
+                <Icon.ArrowUp className="w-4 h-4 shrink-0" />
                 Rút
               </button>
               <button
-                className="w-full text-left px-4 py-3 text-[14px] font-bold border-b border-border"
+                className="w-full flex items-center gap-3 text-left px-4 py-3 text-[14px] font-bold border-b border-border"
                 onClick={() => openFromMenu("history")}
               >
+                <Icon.Clock className="w-4 h-4 shrink-0" />
                 Lịch sử giao dịch
               </button>
               <form action={signOutAction}>
                 <button
                   type="submit"
-                  className="w-full text-left px-4 py-3 text-[14px] font-bold text-danger"
+                  className="w-full flex items-center gap-3 text-left px-4 py-3 text-[14px] font-bold text-danger"
                 >
+                  <Icon.Logout className="w-4 h-4 shrink-0 text-danger" />
                   Đăng xuất
                 </button>
               </form>
@@ -138,14 +142,15 @@ function HomeScreenContent({ primaryWallet }: Props) {
       {/* Hang 2 */}
       <div
         style={{ flex: "1 1 0", minHeight: 0 }}
-        className="flex items-center px-5"
+        className="flex items-baseline gap-1.5 px-5"
       >
         <span className="text-figure font-bold font-num">
           ${formatBalance(balance.token)}
         </span>
+        <span className="text-small font-bold text-hint">USDC</span>
       </div>
 
-      {/* Hang 3-4-5 : QR to full */}
+      {/* Hang 3-4-5 : QR to full, the co bo goc + chấm vang trang tri */}
       <div
         style={{ flex: "3 1 0", minHeight: 0 }}
         className="flex items-center justify-center"
@@ -153,12 +158,16 @@ function HomeScreenContent({ primaryWallet }: Props) {
         {hasWallet ? (
           <div
             style={{ height: "100%", aspectRatio: "1" }}
-            className="p-[1.5cqh] bg-background border border-border rounded-xl flex items-center justify-center"
+            className="relative p-[1.5cqh] bg-background border border-border rounded-xl shadow-btn flex items-center justify-center"
           >
             <QRCodeSVG
               value={encodeTapTipQr(primaryWallet.wallet_address)}
               size={260}
               className="w-full h-full"
+            />
+            <span
+              aria-hidden
+              className="absolute -bottom-[1cqh] -right-[1cqh] w-[3cqh] h-[3cqh] min-w-[22px] min-h-[22px] rounded-full bg-primary border-2 border-background shadow-btn"
             />
           </div>
         ) : (
@@ -171,46 +180,56 @@ function HomeScreenContent({ primaryWallet }: Props) {
         )}
       </div>
 
-      {/* Hang 6 : so tai khoan rut gon */}
+      {/* Hang 6 : so tai khoan rut gon, dang chip */}
       <div
         style={{ flex: "1 1 0", minHeight: 0 }}
-        className="flex items-center justify-center gap-2"
+        className="flex items-center justify-center"
       >
-        <span className="text-small text-hint">Số tài khoản:</span>
-        <button
-          onClick={() => setAddressExpanded((v) => !v)}
-          className="text-small font-bold font-num underline decoration-primary decoration-2 underline-offset-2"
-        >
-          {addressExpanded
-            ? primaryWallet.wallet_address
-            : shortenAddress(primaryWallet.wallet_address)}
-        </button>
-        <button onClick={copyAddress} aria-label="Copy địa chỉ ví">
-          <Icon.Copy className="w-[2cqh] h-[2cqh] min-w-[14px] min-h-[14px]" />
-        </button>
+        <div className="flex items-center gap-2 bg-surface rounded-full py-1.5 pl-4 pr-1.5">
+          <span className="text-small text-hint font-bold">Số TK</span>
+          <button
+            onClick={() => setAddressExpanded((v) => !v)}
+            className="text-small font-bold font-num"
+          >
+            {addressExpanded
+              ? primaryWallet.wallet_address
+              : shortenAddress(primaryWallet.wallet_address)}
+          </button>
+          <button
+            onClick={copyAddress}
+            aria-label="Copy địa chỉ ví"
+            className="w-[3.4cqh] h-[3.4cqh] min-w-[26px] min-h-[26px] rounded-full bg-background flex items-center justify-center shrink-0"
+          >
+            <Icon.Copy className="w-[1.8cqh] h-[1.8cqh] min-w-[12px] min-h-[12px]" />
+          </button>
+        </div>
       </div>
 
       {/* Hang 7-8 : vung thong bao, mac dinh trong hoan toan - khong ve khung
           khi khong co gi, tranh nhin nhu placeholder quen xoa. */}
       <div style={{ flex: "2 1 0", minHeight: 0 }} />
 
-      {/* Hang 9-10 : panel noi, Tip Setting 1/3 + Tip 2/3 */}
+      {/* Hang 9-10 : 2 nut vien thuoc rieng biet, Tip Setting (vien) + Tip (day, co icon).
+          Chieu cao dat bang cqh (ty le theo KHUNG, khong phai theo hang) -
+          dung % cua hang 2 don vi se qua cao so voi be ngang, bien nut
+          "Tip Setting" (hep vi flex:1) thanh hinh tron thay vi vien thuoc. */}
       <div
         style={{ flex: "2 1 0", minHeight: 0, minWidth: 0 }}
-        className="flex rounded-t-xl overflow-hidden shadow-btn"
+        className="flex items-center gap-2.5 px-5"
       >
         <button
           style={{ flex: "1 1 0", minWidth: 0 }}
-          className="border-r border-border bg-background text-small font-bold flex items-center justify-center"
+          className="h-[6.8cqh] min-h-[52px] rounded-full border border-foreground bg-background text-small font-bold flex items-center justify-center"
           onClick={() => setPopup("tipSetting")}
         >
           Tip Setting
         </button>
         <button
           style={{ flex: "2 1 0", minWidth: 0 }}
-          className="bg-primary text-primary-foreground text-lead font-extrabold flex items-center justify-center"
+          className="h-[6.8cqh] min-h-[52px] rounded-full bg-primary text-primary-foreground shadow-btn text-lead font-extrabold flex items-center justify-center gap-2"
           onClick={() => setSendOpen(true)}
         >
+          <Icon.Tip className="w-[2.4cqh] h-[2.4cqh] min-w-[16px] min-h-[16px] shrink-0" />
           Tip
         </button>
       </div>

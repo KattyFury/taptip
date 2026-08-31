@@ -280,6 +280,26 @@ export function ArrowUp({ className }: IconProps) {
   );
 }
 
+/** Dong ho - muc "Lich su giao dich" trong Menu dropdown */
+export function Clock({ className }: IconProps) {
+  return (
+    <Svg className={className}>
+      <circle cx="50" cy="50" r="40" {...S} />
+      <path d="M50 28V52L68 64" {...SRound} />
+    </Svg>
+  );
+}
+
+/** Mui ten ra khoi khung - muc "Dang xuat" trong Menu dropdown */
+export function Logout({ className }: IconProps) {
+  return (
+    <Svg className={className}>
+      <path d="M60 15H25C19.4772 15 15 19.4772 15 25V75C15 80.5228 19.4772 85 25 85H60" {...SRound} />
+      <path d="M45 50H90M90 50L72 32M90 50L72 68" {...SRound} />
+    </Svg>
+  );
+}
+
 /** Canh bao - thong bao loi dang khoi */
 export function Warning({ className }: IconProps) {
   return (
