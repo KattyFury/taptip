@@ -26,11 +26,13 @@
 **Bước 6 (Build) đã bắt đầu, verify thật qua `next dev` (không chỉ đoán):**
 Toàn bộ chuỗi đăng nhập lần đầu hoạt động end-to-end: `/sign-in` → gửi OTP thật qua Resend → verify → tạo user D1 → session KV → `/dashboard/setup-wallet` (tạo ví qua passkey, hoặc nút "Skip for now" test nhanh) → `/dashboard` render OK. Đã dọn Supabase khỏi: middleware, auth actions, `(auth-pages)` layout, dashboard layout/page, setup-wallet, home-screen.tsx, send-flow.tsx, use-wallet-balances.ts, api/wallet/balance, api/auth-status, api/setup-wallets. Đã xoá `(auth-pages)/onboarding/` (v2 không thu thập tên lúc onboarding – tên hiển thị là Roadmap).
 
+**UI Home + Scan đã dựng lại xong theo đúng Wireframe v2** (đã duyệt qua mockup Claude Design, xem link trong `docs/04-wireframe-v2.md`): lưới 10 hàng mới, dropdown Menu (Nạp/Rút/Lịch sử/Đăng xuất), popup nội dung dùng chung 1 khuôn `content-popup.tsx` (rộng 3/4 màn hình, cao tự co, tâm luôn ở hàng 4 – KHÔNG phải Dialog căn giữa như v1). Tip Setting đã nối D1 `tip_settings` thật (đọc/ghi qua `api/tip-settings`, đã verify bằng curl). Send flow bỏ hẳn bước "chọn số tiền" riêng của v1 – giờ 4 nút chọn số tiền lấy thẳng từ Tip Setting, hiện ngay trên màn quét full-screen.
+
 **CÒN LẠI, ưu tiên tiếp theo:**
-1. Passkey thật + quét QR thật chỉ test được trên trình duyệt thật (không qua curl) – chưa verify tay.
-2. `components/transactions.tsx` + `app/api/wallet/transactions/**` vẫn đọc Supabase – cần viết lại theo D1 `transactions` (Wireframe v2 Group E).
-3. `app/api/wallet-set/route.ts`, `app/api/webhooks/circle/route.ts`, `app/api/manual-wallet-setup`, `app/api/debug-wallets`, `app/api/get-credential`, `app/api/update-login-credential`, `app/auth/callback/route.ts` – chưa đụng tới, có thể vẫn còn Supabase hoặc là code chết của luồng v1 cần rà lại.
-4. **UI Home vẫn là giao diện v1 cũ** (chưa có Tip Setting, Options dropdown, định dạng địa chỉ rút gọn `0x_NNNNN`) – cần dựng lại đúng theo `docs/04-wireframe-v2.md` Group A–E.
+1. Passkey thật + quét QR thật + mở dropdown/popup chỉ test được trên trình duyệt thật (không qua curl) – chưa verify tay, chỉ mới verify SSR (`/dashboard` trả 200 sạch) + API (`tip-settings` GET/PATCH đúng).
+2. `components/history-popup.tsx` đang dùng **dữ liệu mẫu tĩnh**, chưa đọc D1 `transactions` thật – cần viết luồng ghi giao dịch (webhook hoặc polling sau khi gửi) trước khi popup này có dữ liệu sống.
+3. `components/transactions.tsx` (bản cũ, không còn được dùng ở Home nữa) + `app/api/wallet/transactions/**` vẫn còn Supabase – cân nhắc xoá hẳn thay vì viết lại, vì `history-popup.tsx` đã thay thế đường hiển thị lịch sử.
+4. `app/api/wallet-set/route.ts`, `app/api/webhooks/circle/route.ts`, `app/api/manual-wallet-setup`, `app/api/debug-wallets`, `app/api/get-credential`, `app/api/update-login-credential`, `app/auth/callback/route.ts` – chưa đụng tới, có thể vẫn còn Supabase hoặc là code chết của luồng v1 cần rà lại.
 5. Trước khi deploy thật: khai domain production ở Client Key's Allowed Domain + Passkey Domain (xem cảnh báo ở trên).
 
 ---
