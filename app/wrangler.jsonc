@@ -11,5 +11,18 @@
   "assets": {
     "directory": ".open-next/assets",
     "binding": "ASSETS"
-  }
+  },
+  "d1_databases": [
+    {
+      "binding": "taptip_db",
+      "database_name": "taptip-db",
+      "database_id": "0e262626-aab8-46be-ae52-f648439a61e3"
+    }
+  ],
+  "kv_namespaces": [
+    {
+      "binding": "taptip_kv",
+      "id": "b9608e27b8cb47e8900c206a0d41bf7a"
+    }
+  ]
 }

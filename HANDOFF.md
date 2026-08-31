@@ -11,7 +11,25 @@
 
 ---
 
-## Trạng thái nghỉ 08-27 – đọc trước khi làm gì tiếp (MỚI NHẤT, đọc mục này trước)
+## Trạng thái 08-31 – đọc trước khi làm gì tiếp (MỚI NHẤT, đọc mục này trước)
+
+**PRD v2 + Product Discovery v2 + Stack v2 + Wireframe v2 đã chốt xong hết** (chạy qua Claude Chat theo quy trình `build-on-arc`, đem về lưu ở `docs/02-v2-hoan-thien-y-tuong.md` / `docs/03-planning-v2.md` / `docs/04-wireframe-v2.md`). Đổi lớn nhất so với v1: thêm Tip Setting (4 ô số tiền tùy chỉnh), bỏ chọn số tiền qua popup riêng (giờ chọn ngay trên màn quét QR), định danh ví hiển thị rút gọn `0x_NNNNN` (5 số cuối) thay vì tên/hash đầy đủ, bỏ Supabase sang Cloudflare D1 + KV.
+
+**Hạ tầng Cloudflare đã dựng xong (2026-08-31):**
+- D1 database `taptip-db` (id `0e262626-aab8-46be-ae52-f648439a61e3`) – đã tạo + migrate xong 3 bảng `users`/`tip_settings`/`transactions` (`app/migrations/0001_create_initial_schema.sql`).
+- KV namespace `taptip_kv` (id `b9608e27b8cb47e8900c206a0d41bf7a`) – đã tạo, chưa có key nào (dùng cho `otp:{email}` TTL 5 phút, `session:{token}` TTL 15 phút).
+- Cả 2 đã khai báo binding trong `app/wrangler.jsonc` (`taptip_db`, `taptip_kv`).
+
+**`app/.env.local` đã dọn lại (2026-08-31):** xoá hết config Supabase (không dùng ở v2) và xoá luôn `CIRCLE_API_KEY`/`CIRCLE_ENTITY_SECRET` cũ (account 08-08 – **đã xác nhận thật sự mất entity secret + recovery file**, không phải nhầm lẫn của bản ghi 08-27, không dùng lại được). Giữ nguyên Resend (vẫn dùng ở v2).
+
+**Việc còn treo, chặn Bước 6 (Build):**
+1. **Tạo account Circle Developer Console MỚI hoàn toàn** (việc chỉ user tự làm được – đăng ký + xác thực email) → lấy `CIRCLE_API_KEY` testnet mới, điền vào `app/.env.local`.
+2. Sinh + đăng ký Entity Secret mới qua SDK (`generateEntitySecret` + `registerEntitySecretCiphertext`, xem skill `circle:use-developer-controlled-wallets`) – làm được ngay sau khi có API key ở bước 1, nhớ backup recovery file ra khỏi `C:\tmp` (bài học từ v1, xem mục cũ bên dưới).
+3. Sau đó mới bắt đầu code lại thật (Bước 6) theo đúng Wireframe v2 + Stack v2.
+
+---
+
+## Trạng thái nghỉ 08-27 – lịch sử, không còn là trạng thái hiện tại
 
 **Đang giữa chừng viết lại v2 – KHÔNG phải bug, là quyết định chủ động.** Đừng hoảng khi thấy `.env.local` trống và code vẫn còn gọi Supabase – đúng như vậy, chưa xong.
 
