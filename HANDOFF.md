@@ -11,21 +11,27 @@
 
 ---
 
-## Trạng thái 08-31 – đọc trước khi làm gì tiếp (MỚI NHẤT, đọc mục này trước)
+## Trạng thái 08-31 tối – đọc trước khi làm gì tiếp (MỚI NHẤT, đọc mục này trước)
 
-**PRD v2 + Product Discovery v2 + Stack v2 + Wireframe v2 đã chốt xong hết** (chạy qua Claude Chat theo quy trình `build-on-arc`, đem về lưu ở `docs/02-v2-hoan-thien-y-tuong.md` / `docs/03-planning-v2.md` / `docs/04-wireframe-v2.md`). Đổi lớn nhất so với v1: thêm Tip Setting (4 ô số tiền tùy chỉnh), bỏ chọn số tiền qua popup riêng (giờ chọn ngay trên màn quét QR), định danh ví hiển thị rút gọn `0x_NNNNN` (5 số cuối) thay vì tên/hash đầy đủ, bỏ Supabase sang Cloudflare D1 + KV.
+**PRD v2 + Product Discovery v2 + Stack v2 + Wireframe v2 đã chốt xong hết** (chạy qua Claude Chat theo quy trình `build-on-arc`, lưu ở `docs/02-v2-hoan-thien-y-tuong.md` / `docs/03-planning-v2.md` / `docs/04-wireframe-v2.md`). Đổi lớn nhất so với v1: thêm Tip Setting (4 ô số tiền tùy chỉnh), chọn số tiền ngay trên màn quét QR thay vì popup riêng, định danh ví hiển thị rút gọn `0x_NNNNN` (5 số cuối), bỏ Supabase sang Cloudflare D1 + KV.
 
-**Hạ tầng Cloudflare đã dựng xong (2026-08-31):**
-- D1 database `taptip-db` (id `0e262626-aab8-46be-ae52-f648439a61e3`) – đã tạo + migrate xong 3 bảng `users`/`tip_settings`/`transactions` (`app/migrations/0001_create_initial_schema.sql`).
-- KV namespace `taptip_kv` (id `b9608e27b8cb47e8900c206a0d41bf7a`) – đã tạo, chưa có key nào (dùng cho `otp:{email}` TTL 5 phút, `session:{token}` TTL 15 phút).
-- Cả 2 đã khai báo binding trong `app/wrangler.jsonc` (`taptip_db`, `taptip_kv`).
+**Hạ tầng đã dựng xong và ĐANG SỐNG:**
+- D1 `taptip-db` + KV `taptip_kv` – đã tạo, migrate (bảng `users`/`tip_settings`/`transactions`), khai báo binding trong `app/wrangler.jsonc`. Nhớ migrate cả `--local` lẫn `--remote` (2 D1 tách biệt – `next dev` dùng bản `--local`).
+- Circle account MỚI (account thứ 3 sau 2 lần "brick" thật do lỗi ghi file recovery của Claude Code – xem cảnh báo dưới) – Entity Secret đã đăng ký thành công, recovery file lưu ở `C:\Users\Dell\CircleRecovery\taptip-v2-recovery.dat`, KHÔNG được mất lần nữa.
+- Client Key (Modular Wallets) đã tạo, Allowed Domain hiện đang là `localhost` – **CHƯA khai domain production** (`taptip.kattyfury1403.workers.dev`) và **CHƯA cấu hình Passkey Domain** ở Modular Wallets → Configurator → Passkey (bài học v1: 2 chỗ này phải khớp nhau, thiếu là passkey lỗi "Invalid credentials" trên domain thật).
+- `app/.env.local` đầy đủ Circle (API key + Entity Secret + Client Key/URL) + Resend, đã bỏ hết Supabase.
 
-**`app/.env.local` đã dọn lại (2026-08-31):** xoá hết config Supabase (không dùng ở v2) và xoá luôn `CIRCLE_API_KEY`/`CIRCLE_ENTITY_SECRET` cũ (account 08-08 – **đã xác nhận thật sự mất entity secret + recovery file**, không phải nhầm lẫn của bản ghi 08-27, không dùng lại được). Giữ nguyên Resend (vẫn dùng ở v2).
+**⚠️ Bài học đau (đừng lặp lại):** SDK `registerEntitySecretCiphertext` của Circle, khi `recoveryFileDownloadPath` trỏ sai (VD đưa tên file thay vì thư mục), vẫn đăng ký ciphertext THÀNH CÔNG với server trước khi bước ghi file thất bại – tức entity secret đã "chốt" phía Circle mà recovery file không có, account coi như hỏng vĩnh viễn (giống hệt lỗi account 08-08). Cách an toàn: đừng dựa vào tham số `recoveryFileDownloadPath` của SDK, tự lấy `response.data.recoveryFile` rồi `fs.writeFileSync` bằng tay ngay lập tức.
 
-**Việc còn treo, chặn Bước 6 (Build):**
-1. **Tạo account Circle Developer Console MỚI hoàn toàn** (việc chỉ user tự làm được – đăng ký + xác thực email) → lấy `CIRCLE_API_KEY` testnet mới, điền vào `app/.env.local`.
-2. Sinh + đăng ký Entity Secret mới qua SDK (`generateEntitySecret` + `registerEntitySecretCiphertext`, xem skill `circle:use-developer-controlled-wallets`) – làm được ngay sau khi có API key ở bước 1, nhớ backup recovery file ra khỏi `C:\tmp` (bài học từ v1, xem mục cũ bên dưới).
-3. Sau đó mới bắt đầu code lại thật (Bước 6) theo đúng Wireframe v2 + Stack v2.
+**Bước 6 (Build) đã bắt đầu, verify thật qua `next dev` (không chỉ đoán):**
+Toàn bộ chuỗi đăng nhập lần đầu hoạt động end-to-end: `/sign-in` → gửi OTP thật qua Resend → verify → tạo user D1 → session KV → `/dashboard/setup-wallet` (tạo ví qua passkey, hoặc nút "Skip for now" test nhanh) → `/dashboard` render OK. Đã dọn Supabase khỏi: middleware, auth actions, `(auth-pages)` layout, dashboard layout/page, setup-wallet, home-screen.tsx, send-flow.tsx, use-wallet-balances.ts, api/wallet/balance, api/auth-status, api/setup-wallets. Đã xoá `(auth-pages)/onboarding/` (v2 không thu thập tên lúc onboarding – tên hiển thị là Roadmap).
+
+**CÒN LẠI, ưu tiên tiếp theo:**
+1. Passkey thật + quét QR thật chỉ test được trên trình duyệt thật (không qua curl) – chưa verify tay.
+2. `components/transactions.tsx` + `app/api/wallet/transactions/**` vẫn đọc Supabase – cần viết lại theo D1 `transactions` (Wireframe v2 Group E).
+3. `app/api/wallet-set/route.ts`, `app/api/webhooks/circle/route.ts`, `app/api/manual-wallet-setup`, `app/api/debug-wallets`, `app/api/get-credential`, `app/api/update-login-credential`, `app/auth/callback/route.ts` – chưa đụng tới, có thể vẫn còn Supabase hoặc là code chết của luồng v1 cần rà lại.
+4. **UI Home vẫn là giao diện v1 cũ** (chưa có Tip Setting, Options dropdown, định dạng địa chỉ rút gọn `0x_NNNNN`) – cần dựng lại đúng theo `docs/04-wireframe-v2.md` Group A–E.
+5. Trước khi deploy thật: khai domain production ở Client Key's Allowed Domain + Passkey Domain (xem cảnh báo ở trên).
 
 ---
 
