@@ -17,26 +17,12 @@
  */
 
 import { NextResponse } from "next/server";
-import { createClient } from "@/lib/utils/supabase/server";
+import { getSession } from "@/lib/auth/session";
 
 export async function GET() {
-  try {
-    const supabase = await createClient();
+  const userId = await getSession();
 
-    // Get the current session
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-
-    return NextResponse.json({
-      authenticated: !!user,
-      user,
-    });
-  } catch (error) {
-    console.error("Error checking auth status:", error);
-    return NextResponse.json({
-      authenticated: false,
-      error: "Failed to check authentication status",
-    });
-  }
+  return NextResponse.json({
+    authenticated: !!userId,
+  });
 }

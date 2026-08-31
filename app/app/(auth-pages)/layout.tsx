@@ -19,8 +19,6 @@
 "use client";
 
 import { GlobalContextProvider } from "@/contexts/global-context";
-import { createClient } from "@/lib/utils/supabase/client";
-import type { User } from "@supabase/supabase-js";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
@@ -30,27 +28,25 @@ export default function Layout({
   children: React.ReactNode;
 }) {
   const router = useRouter();
-  const supabase = createClient();
-  const [user, setUser] = useState<User | null>()
+  const [checked, setChecked] = useState(false)
 
-  const getUser = async () => {
-    const {
-      data: { user: loggedUser },
-    } = await supabase.auth.getUser();
+  const checkAuth = async () => {
+    const response = await fetch('/api/auth-status')
+    const { authenticated } = (await response.json()) as { authenticated: boolean }
 
-    if (loggedUser) {
+    if (authenticated) {
       router.push('/dashboard')
       return
     }
 
-    setUser(null)
+    setChecked(true)
   }
 
   useEffect(() => {
-    getUser()
+    checkAuth()
   }, [])
 
-  if (user === undefined) return null;
+  if (!checked) return null;
 
   return (
     <GlobalContextProvider>

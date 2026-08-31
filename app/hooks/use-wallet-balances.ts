@@ -22,7 +22,6 @@ import { useState, useEffect, useCallback, useRef } from "react";
 import { useWeb3 } from "@/components/web3-provider";
 import { toast } from "sonner";
 import axios from "axios";
-import { createSupabaseBrowserClient } from "@/lib/supabase/browser-client";
 
 /**
  * knownAddress: dia chi vi da biet san tu server (primaryWallet.wallet_address),
@@ -37,9 +36,6 @@ export function useWalletBalances(knownAddress?: string) {
   const { account } = useWeb3();
   const effectiveAddress = knownAddress || account.address || null;
 
-  // Create Supabase client once per hook instance
-  const supabaseRef = useRef(createSupabaseBrowserClient());
-
   const [balance, setBalance] = useState({
     native: 0,
     token: 0,
@@ -50,39 +46,10 @@ export function useWalletBalances(knownAddress?: string) {
   const balancesLoadedRef = useRef(false);
   const prevAddressRef = useRef<string | null>(null);
   const isRefreshingRef = useRef(false);
-  const realtimeChannelRef = useRef<any>(null);
 
   interface BalanceResponse {
     balance: string;
   }
-
-  // Fetch balance directly from Supabase
-  const fetchBalanceFromDB = useCallback(
-    async (address: string): Promise<string> => {
-      if (!address) return "0";
-
-      try {
-        // Query the database directly
-        const { data, error } = await supabaseRef.current
-          .from("wallets")
-          .select("balance")
-          .eq("wallet_address", address.toLowerCase())
-          .eq("blockchain", "ARC")
-          .single();
-
-        if (error) {
-          console.error("Error fetching balance from DB:", error);
-          return "0";
-        }
-
-        return data?.balance || "0";
-      } catch (error) {
-        console.error("Error fetching balance from DB:", error);
-        return "0";
-      }
-    },
-    [],
-  );
 
   // Fetch balance from API
   const fetchBalanceFromAPI = useCallback(
@@ -107,7 +74,8 @@ export function useWalletBalances(knownAddress?: string) {
     [],
   );
 
-  // Load initial balances from DB, then refresh from API
+  // Load balance tu Circle API - v2 bo Supabase (khong con DB fast-path/cache
+  // rieng), moi lan mo Home la fetch lai thang tu Circle.
   const loadBalances = useCallback(async () => {
     if (!effectiveAddress || isRefreshingRef.current) {
       if (!effectiveAddress) {
@@ -118,32 +86,18 @@ export function useWalletBalances(knownAddress?: string) {
 
     isRefreshingRef.current = true;
 
-    // First set loading state
     setBalance((prev) => ({
       ...prev,
       loading: true,
     }));
 
     try {
-      // STEP 1: Try to get balance from DB first (fast)
-      const dbBalance = await fetchBalanceFromDB(effectiveAddress);
-
-      // Update state with DB value immediately (faster UX)
-      setBalance((prev) => ({
-        native: prev.native,
-        token: parseFloat(dbBalance) || 0,
-        loading: true, // Keep loading while we fetch from API
-      }));
-
-      // STEP 2: Then fetch from API to ensure latest value (slower but accurate)
       const apiBalance = await fetchBalanceFromAPI(effectiveAddress);
-
-      // Update state with API value and finish loading
       const finalBalance = parseFloat(apiBalance) || 0;
-      prevBalanceRef.current = finalBalance;
+
       setBalance((prev) => ({
         native: prev.native,
-        token: finalBalance || prev.token,
+        token: finalBalance,
         loading: false,
       }));
 
@@ -156,7 +110,7 @@ export function useWalletBalances(knownAddress?: string) {
     } finally {
       isRefreshingRef.current = false;
     }
-  }, [effectiveAddress, fetchBalanceFromDB, fetchBalanceFromAPI]);
+  }, [effectiveAddress, fetchBalanceFromAPI]);
 
   // Helper to check if account has changed
   const hasAddressChanged = useCallback(() => {
@@ -167,38 +121,6 @@ export function useWalletBalances(knownAddress?: string) {
 
     return prev !== current;
   }, [effectiveAddress]);
-
-  // Track previous balance for realtime toast dedup
-  const prevBalanceRef = useRef<number | null>(null);
-
-  // Handle realtime balance updates
-  const updateWalletBalance = useCallback(
-    (payload: any) => {
-      const newBalance = Number(payload.new.balance);
-
-      if (isNaN(newBalance)) {
-        console.error(
-          "Invalid balance update received:",
-          payload.new.balance,
-        );
-        return;
-      }
-
-      const prevBalance = prevBalanceRef.current;
-      if (prevBalance !== null && newBalance === prevBalance) {
-        return;
-      }
-
-      prevBalanceRef.current = newBalance;
-      toast.info(`Balance: ${newBalance} USDC`);
-
-      setBalance((prev) => ({
-        ...prev,
-        token: newBalance,
-      }));
-    },
-    [],
-  );
 
   // Initialize balances as soon as we know a wallet address - khong con cho
   // Web3Context/WebAuthn ket noi xong, dia chi da biet san tu server la du.
@@ -225,48 +147,6 @@ export function useWalletBalances(knownAddress?: string) {
       loadBalances();
     }
   }, [effectiveAddress, loadBalances, hasAddressChanged]);
-
-  // Set up realtime subscription for wallet updates
-  useEffect(() => {
-    if (realtimeChannelRef.current) {
-      supabaseRef.current.removeChannel(realtimeChannelRef.current);
-      realtimeChannelRef.current = null;
-    }
-
-    if (!effectiveAddress) return;
-
-    const walletChannel = supabaseRef.current
-      .channel("wallet-updates")
-      .on(
-        "postgres_changes",
-        {
-          event: "UPDATE",
-          schema: "public",
-          table: "wallets",
-        },
-        (payload) => {
-          const address = payload.new.wallet_address.toLowerCase();
-          const blockchain = payload.new.blockchain;
-
-          if (
-            blockchain === "ARC" &&
-            address === effectiveAddress?.toLowerCase()
-          ) {
-            updateWalletBalance(payload);
-          }
-        },
-      )
-      .subscribe();
-
-    realtimeChannelRef.current = walletChannel;
-
-    return () => {
-      if (realtimeChannelRef.current) {
-        supabaseRef.current.removeChannel(realtimeChannelRef.current);
-        realtimeChannelRef.current = null;
-      }
-    };
-  }, [effectiveAddress, updateWalletBalance]);
 
   return {
     balance,

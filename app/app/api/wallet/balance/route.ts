@@ -19,7 +19,6 @@
 import { type NextRequest, NextResponse } from "next/server";
 import axios from "axios";
 import { z } from "zod";
-import { createSupabaseServerClient } from "@/lib/supabase/server-client";
 
 // Schema validation
 const WalletIdSchema = z.object({
@@ -49,37 +48,7 @@ export async function POST(
     }
 
     const { walletId } = parseResult.data;
-    const normalizedWalletId = walletId.toLowerCase();
-
-    // Get the Supabase client
-    const supabase = await createSupabaseServerClient();
-
-    // Fetch the wallet information from the database
-    const { data: wallet, error: walletError } = await supabase
-      .from("wallets")
-      .select("*")
-      .eq("wallet_address", normalizedWalletId)
-      .eq("blockchain", "ARC")
-      .single();
-
-    if (walletError || !wallet) {
-      console.error("Error fetching wallet:", walletError);
-      return NextResponse.json(
-        { error: "Wallet not found in database" },
-        { status: 404 },
-      );
-    }
-
-    // Get the wallet address
-    const walletAddress = wallet.wallet_address;
-
-    if (!walletAddress) {
-      console.error("Wallet address not found in database record");
-      return NextResponse.json(
-        { error: "Wallet address not found in database record" },
-        { status: 400 },
-      );
-    }
+    const walletAddress = walletId.toLowerCase();
 
     try {
       // Use the blockchain + address endpoint to get balances
@@ -98,13 +67,6 @@ export async function POST(
         balanceResponse.data?.data?.tokenBalances?.find(
           (balance: any) => balance.token?.symbol === "USDC",
         )?.amount || "0";
-
-      // Update wallet balance in database
-      await supabase
-        .from("wallets")
-        .update({ balance: usdcBalance })
-        .eq("wallet_address", normalizedWalletId)
-        .eq("blockchain", "ARC");
 
       return NextResponse.json({ balance: usdcBalance });
     } catch (error) {
