@@ -82,7 +82,7 @@ export default function CodeConfirmation() {
     };
 
     if (needsOnboarding) {
-      router.push("/onboarding");
+      router.push("/dashboard/setup-wallet");
       return;
     }
 

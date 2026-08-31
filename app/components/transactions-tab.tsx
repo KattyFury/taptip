@@ -16,11 +16,10 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import type { Wallet } from "@/types/database.types";
 import { Transactions } from "@/components/transactions";
 
 interface Props {
-  primaryWallet: Wallet
+  primaryWallet: { wallet_address: string };
   profile: {
     id: any;
   } | null;
@@ -29,5 +28,7 @@ interface Props {
 // Modal "Tip history" chi co tieu de + o tim + danh sach theo ban thiet ke.
 // Tieu de do <DialogTitle> ben home-screen.tsx dat, khong dat lai o day.
 export default async function TransactionsTab({ primaryWallet, profile }: Props) {
-  return <Transactions wallet={primaryWallet} profile={profile} />
+  // TODO(v2): Transactions van doc tu Supabase (Wallet type day du) - se viet
+  // lai theo D1 o Wireframe v2 Group E, chua lam trong lan sua nay.
+  return <Transactions wallet={primaryWallet as any} profile={profile} />
 }

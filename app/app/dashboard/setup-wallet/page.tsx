@@ -18,24 +18,28 @@
 
 'use client';
 
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useRouter } from 'next/navigation';
 import { PasskeySetup } from '@/components/passkey-setup';
-import { createClient } from '@/lib/utils/supabase/client';
 import { useEffect, useState } from 'react';
 
 export default function SetupWalletPage() {
   const router = useRouter();
-  const supabase = createClient();
-  const searchParams = useSearchParams();
-  const username = searchParams.get('username') || '';
+  const [username] = useState(() => crypto.randomUUID());
   const [walletSetupComplete, setWalletSetupComplete] = useState<boolean>()
 
-  const getUser = async () => {
-    const {
-      data: { user: loggedUser },
-    } = await supabase.auth.getUser();
+  const checkWallet = async () => {
+    const response = await fetch('/api/auth-status')
+    const { authenticated, hasWallet } = (await response.json()) as {
+      authenticated: boolean
+      hasWallet: boolean
+    }
 
-    if (loggedUser?.user_metadata.wallet_setup_complete) {
+    if (!authenticated) {
+      router.push('/sign-in')
+      return
+    }
+
+    if (hasWallet) {
       router.push('/dashboard')
       return
     }
@@ -44,7 +48,7 @@ export default function SetupWalletPage() {
   }
 
   useEffect(() => {
-    getUser()
+    checkWallet()
   }, [router])
 
   if (walletSetupComplete === undefined) return null

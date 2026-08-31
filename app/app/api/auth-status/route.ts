@@ -18,11 +18,18 @@
 
 import { NextResponse } from "next/server";
 import { getSession } from "@/lib/auth/session";
+import { getUserById } from "@/lib/db/users";
 
 export async function GET() {
   const userId = await getSession();
+  if (!userId) {
+    return NextResponse.json({ authenticated: false, hasWallet: false });
+  }
+
+  const user = await getUserById(userId);
 
   return NextResponse.json({
-    authenticated: !!userId,
+    authenticated: true,
+    hasWallet: !!user?.wallet_address,
   });
 }

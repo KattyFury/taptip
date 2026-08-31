@@ -18,67 +18,34 @@
 
 import { redirect } from "next/navigation";
 import dynamic from "next/dynamic";
-import { createSupabaseServerComponentClient } from "@/lib/supabase/server-client";
+import { getSession } from "@/lib/auth/session";
+import { getUserById } from "@/lib/db/users";
 import HomeScreen from "@/components/home-screen";
 
 const TransactionsTab = dynamic(() => import("@/components/transactions-tab"), { ssr: true });
 
 export default async function Dashboard() {
-  const supabase = await createSupabaseServerComponentClient();
+  const userId = await getSession();
+  if (!userId) {
+    return redirect("/sign-in");
+  }
 
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
+  const user = await getUserById(userId);
   if (!user) {
     return redirect("/sign-in");
   }
 
-  const isWalletSetupComplete = user?.user_metadata?.wallet_setup_complete;
-
-  const { data: profile } = await supabase
-    .from("profiles")
-    .select()
-    .eq("auth_user_id", user?.id)
-    .single();
-
-  if (!profile) {
-    return redirect("/sign-in");
+  if (!user.wallet_address) {
+    return redirect("/dashboard/setup-wallet");
   }
 
-  // Check for wallets in database
-  const { data: wallets } = await supabase
-    .schema("public")
-    .from("wallets")
-    .select()
-    .eq("profile_id", profile.id);
-
-  const hasPendingWallets = wallets?.some(wallet =>
-    wallet.circle_wallet_id === "pending-setup" || !wallet.wallet_address
-  );
-
-  if ((!wallets || wallets.length === 0 || hasPendingWallets) && !isWalletSetupComplete) {
-    return redirect(`/dashboard/setup-wallet?username=${crypto.randomUUID()}`);
-  }
-
-  // Get the Arc wallet
-  const arcWallet = wallets?.find(w => w.blockchain === "ARC");
-
-  const primaryWallet = arcWallet || {
-    circle_wallet_id: "incomplete-setup",
-    wallet_address: user?.user_metadata?.wallet_address || "0x0",
-    profile_id: profile.id,
-    blockchain: "ARC",
-  };
+  const primaryWallet = { wallet_address: user.wallet_address };
+  const profile = { id: user.id, name: "", daily_tip_limit: null };
 
   return (
     <HomeScreen
       primaryWallet={primaryWallet}
-      profile={{
-        id: profile.id,
-        name: profile.name,
-        daily_tip_limit: profile.daily_tip_limit,
-      }}
+      profile={profile}
       historyContent={<TransactionsTab primaryWallet={primaryWallet} profile={profile} />}
     />
   );

@@ -15,7 +15,6 @@ import { useWeb3 } from "@/components/web3-provider";
 import { useBalance } from "@/contexts/balanceContext";
 import { toast } from "sonner";
 import { decodeTapTipQr } from "@/lib/utils/qr-payment";
-import { createSupabaseBrowserClient } from "@/lib/supabase/browser-client";
 
 // Gia tri tinh bang USDC truc tiep, chua lam quy doi VND (can ty gia that,
 // khong hardcode).
@@ -32,8 +31,6 @@ interface Props {
   profileId: string;
   dailyLimit: number | null;
 }
-
-const supabase = createSupabaseBrowserClient();
 
 export default function SendFlow({
   open,
@@ -94,28 +91,11 @@ export default function SendFlow({
     }
   }, [open, initialAmount]);
 
+  // TODO(v2): "gioi han tip theo ngay" la Roadmap (PRD v2 muc 4/6 - v2 khong
+  // gioi han), va bang transactions gio o D1 chu khong Supabase. Tam thoi
+  // khong tinh spentToday cho toi khi tinh nang nay lam that.
   const fetchSpentToday = async () => {
-    if (!profileId) return;
-    const startOfDay = new Date();
-    startOfDay.setHours(0, 0, 0, 0);
-
-    const { data, error } = await supabase
-      .from("transactions")
-      .select("amount")
-      .eq("profile_id", profileId)
-      .eq("transaction_type", "USDC_TRANSFER_OUT")
-      .gte("created_at", startOfDay.toISOString());
-
-    if (error) {
-      console.error("Could not load today's sent total:", error);
-      return;
-    }
-
-    const total = (data ?? []).reduce(
-      (sum, row: any) => sum + (parseFloat(row.amount) || 0),
-      0,
-    );
-    setSpentToday(total);
+    setSpentToday(0);
   };
 
   useEffect(() => {

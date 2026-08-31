@@ -17,50 +17,34 @@
  */
 
 import { NextRequest, NextResponse } from "next/server";
-import { createClient } from "@/lib/utils/supabase/server";
+import { getSession } from "@/lib/auth/session";
+import { setUserWalletAddress } from "@/lib/db/users";
 
 export async function POST(req: NextRequest) {
   try {
-    const { credential, circleAddress } = await req.json();
+    const { credential, circleAddress } = (await req.json()) as {
+      credential?: string;
+      circleAddress?: string;
+    };
 
     if (!credential) {
       return NextResponse.json(
         { error: "Credential is required" },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
-    // Get user session
-    const supabase = await createClient();
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-
-    if (!user) {
+    const userId = await getSession();
+    if (!userId) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    // Get user profile
-    const { data: profileData, error: profileError } = await supabase
-      .from("profiles")
-      .select()
-      .eq("auth_user_id", user.id)
-      .single();
-
-    if (profileError || !profileData) {
-      console.error("Error fetching profile:", profileError);
-      return NextResponse.json({ error: "Profile not found" }, { status: 404 });
-    }
-
-    // Parse the credential
-    const parsedCredential = JSON.parse(credential);
-
-    // Determine which address to use
-    let walletAddress;
+    let walletAddress: string;
 
     if (circleAddress) {
       walletAddress = circleAddress;
     } else {
+      const parsedCredential = JSON.parse(credential);
       const publicKey = parsedCredential.publicKey;
 
       const isValidPublicKey =
@@ -75,111 +59,23 @@ export async function POST(req: NextRequest) {
       walletAddress = publicKey.slice(0, 42).toLowerCase();
     }
 
-    // Store the credential string for database storage
-    const credentialString =
-      typeof credential === "string" ? credential : JSON.stringify(credential);
+    await setUserWalletAddress(userId, walletAddress);
 
-    // Check if wallet record exists for this profile
-    const { data: existingWallets } = await supabase
-      .from("wallets")
-      .select()
-      .eq("profile_id", profileData.id);
-
-    if (existingWallets && existingWallets.length > 0) {
-      // Update existing Arc wallet
-      const arcWallet = existingWallets.find(
-        (w) => w.blockchain === "ARC"
-      );
-      if (arcWallet) {
-        const { error: updateError } = await supabase
-          .from("wallets")
-          .update({
-            wallet_address: walletAddress,
-            passkey_credential: credentialString,
-            circle_wallet_id: walletAddress,
-            updated_at: new Date().toISOString(),
-          })
-          .eq("id", arcWallet.id);
-
-        if (updateError) {
-          console.error("Error updating Arc wallet:", updateError);
-        }
-      } else {
-        // Create new Arc wallet if only old chain wallets exist
-        const { error: insertError } = await supabase.from("wallets").insert({
-          profile_id: profileData.id,
-          wallet_address: walletAddress,
-          wallet_type: "modular",
-          blockchain: "ARC",
-          account_type: "SCA",
-          currency: "USDC",
-          passkey_credential: credentialString,
-          circle_wallet_id: walletAddress,
-        });
-
-        if (insertError) {
-          console.error("Error inserting Arc wallet:", insertError);
-        }
-      }
-    } else {
-      // Create new wallet record (Arc only)
-      const { error: insertError } = await supabase.from("wallets").insert({
-        profile_id: profileData.id,
-        wallet_address: walletAddress,
-        wallet_type: "modular",
-        blockchain: "ARC",
-        account_type: "SCA",
-        currency: "USDC",
-        passkey_credential: credentialString,
-        circle_wallet_id: walletAddress,
-      });
-
-      if (insertError) {
-        console.error("Error inserting new wallet:", insertError);
-        return NextResponse.json(
-          { error: "Could not create wallet" },
-          { status: 500 }
-        );
-      }
-    }
-
-    // Update user metadata to mark wallet setup as complete
-    const { error: updateUserError } = await supabase.auth.updateUser({
-      data: {
-        wallet_setup_complete: true,
-        wallet_address: walletAddress,
-      },
-    });
-
-    if (updateUserError) {
-      console.error("Error updating user metadata:", updateUserError);
-    }
-
-    // Set a cookie to indicate successful wallet setup
-    const headers = new Headers();
-    headers.append(
-      "Set-Cookie",
-      `wallet_setup_complete=true; Path=/; HttpOnly; SameSite=Strict; Max-Age=3600`
-    );
-
-    return new NextResponse(
-      JSON.stringify({
+    return NextResponse.json(
+      {
         message: "Wallet created successfully",
-        walletAddress: walletAddress,
+        walletAddress,
         success: true,
         redirectUrl: "/dashboard",
-      }),
-      {
-        status: 201,
-        headers,
-      }
+      },
+      { status: 201 },
     );
   } catch (error) {
     console.error("Error setting up wallets:", error);
     const message = error instanceof Error ? error.message : "Unknown error";
     return NextResponse.json(
       { error: `Failed to set up wallet: ${message}` },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

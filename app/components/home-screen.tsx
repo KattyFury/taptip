@@ -17,11 +17,8 @@ import { useBalance, BalanceProvider } from "@/contexts/balanceContext";
 import SendFlow from "@/components/send-flow";
 import { encodeTapTipQr } from "@/lib/utils/qr-payment";
 import { signOutAction } from "@/app/actions";
-import { createSupabaseBrowserClient } from "@/lib/supabase/browser-client";
 
 const CIRCLE_FAUCET_URL = "https://faucet.circle.com/";
-
-const supabase = createSupabaseBrowserClient();
 
 interface Props {
   primaryWallet: {
@@ -100,21 +97,11 @@ function HomeScreenContent({ primaryWallet, profile: initialProfile, historyCont
       limitValue = parsed;
     }
 
+    // TODO(v2): man Settings ten/daily_tip_limit se bi thay bang Wireframe v2
+    // Group D (popup Tip Setting) - tam thoi chi cap nhat local, chua persist.
     setSettingsSaving(true);
     setSettingsError(null);
-
-    const { error } = await supabase
-      .from("profiles")
-      .update({ name: trimmedName, daily_tip_limit: limitValue })
-      .eq("id", profile.id);
-
     setSettingsSaving(false);
-
-    if (error) {
-      console.error("Error saving settings:", error);
-      setSettingsError("Could not save, try again.");
-      return;
-    }
 
     setProfile({ ...profile, name: trimmedName, daily_tip_limit: limitValue });
     setMenuView("main");

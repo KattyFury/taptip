@@ -27,7 +27,6 @@ import {
 } from '@circle-fin/modular-wallets-core';
 import { Screen, BackAction, PrimaryButton, TextLink } from "@/components/screen";
 import * as Icon from "@/components/icons";
-import { createClient } from '@/lib/utils/supabase/client';
 import { createPublicClient } from 'viem';
 import {
     toWebAuthnAccount,
@@ -45,21 +44,25 @@ interface PasskeySetupProps {
 // This component handles the wallet setup after user registration
 export function PasskeySetup({ username }: PasskeySetupProps) {
     const router = useRouter();
-    const supabase = createClient();
     const [isCreating, setIsCreating] = useState(false);
     const [isSkipping, setIsSkipping] = useState(false);
     const [error, setError] = useState<string | null>(null);
 
-    // Bo qua passkey de test giao dien - danh dau wallet_setup_complete de
-    // dashboard/page.tsx khong tu dong day nguoc ve day (xem app/api/setup-wallets/route.ts,
-    // day la field that duoc dung tren luong that, khong phai bia moi). Khong
-    // co vi that nen Home hien placeholder "Creating wallet..." (da co san).
+    // Bo qua passkey de test giao dien - ghi wallet_address gia (placeholder,
+    // khong phai vi Circle that) de dashboard/page.tsx khong day nguoc ve day.
     const skipPasskey = async () => {
         setIsSkipping(true);
         try {
-            await supabase.auth.updateUser({ data: { wallet_setup_complete: true } });
+            await fetch('/api/setup-wallets', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    credential: '{}',
+                    circleAddress: '0x0000000000000000000000000000000000dead',
+                }),
+            });
         } catch (err) {
-            console.warn("Could not set wallet_setup_complete:", err);
+            console.warn("Could not skip wallet setup:", err);
         }
         router.push('/dashboard');
     };
