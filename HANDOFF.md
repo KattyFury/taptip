@@ -11,29 +11,44 @@
 
 ---
 
-## Trạng thái 08-31 tối – đọc trước khi làm gì tiếp (MỚI NHẤT, đọc mục này trước)
+## Trạng thái 08-31 đêm – đọc trước khi làm gì tiếp (MỚI NHẤT, đọc mục này trước)
 
 **PRD v2 + Product Discovery v2 + Stack v2 + Wireframe v2 đã chốt xong hết** (chạy qua Claude Chat theo quy trình `build-on-arc`, lưu ở `docs/02-v2-hoan-thien-y-tuong.md` / `docs/03-planning-v2.md` / `docs/04-wireframe-v2.md`). Đổi lớn nhất so với v1: thêm Tip Setting (4 ô số tiền tùy chỉnh), chọn số tiền ngay trên màn quét QR thay vì popup riêng, định danh ví hiển thị rút gọn `0x_NNNNN` (5 số cuối), bỏ Supabase sang Cloudflare D1 + KV.
 
-**Hạ tầng đã dựng xong và ĐANG SỐNG:**
+### Hạ tầng – đã dựng xong, ĐANG SỐNG
 - D1 `taptip-db` + KV `taptip_kv` – đã tạo, migrate (bảng `users`/`tip_settings`/`transactions`), khai báo binding trong `app/wrangler.jsonc`. Nhớ migrate cả `--local` lẫn `--remote` (2 D1 tách biệt – `next dev` dùng bản `--local`).
 - Circle account MỚI (account thứ 3 sau 2 lần "brick" thật do lỗi ghi file recovery của Claude Code – xem cảnh báo dưới) – Entity Secret đã đăng ký thành công, recovery file lưu ở `C:\Users\Dell\CircleRecovery\taptip-v2-recovery.dat`, KHÔNG được mất lần nữa.
 - Client Key (Modular Wallets) đã tạo, Allowed Domain hiện đang là `localhost` – **CHƯA khai domain production** (`taptip.kattyfury1403.workers.dev`) và **CHƯA cấu hình Passkey Domain** ở Modular Wallets → Configurator → Passkey (bài học v1: 2 chỗ này phải khớp nhau, thiếu là passkey lỗi "Invalid credentials" trên domain thật).
 - `app/.env.local` đầy đủ Circle (API key + Entity Secret + Client Key/URL) + Resend, đã bỏ hết Supabase.
 
-**⚠️ Bài học đau (đừng lặp lại):** SDK `registerEntitySecretCiphertext` của Circle, khi `recoveryFileDownloadPath` trỏ sai (VD đưa tên file thay vì thư mục), vẫn đăng ký ciphertext THÀNH CÔNG với server trước khi bước ghi file thất bại – tức entity secret đã "chốt" phía Circle mà recovery file không có, account coi như hỏng vĩnh viễn (giống hệt lỗi account 08-08). Cách an toàn: đừng dựa vào tham số `recoveryFileDownloadPath` của SDK, tự lấy `response.data.recoveryFile` rồi `fs.writeFileSync` bằng tay ngay lập tức.
+### ⚠️ 2 bài học đau (đừng lặp lại)
+1. SDK `registerEntitySecretCiphertext` của Circle, khi `recoveryFileDownloadPath` trỏ sai (VD đưa tên file thay vì thư mục), vẫn đăng ký ciphertext THÀNH CÔNG với server trước khi bước ghi file thất bại – tức entity secret đã "chốt" phía Circle mà recovery file không có, account coi như hỏng vĩnh viễn (giống hệt lỗi account 08-08). Cách an toàn: đừng dựa vào tham số `recoveryFileDownloadPath` của SDK, tự lấy `response.data.recoveryFile` rồi `fs.writeFileSync` bằng tay ngay lập tức.
+2. `taskkill /IM chrome.exe` tắt **TOÀN BỘ** Chrome trên máy, không chỉ tiến trình debug vừa mở – nếu cần dọn 1 Chrome headless cụ thể (VD dùng để chụp ảnh app qua CDP), phải tắt đúng PID của chính nó, không dùng taskkill theo tên process.
 
-**Bước 6 (Build) đã bắt đầu, verify thật qua `next dev` (không chỉ đoán):**
+### Bước 6 (Build) – luồng auth + tạo ví: verify thật qua `next dev`, không chỉ đoán
 Toàn bộ chuỗi đăng nhập lần đầu hoạt động end-to-end: `/sign-in` → gửi OTP thật qua Resend → verify → tạo user D1 → session KV → `/dashboard/setup-wallet` (tạo ví qua passkey, hoặc nút "Skip for now" test nhanh) → `/dashboard` render OK. Đã dọn Supabase khỏi: middleware, auth actions, `(auth-pages)` layout, dashboard layout/page, setup-wallet, home-screen.tsx, send-flow.tsx, use-wallet-balances.ts, api/wallet/balance, api/auth-status, api/setup-wallets. Đã xoá `(auth-pages)/onboarding/` (v2 không thu thập tên lúc onboarding – tên hiển thị là Roadmap).
 
-**UI Home + Scan đã dựng lại xong theo đúng Wireframe v2** (đã duyệt qua mockup Claude Design, xem link trong `docs/04-wireframe-v2.md`): lưới 10 hàng mới, dropdown Menu (Nạp/Rút/Lịch sử/Đăng xuất), popup nội dung dùng chung 1 khuôn `content-popup.tsx` (rộng 3/4 màn hình, cao tự co, tâm luôn ở hàng 4 – KHÔNG phải Dialog căn giữa như v1). Tip Setting đã nối D1 `tip_settings` thật (đọc/ghi qua `api/tip-settings`, đã verify bằng curl). Send flow bỏ hẳn bước "chọn số tiền" riêng của v1 – giờ 4 nút chọn số tiền lấy thẳng từ Tip Setting, hiện ngay trên màn quét full-screen.
+### UI Home + Scan + popup – đã dựng lại theo Wireframe v2, ĐÃ QUA 2 VÒNG THIẾT KẾ + VERIFY BẰNG ẢNH CHỤP THẬT
+Quy trình: (1) wireframe low-fi (Claude Design canvas) → user duyệt bố cục/hàng → (2) hi-fi polish (màu đen + `#FFCC00`, font Comfortaa/Nunito, đúng token `app/globals.css`) → user duyệt hình → (3) code vào app → **tự chụp ảnh trình duyệt thật qua Chrome DevTools Protocol (có cookie đăng nhập session KV thật, không phải chỉ đọc code)** để verify, phát hiện + sửa 2 lỗi ẩn:
+1. 2 nút Tip Setting/Tip render thành hình tròn thay vì viên thuốc (do `h-[66.6%]` của hàng 2 đơn vị quá cao so với bề ngang) → đổi sang `h-[6.8cqh]` cố định.
+2. Dropdown Menu bị đẩy lệch ra NGOÀI khung nhìn thấy (thiếu `position: relative` ở hàng chứa nút Menu, khiến `absolute top-full` neo nhầm vào toàn khung 10 hàng) → thêm `relative`.
 
-**CÒN LẠI, ưu tiên tiếp theo:**
-1. Passkey thật + quét QR thật + mở dropdown/popup chỉ test được trên trình duyệt thật (không qua curl) – chưa verify tay, chỉ mới verify SSR (`/dashboard` trả 200 sạch) + API (`tip-settings` GET/PATCH đúng).
+Kết quả hiện tại (ảnh chụp thật đã xác nhận đúng):
+- **Home**: hàng 1 "Balance" + nút Menu tròn viền đen; hàng 2 số dư lớn + nhãn USDC; hàng 3-5 thẻ QR bo góc/đổ bóng/chấm vàng góc; hàng 6 chip "Số TK 0x_NNNNN" + icon copy; hàng 7-8 trống thật (không viền); hàng 9-10 hai nút viên thuốc riêng (Tip Setting viền đen, Tip vàng có icon).
+- **Dropdown Menu** (từ icon Menu): Nạp (icon mũi tên xuống) / Rút (mũi tên lên) / Lịch sử giao dịch (icon đồng hồ) / Đăng xuất (icon logout, chữ đỏ) – icon Nạp/Rút dùng lại đúng `Icon.ArrowDown`/`Icon.ArrowUp` đã có sẵn (nhận=xuống=xanh, gửi=lên=đỏ) để nhất quán ngữ nghĩa với Lịch sử; `Icon.Clock` và `Icon.Logout` mới thêm vào `icons.tsx`.
+- **Popup nội dung** (`content-popup.tsx`, dùng chung cho Tip Setting/Lịch sử/Nạp/Rút): rộng 3/4 màn hình, cao tự co theo nội dung, **tâm luôn nằm giữa hàng 5-6 (= chính giữa màn hình theo chiều dọc, top: 50%)** – đã đổi từ "tâm hàng 4" (bản đầu) sang mốc mới này theo yêu cầu.
+- **Tip Setting**: đọc/ghi D1 `tip_settings` thật qua `api/tip-settings` (đã verify GET/PATCH bằng cả curl lẫn thao tác thật trên trình duyệt).
+- **Send flow** (màn quét): bỏ hẳn bước "chọn số tiền" riêng của v1 (Dialog + preset localStorage) – giờ full-screen, 4 nút chọn số tiền lấy thẳng từ Tip Setting.
+
+Xem mockup đã duyệt: link low-fi + hi-fi nằm trong lịch sử hội thoại (không lưu lại trong file – nếu cần xem lại thiết kế gốc, hỏi user hoặc `/artifacts` trong Claude Code).
+
+### CÒN LẠI, ưu tiên tiếp theo
+1. Passkey thật + quét QR thật (camera) chưa test được qua ảnh chụp tự động (cần tương tác WebAuthn thật của người dùng) – cần user tự thử trên điện thoại/trình duyệt thật.
 2. `components/history-popup.tsx` đang dùng **dữ liệu mẫu tĩnh**, chưa đọc D1 `transactions` thật – cần viết luồng ghi giao dịch (webhook hoặc polling sau khi gửi) trước khi popup này có dữ liệu sống.
 3. `components/transactions.tsx` (bản cũ, không còn được dùng ở Home nữa) + `app/api/wallet/transactions/**` vẫn còn Supabase – cân nhắc xoá hẳn thay vì viết lại, vì `history-popup.tsx` đã thay thế đường hiển thị lịch sử.
 4. `app/api/wallet-set/route.ts`, `app/api/webhooks/circle/route.ts`, `app/api/manual-wallet-setup`, `app/api/debug-wallets`, `app/api/get-credential`, `app/api/update-login-credential`, `app/auth/callback/route.ts` – chưa đụng tới, có thể vẫn còn Supabase hoặc là code chết của luồng v1 cần rà lại.
-5. Trước khi deploy thật: khai domain production ở Client Key's Allowed Domain + Passkey Domain (xem cảnh báo ở trên).
+5. Nạp/Rút trong dropdown Menu hiện vẫn dùng nội dung tạm (copy từ v1) trong `home-screen.tsx` – chưa qua thiết kế hi-fi riêng, chỉ mới bọc lại bằng `ContentPopup` cho đồng bộ khuôn.
+6. Trước khi deploy thật: khai domain production ở Client Key's Allowed Domain + Passkey Domain (xem cảnh báo ở trên).
 
 ---
 
