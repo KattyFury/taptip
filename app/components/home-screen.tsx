@@ -190,13 +190,9 @@ function HomeScreenContent({ primaryWallet }: Props) {
         </button>
       </div>
 
-      {/* Hang 7-8 : vung thong bao, mac dinh trong */}
-      <div
-        style={{ flex: "2 1 0", minHeight: 0 }}
-        className="flex items-center justify-center px-5"
-      >
-        <div className="w-full h-[calc(100%-16px)] rounded-xl border border-dashed border-border" />
-      </div>
+      {/* Hang 7-8 : vung thong bao, mac dinh trong hoan toan - khong ve khung
+          khi khong co gi, tranh nhin nhu placeholder quen xoa. */}
+      <div style={{ flex: "2 1 0", minHeight: 0 }} />
 
       {/* Hang 9-10 : panel noi, Tip Setting 1/3 + Tip 2/3 */}
       <div
