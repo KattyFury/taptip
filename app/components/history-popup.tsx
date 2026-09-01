@@ -1,17 +1,26 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import { ContentPopup } from "@/components/content-popup";
 import * as Icon from "@/components/icons";
+import { toast } from "sonner";
 
-// TODO(v2): danh sach tinh, chua noi D1 `transactions` that (xem
-// docs/HANDOFF.md muc "CON LAI" - can viet lai luong ghi giao dich vao D1
-// truoc khi popup nay doc duoc du lieu song). Giu placeholder de UI dung
-// dung khuon ContentPopup, khong crash vi Supabase nhu ban v1.
-const SAMPLE_ROWS = [
-  { direction: "out" as const, counterparty: "0x_a91c4", amount: 3, time: "14:22" },
-  { direction: "in" as const, counterparty: "0x_7fe20", amount: 1, time: "11:05" },
-  { direction: "in" as const, counterparty: "Nạp từ ví ngoài", amount: 50, time: "09:40" },
-];
+interface TransactionRow {
+  direction: "in" | "out";
+  counterparty: string;
+  amount: number;
+  createdAt: string;
+}
+
+function shortenAddress(address: string): string {
+  if (!address || address.length < 8) return address;
+  return `0x_${address.slice(-5)}`;
+}
+
+function formatTime(iso: string): string {
+  const date = new Date(iso.endsWith("Z") ? iso : `${iso}Z`);
+  return date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+}
 
 export function HistoryPopup({
   open,
@@ -20,10 +29,27 @@ export function HistoryPopup({
   open: boolean;
   onClose: () => void;
 }) {
+  const [rows, setRows] = useState<TransactionRow[] | null>(null);
+
+  useEffect(() => {
+    if (!open) return;
+    setRows(null);
+    fetch("/api/transactions")
+      .then((res) => res.json() as Promise<{ transactions: TransactionRow[] }>)
+      .then((data) => setRows(data.transactions))
+      .catch(() => toast.error("Không tải được lịch sử giao dịch"));
+  }, [open]);
+
   return (
     <ContentPopup open={open} onClose={onClose}>
       <div className="flex flex-col px-[18px] max-h-[60vh] overflow-y-auto">
-        {SAMPLE_ROWS.map((row, i) => (
+        {rows == null && (
+          <p className="py-6 text-center text-[14px] text-hint">Đang tải...</p>
+        )}
+        {rows != null && rows.length === 0 && (
+          <p className="py-6 text-center text-[14px] text-hint">Chưa có giao dịch nào</p>
+        )}
+        {rows?.map((row, i) => (
           <div
             key={i}
             className="flex items-center gap-3 py-3.5 border-b border-border last:border-b-0"
@@ -40,7 +66,9 @@ export function HistoryPopup({
                 <Icon.ArrowDown className={"w-3.5 h-3.5 text-success"} />
               )}
             </div>
-            <span className="flex-1 text-[14px] font-semibold">{row.counterparty}</span>
+            <span className="flex-1 text-[14px] font-semibold">
+              {shortenAddress(row.counterparty)}
+            </span>
             <div className="text-right">
               <div
                 className={
@@ -50,7 +78,7 @@ export function HistoryPopup({
               >
                 {row.direction === "out" ? "-" : "+"}${row.amount.toFixed(2)}
               </div>
-              <div className="text-[10px] text-hint">{row.time}</div>
+              <div className="text-[10px] text-hint">{formatTime(row.createdAt)}</div>
             </div>
           </div>
         ))}

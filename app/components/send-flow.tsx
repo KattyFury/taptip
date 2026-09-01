@@ -182,6 +182,13 @@ export default function SendFlow({ open, onOpenChange }: Props) {
     refreshBalances().catch((err) => {
       console.error("Failed to refresh balance after send:", err);
     });
+    fetch("/api/transactions", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ toAddress: decoded.address, amount, txHash }),
+    }).catch((err) => {
+      console.error("Failed to record transaction:", err);
+    });
 
     setTimeout(() => {
       setStep("scan");
