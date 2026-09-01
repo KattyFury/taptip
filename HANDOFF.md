@@ -48,7 +48,7 @@ Xem mockup đã duyệt: link low-fi + hi-fi nằm trong lịch sử hội tho�
 3. `components/transactions.tsx` (bản cũ, không còn được dùng ở Home nữa) + `app/api/wallet/transactions/**` vẫn còn Supabase – cân nhắc xoá hẳn thay vì viết lại, vì `history-popup.tsx` đã thay thế đường hiển thị lịch sử.
 4. `app/api/wallet-set/route.ts`, `app/api/webhooks/circle/route.ts`, `app/api/manual-wallet-setup`, `app/api/debug-wallets`, `app/api/get-credential`, `app/api/update-login-credential`, `app/auth/callback/route.ts` – chưa đụng tới, có thể vẫn còn Supabase hoặc là code chết của luồng v1 cần rà lại.
 5. Nạp/Rút trong dropdown Menu hiện vẫn dùng nội dung tạm (copy từ v1) trong `home-screen.tsx` – chưa qua thiết kế hi-fi riêng, chỉ mới bọc lại bằng `ContentPopup` cho đồng bộ khuôn.
-6. Trước khi deploy thật: khai domain production ở Client Key's Allowed Domain + Passkey Domain (xem cảnh báo ở trên).
+6. ✅ (09-01) Đã khai domain production `taptip.kattyfury1403.workers.dev` ở cả Client Key's Allowed Domain lẫn Passkey Domain trên Circle Console.
 
 ---
 
