@@ -44,7 +44,7 @@ Xem mockup đã duyệt: link low-fi + hi-fi nằm trong lịch sử hội tho�
 
 ### CÒN LẠI, ưu tiên tiếp theo
 1. Passkey thật + quét QR thật (camera) chưa test được qua ảnh chụp tự động (cần tương tác WebAuthn thật của người dùng) – cần user tự thử trên điện thoại/trình duyệt thật.
-2. `components/history-popup.tsx` đang dùng **dữ liệu mẫu tĩnh**, chưa đọc D1 `transactions` thật – cần viết luồng ghi giao dịch (webhook hoặc polling sau khi gửi) trước khi popup này có dữ liệu sống.
+2. ✅ (09-01) `history-popup.tsx` đã đọc D1 `transactions` thật qua `app/api/transactions` (GET). Luồng ghi: `send-flow.tsx` gọi POST `/api/transactions` ngay sau `sendUSDC` thành công (không dùng webhook Circle – ghi trực tiếp lúc gửi, đơn giản hơn và không có độ trễ như đường webhook cũ). Đã verify: `tsc --noEmit` sạch (không có lỗi mới), dev server chạy `GET /api/transactions` trả 401 đúng khi chưa đăng nhập. Chưa verify bằng tài khoản đăng nhập thật (cần user tự thử trên điện thoại cùng lúc test passkey/QR ở mục 1).
 3. `components/transactions.tsx` (bản cũ, không còn được dùng ở Home nữa) + `app/api/wallet/transactions/**` vẫn còn Supabase – cân nhắc xoá hẳn thay vì viết lại, vì `history-popup.tsx` đã thay thế đường hiển thị lịch sử.
 4. `app/api/wallet-set/route.ts`, `app/api/webhooks/circle/route.ts`, `app/api/manual-wallet-setup`, `app/api/debug-wallets`, `app/api/get-credential`, `app/api/update-login-credential`, `app/auth/callback/route.ts` – chưa đụng tới, có thể vẫn còn Supabase hoặc là code chết của luồng v1 cần rà lại.
 5. Nạp/Rút trong dropdown Menu hiện vẫn dùng nội dung tạm (copy từ v1) trong `home-screen.tsx` – chưa qua thiết kế hi-fi riêng, chỉ mới bọc lại bằng `ContentPopup` cho đồng bộ khuôn.
