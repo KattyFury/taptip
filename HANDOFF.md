@@ -11,19 +11,20 @@
 
 ---
 
-## Trạng thái 08-31 đêm – đọc trước khi làm gì tiếp (MỚI NHẤT, đọc mục này trước)
+## Trạng thái 09-01 – đọc trước khi làm gì tiếp (MỚI NHẤT, đọc mục này trước)
 
 **PRD v2 + Product Discovery v2 + Stack v2 + Wireframe v2 đã chốt xong hết** (chạy qua Claude Chat theo quy trình `build-on-arc`, lưu ở `docs/02-v2-hoan-thien-y-tuong.md` / `docs/03-planning-v2.md` / `docs/04-wireframe-v2.md`). Đổi lớn nhất so với v1: thêm Tip Setting (4 ô số tiền tùy chỉnh), chọn số tiền ngay trên màn quét QR thay vì popup riêng, định danh ví hiển thị rút gọn `0x_NNNNN` (5 số cuối), bỏ Supabase sang Cloudflare D1 + KV.
 
-### Hạ tầng – đã dựng xong, ĐANG SỐNG
+### Hạ tầng – đã dựng xong, ĐANG SỐNG, domain production đã khai
 - D1 `taptip-db` + KV `taptip_kv` – đã tạo, migrate (bảng `users`/`tip_settings`/`transactions`), khai báo binding trong `app/wrangler.jsonc`. Nhớ migrate cả `--local` lẫn `--remote` (2 D1 tách biệt – `next dev` dùng bản `--local`).
 - Circle account MỚI (account thứ 3 sau 2 lần "brick" thật do lỗi ghi file recovery của Claude Code – xem cảnh báo dưới) – Entity Secret đã đăng ký thành công, recovery file lưu ở `C:\Users\Dell\CircleRecovery\taptip-v2-recovery.dat`, KHÔNG được mất lần nữa.
-- Client Key (Modular Wallets) đã tạo, Allowed Domain hiện đang là `localhost` – **CHƯA khai domain production** (`taptip.kattyfury1403.workers.dev`) và **CHƯA cấu hình Passkey Domain** ở Modular Wallets → Configurator → Passkey (bài học v1: 2 chỗ này phải khớp nhau, thiếu là passkey lỗi "Invalid credentials" trên domain thật).
+- Client Key (Modular Wallets): Allowed Domain **và** Passkey Domain (Modular Wallets → Configurator → Passkey) đã khai `taptip.kattyfury1403.workers.dev` (09-01) – 2 chỗ này phải khớp nhau (bài học v1: thiếu 1 chỗ là passkey lỗi "Invalid credentials" trên domain thật).
 - `app/.env.local` đầy đủ Circle (API key + Entity Secret + Client Key/URL) + Resend, đã bỏ hết Supabase.
 
-### ⚠️ 2 bài học đau (đừng lặp lại)
+### ⚠️ 3 bài học đau (đừng lặp lại)
 1. SDK `registerEntitySecretCiphertext` của Circle, khi `recoveryFileDownloadPath` trỏ sai (VD đưa tên file thay vì thư mục), vẫn đăng ký ciphertext THÀNH CÔNG với server trước khi bước ghi file thất bại – tức entity secret đã "chốt" phía Circle mà recovery file không có, account coi như hỏng vĩnh viễn (giống hệt lỗi account 08-08). Cách an toàn: đừng dựa vào tham số `recoveryFileDownloadPath` của SDK, tự lấy `response.data.recoveryFile` rồi `fs.writeFileSync` bằng tay ngay lập tức.
 2. `taskkill /IM chrome.exe` tắt **TOÀN BỘ** Chrome trên máy, không chỉ tiến trình debug vừa mở – nếu cần dọn 1 Chrome headless cụ thể (VD dùng để chụp ảnh app qua CDP), phải tắt đúng PID của chính nó, không dùng taskkill theo tên process.
+3. (09-01) Dính lại ĐÚNG lỗi y hệt mục 2 nhưng với `node.exe`: `taskkill //F //IM node.exe` sau khi test `npm run dev` đã tắt **TOÀN BỘ** tiến trình Node trên máy, không chỉ riêng dev server vừa mở. Cách đúng: dùng PowerShell `Get-NetTCPConnection -LocalPort <port> -State Listen | Select -ExpandProperty OwningProcess` để tìm đúng PID đang lắng nghe cổng dev server, rồi `Stop-Process -Id <PID>` — không bao giờ taskkill theo tên process dùng chung (chrome.exe, node.exe, v.v.).
 
 ### Bước 6 (Build) – luồng auth + tạo ví: verify thật qua `next dev`, không chỉ đoán
 Toàn bộ chuỗi đăng nhập lần đầu hoạt động end-to-end: `/sign-in` → gửi OTP thật qua Resend → verify → tạo user D1 → session KV → `/dashboard/setup-wallet` (tạo ví qua passkey, hoặc nút "Skip for now" test nhanh) → `/dashboard` render OK. Đã dọn Supabase khỏi: middleware, auth actions, `(auth-pages)` layout, dashboard layout/page, setup-wallet, home-screen.tsx, send-flow.tsx, use-wallet-balances.ts, api/wallet/balance, api/auth-status, api/setup-wallets. Đã xoá `(auth-pages)/onboarding/` (v2 không thu thập tên lúc onboarding – tên hiển thị là Roadmap).
@@ -43,12 +44,11 @@ Kết quả hiện tại (ảnh chụp thật đã xác nhận đúng):
 Xem mockup đã duyệt: link low-fi + hi-fi nằm trong lịch sử hội thoại (không lưu lại trong file – nếu cần xem lại thiết kế gốc, hỏi user hoặc `/artifacts` trong Claude Code).
 
 ### CÒN LẠI, ưu tiên tiếp theo
-1. Passkey thật + quét QR thật (camera) chưa test được qua ảnh chụp tự động (cần tương tác WebAuthn thật của người dùng) – cần user tự thử trên điện thoại/trình duyệt thật.
-2. ✅ (09-01) `history-popup.tsx` đã đọc D1 `transactions` thật qua `app/api/transactions` (GET). Luồng ghi: `send-flow.tsx` gọi POST `/api/transactions` ngay sau `sendUSDC` thành công (không dùng webhook Circle – ghi trực tiếp lúc gửi, đơn giản hơn và không có độ trễ như đường webhook cũ). Đã verify: `tsc --noEmit` sạch (không có lỗi mới), dev server chạy `GET /api/transactions` trả 401 đúng khi chưa đăng nhập. Chưa verify bằng tài khoản đăng nhập thật (cần user tự thử trên điện thoại cùng lúc test passkey/QR ở mục 1).
-3. ✅ (09-01) Đã xoá hẳn cụm code chết v1 (rà tham chiếu bằng grep trước khi xoá, không đoán): `components/transactions.tsx`/`transactions-tab.tsx`/`transaction-detail.tsx`, `app/dashboard/transaction/[id]`, `app/api/wallet/transactions/**`, `app/api/wallet-set`, `app/api/manual-wallet-setup`, `app/api/debug-wallets`, `app/api/get-credential`, `app/api/update-login-credential`, `app/auth/callback`, `(auth-pages)/forgot-password`, `dashboard/reset-password` + 3 action Supabase (`signInAction`/`forgotPasswordAction`/`resetPasswordAction` trong `app/actions/index.ts`, giữ nguyên `signOutAction` đang dùng thật). Lý do gộp: toàn bộ không còn nơi nào gọi tới trong luồng v2 (kể cả `historyContent` prop chết ở `home-screen.tsx`/`dashboard/page.tsx`), và cụm quên-mật-khẩu không còn ý nghĩa vì v2 đăng nhập bằng OTP, không có mật khẩu. `tsc --noEmit` sạch, dev server verify `/sign-in` `/dashboard` `/api/transactions` không lỗi 500.
-4. ⚠️ CHƯA đụng: `app/api/webhooks/circle/route.ts` và `components/web3-provider.tsx` – file sau vẫn còn 2 hàm chết `registerPasskey`/`loginWithPasskey` (không nơi nào gọi, gọi tới route `/api/update-passkey` còn không tồn tại) trộn chung với `sendUSDC`/balance đang chạy thật – cần đọc kỹ toàn bộ file để tách phần chết trước khi sửa, rủi ro cao nếu đụng vội.
-5. Nạp/Rút trong dropdown Menu hiện vẫn dùng nội dung tạm (copy từ v1) trong `home-screen.tsx` – chưa qua thiết kế hi-fi riêng, chỉ mới bọc lại bằng `ContentPopup` cho đồng bộ khuôn.
-6. ✅ (09-01) Đã khai domain production `taptip.kattyfury1403.workers.dev` ở cả Client Key's Allowed Domain lẫn Passkey Domain trên Circle Console.
+1. **Cần USER tự làm** – test passkey thật + quét QR thật (camera) + xem lịch sử giao dịch thật, trên điện thoại, tại bản production `https://taptip.kattyfury1403.workers.dev` (domain đã khai xong nên test thẳng bản thật, không cần qua mạng LAN dev server nữa). Việc này cần tương tác WebAuthn thật, không tự động hoá được.
+2. `components/web3-provider.tsx` (+ chưa rà `app/api/webhooks/circle/route.ts`) – còn 2 hàm chết `registerPasskey`/`loginWithPasskey` (không nơi nào gọi, gọi tới route `/api/update-passkey` còn không tồn tại) trộn chung với `sendUSDC`/balance đang chạy thật trong CÙNG 1 file – phải đọc kỹ toàn bộ trước khi tách, đừng đụng vội vì đây là code ký giao dịch thật.
+3. Nạp/Rút trong dropdown Menu hiện vẫn dùng nội dung tạm (copy từ v1) trong `home-screen.tsx` – chưa qua thiết kế hi-fi riêng, chỉ mới bọc lại bằng `ContentPopup` cho đồng bộ khuôn.
+
+**Đã xong trong phiên 09-01** (chi tiết xem lịch sử `git log`, tóm tắt commit `4075b55`/`4d9264c`/`8de281d`): khai domain production trên Circle Console; nối `history-popup.tsx` đọc D1 `transactions` thật qua `app/api/transactions` (ghi trực tiếp lúc `sendUSDC` thành công, không qua webhook); dọn sạch toàn bộ cụm code chết v1 còn Supabase (lịch sử giao dịch cũ, route debug/test nội bộ, passkey-credential + callback Supabase, cụm quên-mật-khẩu – v2 dùng OTP nên không còn ý nghĩa). Tất cả đã verify `tsc --noEmit` sạch + dev server không lỗi 500, commit + push xong.
 
 ---
 
