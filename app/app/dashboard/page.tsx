@@ -17,12 +17,9 @@
  */
 
 import { redirect } from "next/navigation";
-import dynamic from "next/dynamic";
 import { getSession } from "@/lib/auth/session";
 import { getUserById } from "@/lib/db/users";
 import HomeScreen from "@/components/home-screen";
-
-const TransactionsTab = dynamic(() => import("@/components/transactions-tab"), { ssr: true });
 
 export default async function Dashboard() {
   const userId = await getSession();
@@ -42,11 +39,5 @@ export default async function Dashboard() {
   const primaryWallet = { wallet_address: user.wallet_address };
   const profile = { id: user.id, name: "", daily_tip_limit: null };
 
-  return (
-    <HomeScreen
-      primaryWallet={primaryWallet}
-      profile={profile}
-      historyContent={<TransactionsTab primaryWallet={primaryWallet} profile={profile} />}
-    />
-  );
+  return <HomeScreen primaryWallet={primaryWallet} profile={profile} />;
 }

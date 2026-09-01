@@ -23,7 +23,6 @@ interface Props {
     name: string;
     daily_tip_limit: number | null;
   };
-  historyContent: React.ReactNode;
 }
 
 function formatBalance(token: number): number {
