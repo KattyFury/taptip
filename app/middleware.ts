@@ -23,32 +23,12 @@ import { getKv } from "@/lib/cloudflare";
 // proxy.ts moi cua Next 16 - proxy.ts bat buoc chay Node.js runtime, va
 // @opennextjs/cloudflare (adapter deploy len Cloudflare Workers) chua ho tro
 // Node.js middleware (xem opennextjs/opennextjs-cloudflare#962).
+//
+// Middleware nay chi lam MOT viec: dieu huong theo trang thai dang nhap.
+// Cac route /api tu kiem tra session bang getSession() nen khong can di qua
+// day - va PHAI khong di qua day: matcher cu con om ca /_next/:path* khien
+// moi file tinh (js/css/anh) cung goi KV mot lan, ton latency + luot doc KV.
 export async function middleware(request: NextRequest) {
-  // Get the origin from the request headers
-  const origin = request.headers.get('origin') || '';
-  const allowedOrigins = [
-    'http://localhost:3000',
-    'https://64b3466d-48ab-43ac-94e1-df5a0c65600c-00-3dcvk8y4qe4v6.kirk.replit.dev',
-  ];
-
-  // Create the response with the original headers
-  const response = NextResponse.next({
-    request: {
-      headers: request.headers,
-    },
-  });
-
-  // Add CORS headers if origin is allowed
-  if (allowedOrigins.includes(origin)) {
-    response.headers.set('Access-Control-Allow-Origin', origin);
-    response.headers.set('Access-Control-Allow-Credentials', 'true');
-    response.headers.set('Access-Control-Allow-Methods', 'GET,OPTIONS,PATCH,DELETE,POST,PUT');
-    response.headers.set(
-      'Access-Control-Allow-Headers',
-      'X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Api-Version'
-    );
-  }
-
   const sessionToken = request.cookies.get("taptip_session")?.value;
   const kv = await getKv();
   const userId = sessionToken ? await kv.get(`session:${sessionToken}`) : null;
@@ -60,12 +40,12 @@ export async function middleware(request: NextRequest) {
   // "/" la man Splash + Add to Home Screen (app/page.tsx) - chi danh cho
   // nguoi chua dang nhap. Da dang nhap thi bo qua, vao thang dashboard.
   if (userId && request.nextUrl.pathname === "/") {
-    return NextResponse.redirect(new URL("/dashboard", request.url))
+    return NextResponse.redirect(new URL("/dashboard", request.url));
   }
 
-  return response;
+  return NextResponse.next();
 }
 
 export const config = {
-  matcher: ["/", "/dashboard/:path*", "/_next/:path*", "/api/:path*"]
-}
+  matcher: ["/", "/dashboard/:path*"],
+};

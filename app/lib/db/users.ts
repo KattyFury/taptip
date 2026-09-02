@@ -5,6 +5,9 @@ export interface User {
   id: string;
   email: string;
   wallet_address: string | null;
+  /** JSON {id, publicKey} cua passkey - phan cong khai, khong phai bi mat.
+   * Xem migrations/0002_add_passkey_credential.sql. */
+  passkey_credential: string | null;
   created_at: string;
 }
 
@@ -42,10 +45,27 @@ export async function createUser(email: string): Promise<User> {
   return user;
 }
 
-export async function setUserWalletAddress(userId: string, walletAddress: string) {
+export async function setUserWallet(
+  userId: string,
+  walletAddress: string,
+  passkeyCredential: string,
+) {
   const db = await getDb();
   await db
-    .prepare("UPDATE users SET wallet_address = ? WHERE id = ?")
-    .bind(walletAddress, userId)
+    .prepare(
+      "UPDATE users SET wallet_address = ?, passkey_credential = ? WHERE id = ?",
+    )
+    .bind(walletAddress, passkeyCredential, userId)
+    .run();
+}
+
+export async function setUserPasskeyCredential(
+  userId: string,
+  passkeyCredential: string,
+) {
+  const db = await getDb();
+  await db
+    .prepare("UPDATE users SET passkey_credential = ? WHERE id = ?")
+    .bind(passkeyCredential, userId)
     .run();
 }

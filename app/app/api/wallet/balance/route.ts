@@ -17,8 +17,8 @@
  */
 
 import { type NextRequest, NextResponse } from "next/server";
-import axios from "axios";
 import { z } from "zod";
+import { getSession } from "@/lib/auth/session";
 
 // Schema validation
 const WalletIdSchema = z.object({
@@ -37,6 +37,13 @@ export async function POST(
   req: NextRequest,
 ): Promise<NextResponse<WalletBalanceResponse>> {
   try {
+    // Route nay xai CIRCLE_API_KEY cua app - bat buoc dang nhap, khong de
+    // nguoi la dung lam proxy tra cuu so du mien phi bang key cua minh.
+    const userId = await getSession();
+    if (!userId) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
     const body = await req.json();
     const parseResult = WalletIdSchema.safeParse(body);
 
@@ -52,7 +59,7 @@ export async function POST(
 
     try {
       // Use the blockchain + address endpoint to get balances
-      const balanceResponse = await axios.get(
+      const balanceResponse = await fetch(
         `https://api.circle.com/v1/w3s/buidl/wallets/ARC-TESTNET/${walletAddress}/balances`,
         {
           headers: {
@@ -63,21 +70,26 @@ export async function POST(
         },
       );
 
+      if (!balanceResponse.ok) {
+        console.error("Circle balance API error:", {
+          status: balanceResponse.status,
+          body: await balanceResponse.text().catch(() => ""),
+        });
+        return NextResponse.json({ balance: "0" });
+      }
+
+      const payload = (await balanceResponse.json()) as {
+        data?: { tokenBalances?: { token?: { symbol?: string }; amount?: string }[] };
+      };
+
       const usdcBalance =
-        balanceResponse.data?.data?.tokenBalances?.find(
-          (balance: any) => balance.token?.symbol === "USDC",
+        payload.data?.tokenBalances?.find(
+          (balance) => balance.token?.symbol === "USDC",
         )?.amount || "0";
 
       return NextResponse.json({ balance: usdcBalance });
     } catch (error) {
       console.error("Error fetching balance from Circle API:", error);
-
-      if (axios.isAxiosError(error)) {
-        console.error("API error details:", {
-          status: error.response?.status,
-          data: error.response?.data,
-        });
-      }
 
       // Return 0 balance instead of error for better UX
       return NextResponse.json({ balance: "0" });

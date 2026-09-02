@@ -18,7 +18,8 @@
 
 import { NextRequest, NextResponse } from "next/server";
 import { getSession } from "@/lib/auth/session";
-import { setUserWalletAddress } from "@/lib/db/users";
+import { setUserWallet } from "@/lib/db/users";
+import { normalizePasskeyCredential } from "@/lib/auth/passkey";
 
 export async function POST(req: NextRequest) {
   try {
@@ -39,12 +40,12 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
+    const parsedCredential = JSON.parse(credential);
     let walletAddress: string;
 
     if (circleAddress) {
       walletAddress = circleAddress;
     } else {
-      const parsedCredential = JSON.parse(credential);
       const publicKey = parsedCredential.publicKey;
 
       const isValidPublicKey =
@@ -59,7 +60,14 @@ export async function POST(req: NextRequest) {
       walletAddress = publicKey.slice(0, 42).toLowerCase();
     }
 
-    await setUserWalletAddress(userId, walletAddress);
+    // PHAI luu credential lai: lan sau mo app, client can {id, publicKey} de
+    // dung lai dung smart account nay ma ky giao dich. Bo qua buoc nay la
+    // app khong bao gio gui tip duoc (bug 09-02).
+    await setUserWallet(
+      userId,
+      walletAddress,
+      JSON.stringify(normalizePasskeyCredential(parsedCredential)),
+    );
 
     return NextResponse.json(
       {

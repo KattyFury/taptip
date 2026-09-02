@@ -16,15 +16,17 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import type { Session } from '@supabase/supabase-js'
+'use client'
+
 import React, { type PropsWithChildren, createContext, useState } from 'react'
 
+/**
+ * Mang email tu man /sign-in sang /code-confirmation. Cac truong cu
+ * (session/firstName/lastName/username) da bo: `session` la kieu cua Supabase
+ * - da doi sang D1 + KV tu lau, ba truong con lai khong noi nao doc.
+ */
 interface Context {
   email?: string
-  firstName?: string
-  lastName?: string
-  username?: string
-  session?: Session
   updateState: (newValues: Partial<Context>) => void
 }
 

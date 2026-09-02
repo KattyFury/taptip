@@ -21,7 +21,6 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import { useWeb3 } from "@/components/web3-provider";
 import { toast } from "sonner";
-import axios from "axios";
 
 /**
  * knownAddress: dia chi vi da biet san tu server (primaryWallet.wallet_address),
@@ -57,15 +56,16 @@ export function useWalletBalances(knownAddress?: string) {
       if (!address) return "0";
 
       try {
-        const response = await axios.post<BalanceResponse>(
-          "/api/wallet/balance",
-          {
-            walletId: address,
-            blockchain: "arc",
-          },
-        );
+        const response = await fetch("/api/wallet/balance", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ walletId: address, blockchain: "arc" }),
+        });
 
-        return response.data.balance || "0";
+        if (!response.ok) return "0";
+
+        const data = (await response.json()) as BalanceResponse;
+        return data.balance || "0";
       } catch (error) {
         console.error("Error fetching balance from API:", error);
         return "0";

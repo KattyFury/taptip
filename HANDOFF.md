@@ -11,7 +11,43 @@
 
 ---
 
-## Trạng thái 09-02 – đọc trước khi làm gì tiếp (MỚI NHẤT, đọc mục này trước)
+## Kiểm toán 09-02 (cuối ngày) – MỚI NHẤT, đọc mục này trước
+
+Rà toàn bộ repo bằng đồ thị import (script tự viết, không soi mắt) + đọc source SDK trong `node_modules`.
+
+### 🔴 Lỗi nghiêm trọng: GỬI TIP CHƯA BAO GIỜ CHẠY ĐƯỢC – đã sửa
+
+Chuỗi đứt ở 3 chỗ cộng lại, mỗi chỗ đều "im lặng" nên không ai thấy:
+1. `api/setup-wallets` nhận `credential` từ client rồi **vứt đi** – chỉ lưu `wallet_address`. Bảng `users` trong D1 còn không có cột nào để chứa nó.
+2. `web3-provider.tsx` gọi `GET /api/get-credential` – route này bị xoá ở commit `8de281d` với lý do "chỉ được gọi từ nhánh code chết". **Lý do đó sai**: `loadCredential()` chạy trong `useEffect` chính, không phải code chết.
+3. Fetch 404 → `return null` → không dựng được smart account → `sendUSDC` luôn trả `null` → UI báo "Send failed, try again".
+
+Bằng chứng: user production duy nhất có `wallet_address` nhưng `passkey_credential` rỗng.
+
+**Cách sửa:** thêm cột `passkey_credential` (migration `0002`, đã áp cả `--local` lẫn `--remote`); `setup-wallets` lưu credential; route mới `GET/POST /api/credential`. Với ví tạo TRƯỚC khi có cột này (đúng ca của user), lần đầu bấm Tip sẽ hỏi passkey một lần (`WebAuthnMode.Login`) rồi lưu lại — các lần sau không hỏi nữa.
+
+Chỉ lưu `{id, publicKey}` — đã đọc `node_modules/viem/.../toWebAuthnAccount.js`, nó chỉ destructure đúng 2 trường này; `raw` là object trình duyệt, `JSON.stringify` ra `{}`. **Đây không phải bí mật**: khoá ký nằm trong secure enclave, mỗi lần ký vẫn phải qua Face ID trên đúng máy đó.
+
+### Các lỗi khác đã sửa
+- **`axios` là dependency ma** – dùng thật ở 2 file nhưng không có trong `package.json`, chạy được chỉ nhờ hoisting. Đã thay bằng `fetch`; sau khi `npm install` sạch thì axios biến mất khỏi `node_modules` → xác nhận nếu không sửa thì lần cài sạch kế tiếp là hỏng build.
+- **Middleware chạy trên mọi file tĩnh** – matcher cũ ôm cả `/_next/:path*`, nên mỗi file js/css cũng gọi KV một lần (tốn latency + lượt đọc KV tính tiền). Thu về `["/", "/dashboard/:path*"]`; các route `/api` vốn tự gọi `getSession()`.
+- **CORS chết trong middleware** – whitelist `localhost:3000` + một URL Replit của người lạ, kèm `Allow-Credentials: true`. Xoá hẳn (app same-origin).
+- **`/api/wallet/balance` không kiểm tra đăng nhập** – ai cũng gọi được, tiêu `CIRCLE_API_KEY` của mình làm proxy tra số dư miễn phí. Đã thêm `getSession()`.
+- **`tailwind-merge` khai sai chỗ** – import runtime nhưng nằm trong `devDependencies`. Đã chuyển sang `dependencies`.
+- **`next.config.js`** – bỏ `serverExternalPackages: ["pdf-parse"]` (không dùng), bỏ `allowedDevOrigins` trỏ Replit người lạ, bỏ luôn guard bắt buộc `CIRCLE_ENTITY_SECRET` (entity secret chỉ dành cho developer-controlled wallets, app này dùng modular wallets nên biến đó không được đọc ở đâu cả).
+- **`npm audit`: 5 lỗ (2 high) → 0.**
+
+### Dọn code chết
+44/85 file nguồn không ai import tới. Đã xoá hết → **0/43 file thừa**, danh sách package import khớp đúng `package.json`:
+- Toàn bộ `components/ui/*` không dùng (24 file), `lib/supabase/`, `lib/utils/supabase/`, `types/database.types.ts`, `hooks/use-toast.ts`, `lib/balanceTester.js`, 8 file `lib/utils/*`.
+- Thư mục `supabase/` (18 migration của DB đã bỏ từ lâu), ảnh public thừa (logo 3 chain khác, `screenshot.png`, `logo.png`, `favicon.svg` còn là logo Circle, `site.webmanifest` trùng với `app/manifest.ts`).
+- `web3-provider.tsx` viết lại gọn: chỉ còn `account.address` + `sendUSDC` (2 thứ app thật sự dùng), bỏ 9 hàm chết trong đó `registerPasskey`/`loginWithPasskey` còn trỏ tới 2 route không tồn tại.
+- **30+ package** không dùng: `openai`, `pdf-parse`, `pdfjs-dist`, `mammoth`, `web3`, `react-confetti`, `millify`, `@supabase/*`, gần hết `@radix-ui/*`, `lucide-react`, `cmdk`, `geist`, `next-themes`, `uuid`, `supabase` CLI...
+
+### ⚠️ CÒN LẠI – chỉ user làm được
+Gửi tip thật trên điện thoại. Tôi sửa được chuỗi ký nhưng **không tự xác minh end-to-end được** vì cần Face ID thật + camera thật. Lần đầu bấm Tip sau bản này sẽ hỏi passkey một lần (đúng thiết kế, do ví cũ chưa có credential lưu). Nếu vẫn lỗi, mở console lấy log `Error sending USDC:` — giờ nó log ra nguyên nhân thật thay vì im lặng.
+
+## Trạng thái 09-02 – các đợt sửa giao diện trong ngày
 
 **Áp thiết kế Figma mới vào toàn bộ code (thay hẳn wireframe v2 08-31 cũ).** User tự vẽ lại UI trong Figma (`Taptip`, file key `rLGoWK4AHhqov9CKHXJqqE`) + đưa quy định lưới/font-size/màu bằng lời trong chat, đưa sẵn logo + bộ icon mới ở `C:\Users\Dell\Desktop\taptip\`. Quy trình: kéo `get_design_context` thật cho 7 frame đại diện (không đoán từ ảnh) → viết plan (`EnterPlanMode`) → code → verify bằng Chrome headless thật qua CDP (tự tạo session KV giả trong D1/KV `--local` để chụp ảnh Home/popup có đăng nhập, không cần user test tay) → build production sạch → deploy thật.
 
