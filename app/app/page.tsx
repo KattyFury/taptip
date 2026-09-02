@@ -96,7 +96,7 @@ export default function Splash() {
           </SingleAction>
         }
         foot={
-          <div style={{ marginTop: "-2.5cqh" }}>
+          <div style={{ transform: "translateY(-2.5cqh)" }}>
             <TextLink onClick={() => router.push("/sign-in")}>Skip</TextLink>
           </div>
         }
