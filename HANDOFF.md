@@ -11,7 +11,29 @@
 
 ---
 
-## Kiểm toán 09-02 (cuối ngày) – MỚI NHẤT, đọc mục này trước
+## Chuyển sang Developer-Controlled Wallets 09-02 – MỚI NHẤT, đọc mục này trước
+
+**Code đã chạy sai kiến trúc so với tài liệu suốt từ đầu.** `docs/01-ideation.md:18` và `docs/03-planning-v2.md:31,44,56` chốt **Circle Developer-Controlled Wallets**, nhưng code chạy **Modular Wallets (passkey)** — kiến trúc này đi kèm sẵn trong bản fork `arc-p2p-payments` ở commit `a2015a9` và không ai đối chiếu lại với tài liệu. Hệ quả đúng như tài liệu đã cảnh báo: passkey bắt user ký từng giao dịch, tức là **vi phạm chính yêu cầu số 1 (tốc độ)** — cũng là lý do `01-ideation.md` gạt Privy.
+
+Đã kiểm chứng trước khi làm: Circle docs + SDK types xác nhận `ARC-TESTNET` hỗ trợ đầy đủ dev-controlled (tạo ví ✅ transfer ✅ SCA ✅ Gas Station ✅).
+
+**Đã làm:**
+- `lib/circle/wallets.ts` — tạo ví + gửi USDC phía server bằng API key + entity secret.
+- Route mới `POST /api/tip` — quét QR xong là tiền đi, KHÔNG có bước xác nhận nào.
+- `setup-wallets` viết lại: địa chỉ do Circle cấp. Bỏ nhánh cũ `publicKey.slice(0,42)` — nhánh đó tạo ra **địa chỉ không ai điều khiển được**, tiền gửi vào là mất vĩnh viễn.
+- Migration `0003` thêm `circle_wallet_id`. Wallet set: `214e3fa8-4f85-5782-a6f0-a3bdd992617e` (biến `CIRCLE_WALLET_SET_ID`, đã set cả .env.local lẫn Worker secret).
+- Gỡ hẳn `web3-provider.tsx` + `passkey-setup.tsx` (đổi thành `create-wallet.tsx`). Client không còn ký gì nữa.
+
+**Bẫy đã dính, đừng lặp lại:**
+1. Secret trên Worker KHÔNG khớp `.env.local` (còn của tài khoản Circle cũ) → Circle trả "Invalid credentials" chỉ ở production. Đã `wrangler secret put` lại. Sửa code xong mà production vẫn lỗi thì kiểm tra chỗ này trước.
+2. `createTransaction` PHẢI dùng cặp (`walletAddress` + `blockchain`), KHÔNG dùng `walletId`: kiểu SDK là union, nhánh `walletId` chỉ nhận `tokenId`, nhét `tokenAddress` vào là "API parameter invalid" (lỗi chung chung, SDK nuốt mất chi tiết). Shape đúng nằm ở docs `wallets/dev-controlled/transfer-tokens-across-wallets`.
+
+**CÒN LẠI:**
+- Ví mới của user: `0xe25d59aa23bfba0f40654f526bcb318c0d76c5b0` — **đang 0 USDC, cần nạp từ https://faucet.circle.com/** thì mới tip được. Endpoint đã verify trên production: trả đúng lỗi "insufficient asset amount", tức đường đi đã thông, chỉ thiếu tiền.
+- 40 USDC cũ nằm ở ví passkey `0xe42efd03bba8e7079dd3345f4f8c94dd1ed50e26`, giờ app không ký được nữa nên coi như bỏ lại. Là tiền testnet, lấy lại từ faucet; code passkey vẫn còn trong git history nếu cần.
+- Gas Station chưa cấu hình policy — hiện ví tự trả gas bằng USDC của nó.
+
+## Kiểm toán 09-02 (cuối ngày) – lịch sử
 
 Rà toàn bộ repo bằng đồ thị import (script tự viết, không soi mắt) + đọc source SDK trong `node_modules`.
 

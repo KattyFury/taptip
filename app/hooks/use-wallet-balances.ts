@@ -19,7 +19,6 @@
 "use client";
 
 import { useState, useEffect, useCallback, useRef } from "react";
-import { useWeb3 } from "@/components/web3-provider";
 import { toast } from "sonner";
 
 /**
@@ -32,8 +31,7 @@ import { toast } from "sonner";
  * account.address (Web3Context) neu khong duoc truyen vao.
  */
 export function useWalletBalances(knownAddress?: string) {
-  const { account } = useWeb3();
-  const effectiveAddress = knownAddress || account.address || null;
+  const effectiveAddress = knownAddress || null;
 
   const [balance, setBalance] = useState({
     native: 0,

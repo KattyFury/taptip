@@ -20,7 +20,6 @@ import type { Viewport } from "next";
 import { Inter } from "next/font/google";
 import { Toaster } from "@/components/ui/sonner";
 import "./globals.css";
-import { Web3Provider } from "@/components/web3-provider";
 import { BalanceProvider } from "@/contexts/balanceContext";
 
 const defaultUrl = process.env.NEXT_PUBLIC_SITE_URL
@@ -59,7 +58,6 @@ export default async function RootLayout({
       suppressHydrationWarning
     >
       <body className="bg-page-backdrop text-foreground font-sans min-h-dvh overflow-hidden">
-        <Web3Provider>
           <BalanceProvider>
             {/* Toaster PHAI nam ngoai container can giua: sonner render mot
                 <section> tham gia layout, de trong flex la no an mat mot phan
@@ -75,7 +73,6 @@ export default async function RootLayout({
               </div>
             </div>
           </BalanceProvider>
-        </Web3Provider>
       </body>
     </html>
   );

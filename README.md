@@ -8,12 +8,12 @@ So everything a normal crypto app asks for is gone. No seed phrase. No gas token
 
 ## How it works
 
-1. **Sign in with your email.** A 6-digit code, then a passkey (Face ID / fingerprint). No password.
-2. **A wallet appears behind the scenes.** Circle Modular Wallets creates it, tied to your passkey. Your signing key never leaves your device.
+1. **Sign in with your email.** A 6-digit code. No password.
+2. **A wallet appears behind the scenes.** Circle creates and custodies it. Nothing to install, nothing to write down.
 3. **Show your QR to get tipped.** Your home screen *is* the QR code.
-4. **Tap to Tip to give.** Scan, choose an amount, sent. USDC arrives in seconds.
+4. **Tap to Tip to give.** Scan, pick an amount, sent — no confirmation step, no biometric prompt.
 
-The app pays the gas. Users never hold a second token, and never see the word "gas".
+That last part is the whole point. A tip is a two-second gesture, so we refuse to put a signature prompt inside it. Circle signs on the server, and the app pays the gas — users never hold a second token, and never see the word "gas".
 
 ## Why Arc
 
@@ -24,7 +24,7 @@ Arc is Circle's chain where **USDC is the native gas token**. One asset does eve
 | Layer | Choice |
 | --- | --- |
 | App | Next.js 16 (App Router), deployed to Cloudflare Workers via OpenNext |
-| Wallet | Circle Modular Wallets — passkey-owned smart accounts |
+| Wallet | Circle Developer-Controlled Wallets — server-signed, so tipping needs no user confirmation |
 | Chain | Arc Testnet, USDC |
 | Data | Cloudflare D1 (users, tip amounts, transactions) + KV (sessions) |
 | Email | Resend (login codes) |

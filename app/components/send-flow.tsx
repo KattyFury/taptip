@@ -4,7 +4,6 @@ import { useEffect, useRef, useState } from "react";
 import { Html5Qrcode } from "html5-qrcode";
 import * as Icon from "@/components/icons";
 import { CenteredCard } from "@/components/content-popup";
-import { useWeb3 } from "@/components/web3-provider";
 import { useBalance } from "@/contexts/balanceContext";
 import { toast } from "sonner";
 import { decodeTapTipQr } from "@/lib/utils/qr-payment";
@@ -27,7 +26,7 @@ interface Props {
 }
 
 export default function SendFlow({ open, onOpenChange }: Props) {
-  const { sendUSDC } = useWeb3();
+
   const { balance, refreshBalances } = useBalance();
   const [step, setStep] = useState<Step>("scan");
   const [settings, setSettings] = useState<TipSettings | null>(null);
@@ -189,10 +188,19 @@ export default function SendFlow({ open, onOpenChange }: Props) {
     stopScanner();
     setStep("sending");
 
-    const txHash = await sendUSDC(decoded.address, String(amount));
+    // Circle giu khoa va ky phia server -> khong co buoc xac nhan nao o day,
+    // quet xong la tien di. Lich su cung duoc route ghi luon.
+    const response = await fetch("/api/tip", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ toAddress: decoded.address, amount }),
+    }).catch(() => null);
 
-    if (!txHash) {
-      toast.error("Send failed, try again");
+    if (!response?.ok) {
+      const message = response
+        ? ((await response.json().catch(() => null)) as { error?: string } | null)?.error
+        : null;
+      toast.error(message || "Send failed, try again");
       setStep("scan");
       return;
     }
@@ -201,13 +209,6 @@ export default function SendFlow({ open, onOpenChange }: Props) {
     setStep("success");
     refreshBalances().catch((err) => {
       console.error("Failed to refresh balance after send:", err);
-    });
-    fetch("/api/transactions", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ toAddress: decoded.address, amount, txHash }),
-    }).catch((err) => {
-      console.error("Failed to record transaction:", err);
     });
 
     setTimeout(() => {

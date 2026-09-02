@@ -5,8 +5,10 @@ export interface User {
   id: string;
   email: string;
   wallet_address: string | null;
+  /** ID vi ben Circle - CAN de goi createTransaction (dia chi khong du). */
+  circle_wallet_id: string | null;
   /** JSON {id, publicKey} cua passkey - phan cong khai, khong phai bi mat.
-   * Xem migrations/0002_add_passkey_credential.sql. */
+   * Chi con dung cho vi passkey CU (truoc khi chuyen sang dev-controlled). */
   passkey_credential: string | null;
   created_at: string;
 }
@@ -45,17 +47,17 @@ export async function createUser(email: string): Promise<User> {
   return user;
 }
 
-export async function setUserWallet(
+export async function setUserCircleWallet(
   userId: string,
   walletAddress: string,
-  passkeyCredential: string,
+  circleWalletId: string,
 ) {
   const db = await getDb();
   await db
     .prepare(
-      "UPDATE users SET wallet_address = ?, passkey_credential = ? WHERE id = ?",
+      "UPDATE users SET wallet_address = ?, circle_wallet_id = ? WHERE id = ?",
     )
-    .bind(walletAddress, passkeyCredential, userId)
+    .bind(walletAddress, circleWalletId, userId)
     .run();
 }
 

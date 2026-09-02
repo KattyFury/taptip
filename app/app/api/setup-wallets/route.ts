@@ -16,70 +16,47 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import { NextRequest, NextResponse } from "next/server";
+import { NextResponse } from "next/server";
 import { getSession } from "@/lib/auth/session";
-import { setUserWallet } from "@/lib/db/users";
-import { normalizePasskeyCredential } from "@/lib/auth/passkey";
+import { getUserById, setUserCircleWallet } from "@/lib/db/users";
+import { createWalletForUser } from "@/lib/circle/wallets";
 
-export async function POST(req: NextRequest) {
+/**
+ * Tao vi Circle Developer-Controlled cho user dang dang nhap.
+ *
+ * Ban cu nhan passkey credential tu client roi tu suy ra dia chi - trong do co
+ * ca nhanh `publicKey.slice(0, 42)` tao ra dia chi KHONG AI DIEU KHIEN DUOC
+ * (tien gui vao la mat vinh vien). Gio dia chi do Circle cap, khong doan nua.
+ */
+export async function POST() {
   try {
-    const { credential, circleAddress } = (await req.json()) as {
-      credential?: string;
-      circleAddress?: string;
-    };
-
-    if (!credential) {
-      return NextResponse.json(
-        { error: "Credential is required" },
-        { status: 400 },
-      );
-    }
-
     const userId = await getSession();
     if (!userId) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const parsedCredential = JSON.parse(credential);
-    let walletAddress: string;
-
-    if (circleAddress) {
-      walletAddress = circleAddress;
-    } else {
-      const publicKey = parsedCredential.publicKey;
-
-      const isValidPublicKey =
-        publicKey &&
-        publicKey.startsWith("0x") &&
-        /^0x[0-9a-fA-F]{40,}$/.test(publicKey);
-
-      if (!isValidPublicKey) {
-        throw new Error(`Invalid public key format: ${publicKey}`);
-      }
-
-      walletAddress = publicKey.slice(0, 42).toLowerCase();
+    const user = await getUserById(userId);
+    if (!user) {
+      return NextResponse.json({ error: "User not found" }, { status: 404 });
     }
 
-    // PHAI luu credential lai: lan sau mo app, client can {id, publicKey} de
-    // dung lai dung smart account nay ma ky giao dich. Bo qua buoc nay la
-    // app khong bao gio gui tip duoc (bug 09-02).
-    await setUserWallet(
-      userId,
-      walletAddress,
-      JSON.stringify(normalizePasskeyCredential(parsedCredential)),
-    );
+    // Da co vi Circle roi thi khong tao them - tranh bo roi vi cu dang giu tien.
+    if (user.circle_wallet_id && user.wallet_address) {
+      return NextResponse.json({
+        walletAddress: user.wallet_address,
+        alreadyExists: true,
+      });
+    }
+
+    const wallet = await createWalletForUser(userId);
+    await setUserCircleWallet(userId, wallet.address, wallet.walletId);
 
     return NextResponse.json(
-      {
-        message: "Wallet created successfully",
-        walletAddress,
-        success: true,
-        redirectUrl: "/dashboard",
-      },
+      { walletAddress: wallet.address, success: true },
       { status: 201 },
     );
   } catch (error) {
-    console.error("Error setting up wallets:", error);
+    console.error("Error setting up wallet:", error);
     const message = error instanceof Error ? error.message : "Unknown error";
     return NextResponse.json(
       { error: `Failed to set up wallet: ${message}` },

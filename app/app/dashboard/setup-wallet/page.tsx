@@ -19,43 +19,40 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
-import { PasskeySetup } from '@/components/passkey-setup';
+import { CreateWallet } from '@/components/create-wallet';
 import { useEffect, useState } from 'react';
 
 export default function SetupWalletPage() {
   const router = useRouter();
-  const [username] = useState(() => crypto.randomUUID());
-  const [walletSetupComplete, setWalletSetupComplete] = useState<boolean>()
-
-  const checkWallet = async () => {
-    const response = await fetch('/api/auth-status')
-    const { authenticated, hasWallet } = (await response.json()) as {
-      authenticated: boolean
-      hasWallet: boolean
-    }
-
-    if (!authenticated) {
-      router.push('/sign-in')
-      return
-    }
-
-    if (hasWallet) {
-      router.push('/dashboard')
-      return
-    }
-
-    setWalletSetupComplete(false)
-  }
+  const [ready, setReady] = useState(false);
 
   useEffect(() => {
-    checkWallet()
-  }, [router])
+    (async () => {
+      const response = await fetch('/api/auth-status');
+      const { authenticated, hasWallet } = (await response.json()) as {
+        authenticated: boolean;
+        hasWallet: boolean;
+      };
 
-  if (walletSetupComplete === undefined) return null
+      if (!authenticated) {
+        router.push('/sign-in');
+        return;
+      }
+
+      if (hasWallet) {
+        router.push('/dashboard');
+        return;
+      }
+
+      setReady(true);
+    })();
+  }, [router]);
+
+  if (!ready) return null;
 
   return (
     <div className="flex flex-col w-full h-full">
-      <PasskeySetup username={username} />
+      <CreateWallet />
     </div>
   );
 }
