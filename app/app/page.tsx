@@ -59,12 +59,11 @@ export default function Splash() {
     return () => clearTimeout(timer);
   }, []);
 
-  // Splash: chu ky TapTip can giua, hoi cao hon tam mot chut
-  // (luoi 1 dem tren / 5 logo / 4 dem duoi)
+  // Splash: chu ky TapTip can giua vach 2.5 (tam hang 3)
+  // (0 dem tren / 5 logo / 5 dem duoi)
   if (step === "splash") {
     return (
       <div className="flex flex-col h-full px-5">
-        <div style={{ flex: "1 1 0" }} />
         <div
           style={{ flex: "5 1 0", minHeight: 0 }}
           className="flex items-center justify-center"
@@ -72,7 +71,7 @@ export default function Splash() {
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img src="/logo-full.svg" alt="TapTip" className="w-[60%] h-auto" />
         </div>
-        <div style={{ flex: "4 1 0" }} />
+        <div style={{ flex: "5 1 0" }} />
       </div>
     );
   }
