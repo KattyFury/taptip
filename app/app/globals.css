@@ -129,12 +129,12 @@
   /* Thang chu quy doi truc tiep tu ban Figma goc 390x844: px/844*100.
      27 -> 3.2cqh (tieu de), 22 -> 2.61cqh (nut/nhan "Balance"/so tien lich
      su), 17 -> 2.01cqh (noi dung), 15 -> 1.78cqh (hint/ngay thang),
-     32 -> 3.79cqh (so du lon o Home). */
+     37 -> 4.38cqh (so du lon o Home - tang +5 tu 32 theo yeu cau 09-02). */
   --text-title: 3.2cqh;
   --text-lead: 2.61cqh;
   --text-body: 2.01cqh;
   --text-small: 1.78cqh;
-  --text-figure: 3.79cqh;
+  --text-figure: 4.38cqh;
 }
 
 @layer base {

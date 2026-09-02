@@ -10,10 +10,13 @@ import * as Icon from "@/components/icons";
 
 /**
  * CenteredCard - dung cho Scan to tip / Lich su / Nap / Rut: card trang,
- * vien den 1px, bo goc 10px (--radius-card), rong = full khung chua (khung
- * chua da co le 20px 2 ben tu layout cha - KHONG tu them le o day nua, keo
- * bi le kep 40px), neo gan dinh khung (KHONG center dung 50% nhu ban cu),
- * noi dung cuon rieng neu dai hon khung.
+ * vien den 1px, bo goc 10px (--radius-card), rong FULL BLEED sat 2 canh
+ * khung dien thoai (0 le - khac voi cac hang noi dung Home van giu le 20px).
+ * `home-root` (cha gan nhat co position:relative) nam ben trong px-5 cua
+ * dashboard/layout.tsx nen da bi lom vao 20px san - dung -mx-5 de "tra lai"
+ * dung 20px do, cho ca scrim lan card ra sat mep khung that su.
+ * Neo gan dinh khung (KHONG center dung 50% nhu ban cu), noi dung cuon
+ * rieng neu dai hon khung.
  */
 export function CenteredCard({
   open,
@@ -35,7 +38,7 @@ export function CenteredCard({
   return (
     <>
       <div
-        className="absolute inset-0 z-40 bg-scrim"
+        className="absolute inset-0 -mx-5 z-40 bg-scrim"
         onClick={onClose}
         aria-hidden="true"
       />
@@ -43,7 +46,7 @@ export function CenteredCard({
         role="dialog"
         aria-modal="true"
         style={{ top: "10.5cqh", maxHeight: `${maxHeightCqh}cqh` }}
-        className="absolute left-0 right-0 z-50 flex flex-col rounded-card border border-border bg-background shadow-modal overflow-hidden"
+        className="absolute left-0 right-0 -mx-5 z-50 flex flex-col rounded-card border border-border bg-background shadow-modal overflow-hidden"
       >
         <div className="relative shrink-0 flex items-center justify-center px-[18px] py-[14px]">
           <h2 className="text-title font-semibold text-center">{title}</h2>

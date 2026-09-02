@@ -48,6 +48,15 @@ function detectPlatform(): "ios" | "android" {
   return /android/i.test(navigator.userAgent) ? "android" : "ios";
 }
 
+// Da them vao Home Screen roi thi trinh duyet chay o "display-mode: standalone"
+// (Android/desktop) hoac navigator.standalone (iOS Safari) - khong can hien
+// lai huong dan "Add to Home Screen" nua, bo qua thang toi /sign-in.
+function isInstalledStandalone(): boolean {
+  if (typeof window === "undefined") return false;
+  const iosStandalone = (window.navigator as unknown as { standalone?: boolean }).standalone === true;
+  return window.matchMedia?.("(display-mode: standalone)").matches === true || iosStandalone;
+}
+
 export default function Splash() {
   const router = useRouter();
   const [step, setStep] = useState<"splash" | "add-to-home">("splash");
@@ -55,9 +64,15 @@ export default function Splash() {
 
   useEffect(() => {
     setPlatform(detectPlatform());
-    const timer = setTimeout(() => setStep("add-to-home"), SPLASH_DURATION_MS);
+    const timer = setTimeout(() => {
+      if (isInstalledStandalone()) {
+        router.push("/sign-in");
+      } else {
+        setStep("add-to-home");
+      }
+    }, SPLASH_DURATION_MS);
     return () => clearTimeout(timer);
-  }, []);
+  }, [router]);
 
   // Splash: chu ky TapTip can giua vach 2.5 (tam hang 3)
   // (0 dem tren / 5 logo / 5 dem duoi)

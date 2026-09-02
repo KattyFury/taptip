@@ -265,13 +265,12 @@ export default function SendFlow({ open, onOpenChange }: Props) {
             <button
               onClick={selectCustom}
               className={
-                "w-full h-[6.68cqh] min-h-[38px] rounded-full text-lead font-bold flex items-center justify-center gap-1.5 " +
+                "w-full h-[6.68cqh] min-h-[38px] rounded-full text-lead font-bold " +
                 (selectedSlot === "custom"
                   ? "bg-primary text-primary-foreground"
                   : "bg-surface text-foreground")
               }
             >
-              <Icon.Add className="w-[1.8cqh] h-[1.8cqh] min-w-[12px] min-h-[12px] shrink-0" />
               Custom
             </button>
           </div>

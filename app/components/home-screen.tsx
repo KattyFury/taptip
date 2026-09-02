@@ -115,7 +115,7 @@ function HomeScreenContent({ primaryWallet }: Props) {
             <div className="absolute right-0 top-full z-50 mt-1.5 w-[210px] rounded-card border border-border bg-background shadow-modal overflow-hidden">
               <div className="w-full flex items-center justify-between gap-3 px-4 py-3 border-b border-border">
                 <div className="flex flex-col min-w-0">
-                  <span className="text-small text-accent">Địa chỉ ví</span>
+                  <span className="text-small text-accent">Account Number</span>
                   <span className="text-body font-semibold truncate">
                     {shortenAddress(primaryWallet.wallet_address)}
                   </span>
@@ -157,11 +157,11 @@ function HomeScreenContent({ primaryWallet }: Props) {
         )}
       </div>
 
-      {/* Hang 2 : Balance xep tren so du lon - dung leading-none de ca 2 dong
-          chu gon dung trong 1 hang, khong lam to hang nhu ban cu (flex 1.6). */}
+      {/* Hang 2 : Balance can giua (ngang), so du lon cach nhan "Balance"
+          1 khoang tho (gap) - van dung leading-none de gon dung trong 1 hang. */}
       <div
         style={{ flex: "1 1 0", minHeight: 0 }}
-        className="flex flex-col items-start justify-center"
+        className="flex flex-col items-center justify-center gap-[0.8cqh]"
       >
         <span className="text-lead font-bold text-accent leading-none">Balance</span>
         <span className="text-figure font-bold leading-none">
@@ -203,8 +203,8 @@ function HomeScreenContent({ primaryWallet }: Props) {
         </div>
 
         <div className="shrink-0 flex items-center gap-2">
-          <span className="text-body font-semibold">
-            {shortenAddress(primaryWallet.wallet_address)}
+          <span className="text-lead font-semibold">
+            Account Number: {shortenAddress(primaryWallet.wallet_address)}
           </span>
           <CopyButton value={primaryWallet.wallet_address} label="Copy wallet address" />
         </div>
