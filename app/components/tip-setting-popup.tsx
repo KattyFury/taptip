@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { ContentPopup } from "@/components/content-popup";
 import * as Icon from "@/components/icons";
 import { toast } from "sonner";
 
@@ -15,27 +14,28 @@ interface TipSettings {
 
 const SLOTS = [1, 2, 3, 4] as const;
 
-export function TipSettingPopup({
-  open,
-  onClose,
-}: {
-  open: boolean;
-  onClose: () => void;
-}) {
+/**
+ * Card noi dung cua popup Tip amounts - vo AnchoredCard boc quanh no o
+ * home-screen.tsx, nen component nay khong tu quan ly open/dinh vi nua.
+ */
+export function TipSettingPopup({ onClose }: { onClose: () => void }) {
   const [settings, setSettings] = useState<TipSettings | null>(null);
   const [editingSlot, setEditingSlot] = useState<number | null>(null);
   const [draftValue, setDraftValue] = useState("");
 
   useEffect(() => {
-    if (!open) return;
     fetch("/api/tip-settings")
       .then((res) => res.json() as Promise<{ settings: TipSettings }>)
       .then((data) => setSettings(data.settings))
-      .catch(() => toast.error("Không tải được Tip Setting"));
-  }, [open]);
+      .catch(() => toast.error("Could not load tip amounts"));
+  }, []);
 
   const slotValue = (slot: number) =>
     settings ? (settings[`slot${slot}` as keyof TipSettings] as number | null) : null;
+
+  const visibleSlots = SLOTS.filter((slot) => slotValue(slot) != null || editingSlot === slot);
+  const nextEmptySlot = SLOTS.find((slot) => slotValue(slot) == null);
+  const canAddMore = nextEmptySlot != null && editingSlot !== nextEmptySlot;
 
   const startEdit = (slot: number) => {
     const current = slotValue(slot);
@@ -60,7 +60,7 @@ export function TipSettingPopup({
     });
 
     if (!res.ok) {
-      toast.error("Không lưu được, thử lại");
+      toast.error("Could not save, try again");
       return;
     }
 
@@ -78,7 +78,7 @@ export function TipSettingPopup({
     });
 
     if (!res.ok) {
-      toast.error("Không lưu được, thử lại");
+      toast.error("Could not save, try again");
       return;
     }
 
@@ -87,58 +87,62 @@ export function TipSettingPopup({
   };
 
   return (
-    <ContentPopup open={open} onClose={onClose}>
-      <div className="flex flex-col px-[18px]">
-        {SLOTS.map((slot) => {
-          const value = slotValue(slot);
-          const isEditing = editingSlot === slot;
-          const isDefault = settings?.default_slot === slot;
+    <div className="flex flex-col px-[18px] py-[16px]">
+      <h2 className="text-body font-semibold mb-2">Tip amounts</h2>
 
-          return (
-            <div
-              key={slot}
-              className="flex items-center justify-between gap-2.5 py-4 border-b border-border last:border-b-0"
-            >
-              {isEditing ? (
-                <input
-                  autoFocus
-                  type="number"
-                  inputMode="decimal"
-                  value={draftValue}
-                  onChange={(e) => setDraftValue(e.target.value)}
-                  onBlur={saveEdit}
-                  onKeyDown={(e) => e.key === "Enter" && (e.currentTarget as HTMLInputElement).blur()}
-                  placeholder="Số tiền"
-                  className="w-[100px] text-[21px] font-bold font-num outline-none border-b-2 border-primary bg-transparent"
-                />
-              ) : (
-                <button
-                  className="flex items-center gap-2.5 text-left disabled:pointer-events-none"
-                  disabled={value == null}
-                  onClick={() => makeDefault(slot)}
-                >
-                  <span className="text-[21px] font-bold font-num">
-                    {value != null ? `$${value}` : "+ Nhập số"}
-                  </span>
-                  {isDefault && (
-                    <span className="text-[10px] font-extrabold uppercase tracking-wide bg-primary text-primary-foreground px-2 py-1 rounded-sm">
-                      Mặc định
-                    </span>
-                  )}
-                </button>
-              )}
+      {visibleSlots.map((slot) => {
+        const value = slotValue(slot);
+        const isDefault = settings?.default_slot === slot;
+        const isEditing = editingSlot === slot;
 
+        return (
+          <div
+            key={slot}
+            className="flex items-center justify-between gap-2.5 py-[10px] border-b border-border last:border-b-0"
+          >
+            {isEditing ? (
+              <input
+                autoFocus
+                type="number"
+                inputMode="decimal"
+                value={draftValue}
+                onChange={(e) => setDraftValue(e.target.value)}
+                onBlur={saveEdit}
+                onKeyDown={(e) => e.key === "Enter" && (e.currentTarget as HTMLInputElement).blur()}
+                placeholder="Amount"
+                className="w-[80px] text-lead font-bold outline-none border-b-2 border-primary bg-transparent"
+              />
+            ) : (
               <button
-                aria-label="Sửa số tiền"
-                onClick={() => startEdit(slot)}
-                className="w-7 h-7 rounded-full border border-border flex items-center justify-center shrink-0"
+                className="flex items-center gap-2.5 text-left flex-1"
+                onClick={() => makeDefault(slot)}
               >
-                <Icon.Edit className="w-3.5 h-3.5" />
+                <span className={"text-body " + (isDefault ? "font-semibold" : "text-accent")}>
+                  {isDefault ? "Default" : "Option"}
+                </span>
+                <span className="text-lead font-bold">${value}</span>
               </button>
-            </div>
-          );
-        })}
-      </div>
-    </ContentPopup>
+            )}
+
+            <button
+              aria-label="Edit amount"
+              onClick={() => startEdit(slot)}
+              className="w-6 h-6 flex items-center justify-center shrink-0"
+            >
+              <Icon.Option className="w-4 h-4" />
+            </button>
+          </div>
+        );
+      })}
+
+      {canAddMore && (
+        <button
+          className="text-body text-accent text-left py-[10px]"
+          onClick={() => startEdit(nextEmptySlot)}
+        >
+          + Add more option
+        </button>
+      )}
+    </div>
   );
 }

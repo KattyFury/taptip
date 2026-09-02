@@ -1,62 +1,36 @@
-/**
- * Copyright 2026 Circle Internet Group, Inc.  All rights reserved.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- *
- * SPDX-License-Identifier: Apache-2.0
- */
-
 "use client";
 
-import { type FunctionComponent, useState } from "react";
-import { Copy } from "lucide-react";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
-import { Button } from "@/components/ui/button";
-import { sleep } from "@/lib/utils/sleep";
+import { useState } from "react";
+import * as Icon from "@/components/icons";
 
-interface Props {
-  text: string;
-}
+/**
+ * Nut copy dung chung (dia chi vi o Home + popup Deposit). Bam xong: icon
+ * Copy doi sang Check mau --success trong 1.8s roi tu quay lai - KHONG dung
+ * toast (theo yeu cau dong bo thiet ke 09-02).
+ */
+export function CopyButton({ value, label }: { value: string; label: string }) {
+  const [copied, setCopied] = useState(false);
 
-export const CopyButton: FunctionComponent<Props> = (props) => {
-  const [shouldShowTooltip, setShouldShowTooltip] = useState(false);
-
-  const simulateTooltipOpening = async () => {
-    setShouldShowTooltip(true);
-    await sleep(700);
-    setShouldShowTooltip(false);
+  const handleCopy = () => {
+    navigator.clipboard.writeText(value);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 1800);
   };
 
   return (
-    <TooltipProvider>
-      <Tooltip open={shouldShowTooltip}>
-        <TooltipTrigger asChild>
-          <Button onClick={simulateTooltipOpening}>
-            <Copy
-              className="h-4 w-4"
-              onClick={() => navigator.clipboard.writeText(props.text)}
-            />
-          </Button>
-        </TooltipTrigger>
-        <TooltipContent>
-          <p>Copied</p>
-        </TooltipContent>
-      </Tooltip>
-    </TooltipProvider>
+    <button
+      onClick={handleCopy}
+      aria-label={label}
+      className={
+        "w-[3.4cqh] h-[3.4cqh] min-w-[26px] min-h-[26px] rounded-full flex items-center justify-center shrink-0 " +
+        (copied ? "text-success" : "text-foreground")
+      }
+    >
+      {copied ? (
+        <Icon.Check className="w-[1.8cqh] h-[1.8cqh] min-w-[12px] min-h-[12px]" />
+      ) : (
+        <Icon.Copy className="w-[1.8cqh] h-[1.8cqh] min-w-[12px] min-h-[12px]" />
+      )}
+    </button>
   );
-};
+}

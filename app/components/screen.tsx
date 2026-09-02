@@ -34,8 +34,6 @@
 import type { ReactNode } from "react";
 
 interface ScreenProps {
-  /** Icon dau man, to 56px (6cqh), mau xanh accent */
-  icon?: ReactNode;
   /** Tieu de man. Nhan ReactNode de man OTP ghep them dong email mau xanh */
   title?: ReactNode;
   /** Noi dung chinh, bat dau tu vach 3.0 */
@@ -46,24 +44,20 @@ interface ScreenProps {
   foot?: ReactNode;
 }
 
-export function Screen({ icon, title, children, action, foot }: ScreenProps) {
+export function Screen({ title, children, action, foot }: ScreenProps) {
   return (
     <div data-screen-root className="flex flex-col w-full h-full">
       {/* 0.0 -> 1.0 */}
       <div style={{ flex: "1 1 0" }} />
 
-      {/* 1.0 -> 2.5 : icon + tieu de, bam dinh vach 1.0 */}
+      {/* 1.0 -> 2.5 : tieu de, bam dinh vach 1.0. Ban ve Figma 09-02 bo han
+          icon lon dau man - tieu de len thang hang 2. */}
       <div
         style={{ flex: "1.5 1 0", minHeight: 0 }}
         className="flex flex-col items-center justify-start gap-[1.2cqh] w-full max-w-[320px] mx-auto"
       >
-        {icon && (
-          <span className="inline-flex w-[6cqh] h-[6cqh] text-accent shrink-0">
-            {icon}
-          </span>
-        )}
         {title && (
-          <h1 className="text-title font-extrabold text-center leading-tight">
+          <h1 className="text-title font-semibold text-center leading-tight">
             {title}
           </h1>
         )}
@@ -109,7 +103,7 @@ export function PrimaryButton({
     <button
       className={
         "h-[66.6%] rounded-full bg-primary text-primary-foreground shadow-btn " +
-        "flex items-center justify-center gap-2 text-lead font-extrabold " +
+        "flex items-center justify-center gap-2 text-lead font-bold " +
         "disabled:opacity-50 disabled:pointer-events-none " +
         className
       }
@@ -120,7 +114,9 @@ export function PrimaryButton({
   );
 }
 
-/** Nut vien chi co icon - dung cho nut Quay lai o hang hanh dong. */
+/** Nut vang chi co icon - dung cho nut Quay lai o hang hanh dong. Cung mau
+ * pill vang voi PrimaryButton (Figma khong con phan biet nut phu/chinh bang
+ * mau, chi bang do rong va noi dung). */
 export function IconButton({
   children,
   className = "",
@@ -129,7 +125,7 @@ export function IconButton({
   return (
     <button
       className={
-        "h-[66.6%] rounded-full border border-border shadow-btn " +
+        "h-[66.6%] rounded-full bg-primary text-primary-foreground shadow-btn " +
         "flex items-center justify-center " +
         "disabled:opacity-50 disabled:pointer-events-none " +
         className
@@ -180,7 +176,7 @@ export function TextLink({
 }: React.ButtonHTMLAttributes<HTMLButtonElement>) {
   return (
     <button
-      className={"text-accent text-body font-extrabold text-center " + className}
+      className={"text-accent text-body font-semibold text-center " + className}
       {...props}
     >
       {children}
@@ -188,7 +184,7 @@ export function TextLink({
   );
 }
 
-/** O nhap lieu kieu chim (khong vien, nen xam, bong long vao trong). */
+/** O nhap lieu vien den, nen trong - khop Figma 09-02 (bo nen xam/bong cu). */
 export function Field({
   className = "",
   ...props
@@ -196,8 +192,8 @@ export function Field({
   return (
     <input
       className={
-        "w-full h-[6cqh] min-h-[48px] rounded-xl border-0 bg-surface shadow-field " +
-        "px-4 text-lead text-left text-foreground placeholder:text-hint " +
+        "w-full h-[6cqh] min-h-[48px] rounded-full border border-border bg-background " +
+        "px-4 text-body text-left text-foreground placeholder:text-accent " +
         "outline-none focus:ring-2 focus:ring-primary " +
         className
       }
@@ -206,17 +202,19 @@ export function Field({
   );
 }
 
-// Icon Back dung noi bo cho BackAction (tranh vong import voi icons.tsx)
+// Icon Back dung noi bo cho BackAction (tranh vong import voi icons.tsx).
+// Tam giac dac quay trai, khop ban ve Figma 09-02 (back.svg).
 function BackIcon() {
   return (
     <svg
       viewBox="0 0 100 100"
       fill="none"
       aria-hidden="true"
-      className="w-[3cqh] h-[3cqh] text-foreground"
+      className="w-[2.6cqh] h-[2.6cqh] text-primary-foreground"
     >
       <path
-        d="M30 50L10 70L30 90M10 70H50C60 70.1428 80 66.9235 80 40.5336C80 14.1437 50 10 50 10"
+        d="M80 83L80 23L20 53L80 83Z"
+        fill="currentColor"
         stroke="currentColor"
         strokeWidth={10}
         strokeLinecap="round"

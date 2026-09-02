@@ -21,7 +21,6 @@
 import { useEffect, useState, type ReactNode } from "react";
 import { useRouter } from "next/navigation";
 import { Screen, SingleAction, PrimaryButton, TextLink } from "@/components/screen";
-import * as Icon from "@/components/icons";
 
 const SPLASH_DURATION_MS = 1600;
 
@@ -81,7 +80,6 @@ export default function Splash() {
   return (
     <div className="h-full px-5">
       <Screen
-        icon={<Icon.Add className="w-full h-full" />}
         title="Add TapTip to Home Screen"
         action={
           <SingleAction>

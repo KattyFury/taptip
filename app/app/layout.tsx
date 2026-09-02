@@ -17,7 +17,7 @@
  */
 
 import type { Viewport } from "next";
-import { Nunito, Comfortaa } from "next/font/google";
+import { Inter } from "next/font/google";
 import { Toaster } from "@/components/ui/sonner";
 import "./globals.css";
 import { Web3Provider } from "@/components/web3-provider";
@@ -27,20 +27,12 @@ const defaultUrl = process.env.NEXT_PUBLIC_SITE_URL
   ? process.env.NEXT_PUBLIC_SITE_URL
   : "http://localhost:3000";
 
-// Nunito: toan bo chu giao dien (400 thuong, 700 dam, 800 tieu de/nut)
-const nunito = Nunito({
+// Inter: toan bo chu giao dien, ke ca so - Figma dung Inter cho tat ca,
+// khong tach font rieng cho con so nhu ban cu (Nunito + Comfortaa).
+const inter = Inter({
   subsets: ["latin", "vietnamese"],
-  weight: ["400", "700", "800"],
-  variable: "--font-nunito",
-  display: "swap",
-});
-
-// Comfortaa: CHI dung cho gia tri so - so du, so tien, ngay gio, chu so OTP.
-// Comfortaa het nac o 700, khong co 800.
-const comfortaa = Comfortaa({
-  subsets: ["latin", "vietnamese"],
-  weight: ["400", "700"],
-  variable: "--font-comfortaa",
+  weight: ["400", "500", "600", "700", "800"],
+  variable: "--font-inter",
   display: "swap",
 });
 
@@ -63,7 +55,7 @@ export default async function RootLayout({
   return (
     <html
       lang="en"
-      className={`${nunito.variable} ${comfortaa.variable}`}
+      className={inter.variable}
       suppressHydrationWarning
     >
       <body className="bg-page-backdrop text-foreground font-sans min-h-dvh overflow-hidden">

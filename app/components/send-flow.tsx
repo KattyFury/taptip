@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { Html5Qrcode } from "html5-qrcode";
 import * as Icon from "@/components/icons";
+import { CenteredCard } from "@/components/content-popup";
 import { useWeb3 } from "@/components/web3-provider";
 import { useBalance } from "@/contexts/balanceContext";
 import { toast } from "sonner";
@@ -58,7 +59,7 @@ export default function SendFlow({ open, onOpenChange }: Props) {
           selectSlot(data.settings.default_slot);
         }
       })
-      .catch(() => toast.error("Không tải được Tip Setting"));
+      .catch(() => toast.error("Could not load tip amounts"));
   }, [open]);
 
   useEffect(() => {
@@ -115,7 +116,7 @@ export default function SendFlow({ open, onOpenChange }: Props) {
       );
     } catch (err) {
       console.warn("Could not start camera:", err);
-      setScanError("Không mở được camera. Thử tải ảnh từ thư viện.");
+      setScanError("Could not open camera. Try uploading a QR image instead.");
     }
   };
 
@@ -143,7 +144,7 @@ export default function SendFlow({ open, onOpenChange }: Props) {
       handleScanResult(decodedText);
     } catch (err) {
       console.error("Could not decode QR from image:", err);
-      setScanError("Không đọc được mã QR trong ảnh này.");
+      setScanError("Could not read a QR code in this image.");
     } finally {
       e.target.value = "";
     }
@@ -152,17 +153,17 @@ export default function SendFlow({ open, onOpenChange }: Props) {
   const handleScanResult = async (decodedText: string) => {
     const amount = selectedAmount;
     if (amount == null) {
-      setScanError("Chưa chọn số tiền.");
+      setScanError("Choose an amount first.");
       return;
     }
     if (amount > balanceNum) {
-      setScanError("Số dư không đủ để gửi mức này.");
+      setScanError("Not enough balance to send this amount.");
       return;
     }
 
     const decoded = decodeTapTipQr(decodedText);
     if (!decoded) {
-      setScanError("Mã QR không hợp lệ — sai mạng, sai loại tiền, hoặc không phải QR TapTip.");
+      setScanError("Invalid QR code — wrong network, wrong asset, or not a TapTip code.");
       return;
     }
 
@@ -172,7 +173,7 @@ export default function SendFlow({ open, onOpenChange }: Props) {
     const txHash = await sendUSDC(decoded.address, String(amount));
 
     if (!txHash) {
-      toast.error("Gửi thất bại, thử lại");
+      toast.error("Send failed, try again");
       setStep("scan");
       return;
     }
@@ -195,105 +196,81 @@ export default function SendFlow({ open, onOpenChange }: Props) {
     }, 2000);
   };
 
-  if (!open) return null;
-
   const isOverlayStep = step === "sending" || step === "success";
 
   return (
-    <div className="fixed inset-0 z-50 bg-background flex flex-col">
-      {/* ================ LUOI 10 HANG MAN QUET (Wireframe v2 Group B) ========
-          1 : header "Tip"
-          2 : dem
-          3-5 : camera to full
-          6-8 : trong
-          9 : 4 nut chon so tien
-          10 : "Thoat" do
-          ========================================================================= */}
+    <>
+      {/* Card "Scan to tip" giua man, Home mo phia sau qua scrim cua CenteredCard */}
+      <CenteredCard open={open} onClose={() => onOpenChange(false)} title="Scan to tip">
+        <div className="flex flex-col items-center px-[18px] pb-[18px] gap-[1.4cqh]">
+          <div className="relative w-full aspect-square rounded-xl overflow-hidden bg-foreground">
+            <div id={QR_REGION_ID} className="w-full h-full" />
+            <div
+              aria-hidden
+              className="pointer-events-none absolute left-[15%] top-[15%] w-[70%] h-[70%] border-[3px] border-primary rounded-sm"
+            />
+          </div>
 
-      {/* Hang 1 */}
-      <div style={{ flex: "1 1 0", minHeight: 0 }} className="flex items-center justify-center">
-        <span className="text-[17px] font-extrabold">Tip</span>
-      </div>
+          <button
+            onClick={() => fileInputRef.current?.click()}
+            className="text-body font-semibold text-center"
+          >
+            Upload a QR image instead
+          </button>
 
-      {/* Hang 2 */}
-      <div style={{ flex: "1 1 0", minHeight: 0 }} />
+          {scanError && (
+            <p className="text-small font-semibold text-danger text-center">{scanError}</p>
+          )}
 
-      {/* Hang 3-4-5 : camera to full */}
-      <div style={{ flex: "3 1 0", minHeight: 0 }} className="flex items-center justify-center px-5">
-        <div className="relative w-full h-full rounded-xl overflow-hidden bg-foreground">
-          <div id={QR_REGION_ID} className="w-full h-full" />
-          <div
-            aria-hidden
-            className="pointer-events-none absolute left-[15%] top-[15%] w-[70%] h-[70%] border-[3px] border-primary rounded-sm"
-          />
+          <div className="w-full flex flex-wrap items-center justify-center gap-2.5">
+            {([1, 2, 3, 4] as const).map((slot) => {
+              const value = slotAmount(slot);
+              if (value == null) return null;
+              const isSelected = selectedSlot === slot;
+              return (
+                <button
+                  key={slot}
+                  onClick={() => selectSlot(slot)}
+                  className={
+                    "px-[18px] h-[6.68cqh] min-h-[38px] rounded-full text-lead font-bold " +
+                    (isSelected
+                      ? "bg-primary text-primary-foreground"
+                      : "bg-surface text-foreground")
+                  }
+                >
+                  ${value}
+                </button>
+              );
+            })}
+          </div>
         </div>
-      </div>
 
-      {/* Hang 6-7-8 : trong */}
-      <div style={{ flex: "3 1 0", minHeight: 0 }} className="flex items-center justify-center px-6">
-        {scanError && (
-          <p className="text-[14px] font-extrabold text-danger text-center">{scanError}</p>
-        )}
-      </div>
-
-      {/* Hang 9 : 4 nut chon so tien */}
-      <div style={{ flex: "1 1 0", minHeight: 0 }} className="flex items-center justify-center gap-2.5">
-        {([1, 2, 3, 4] as const).map((slot) => {
-          const value = slotAmount(slot);
-          if (value == null) return null;
-          const isSelected = selectedSlot === slot;
-          return (
-            <button
-              key={slot}
-              onClick={() => selectSlot(slot)}
-              className={
-                "px-[18px] py-2.5 rounded-full text-[14px] font-bold font-num border-2 " +
-                (isSelected
-                  ? "bg-primary border-primary text-primary-foreground"
-                  : "border-border text-foreground")
-              }
-            >
-              ${value}
-            </button>
-          );
-        })}
-      </div>
-
-      {/* Hang 10 : Thoat */}
-      <div style={{ flex: "1 1 0", minHeight: 0 }} className="flex items-center justify-center">
-        <button
-          onClick={() => onOpenChange(false)}
-          className="text-[14px] font-extrabold text-danger"
-        >
-          Thoát
-        </button>
-      </div>
-
-      <input
-        ref={fileInputRef}
-        type="file"
-        accept="image/*"
-        className="hidden"
-        onChange={handleFileUpload}
-      />
+        <input
+          ref={fileInputRef}
+          type="file"
+          accept="image/*"
+          className="hidden"
+          onChange={handleFileUpload}
+        />
+      </CenteredCard>
 
       {isOverlayStep && (
         <OverlayCard>
           {step === "sending" && (
             <>
               <Icon.Loading className="w-[56px] h-[56px] text-accent animate-spin" />
-              <p className="text-[20px] font-bold">Đang xử lý...</p>
+              <p className="text-[20px] font-bold">Processing...</p>
             </>
           )}
           {step === "success" && (
             <>
               <Icon.Check className="w-[56px] h-[56px] text-success" />
-              <p className="text-[20px] font-bold font-num">-${lastAmount}</p>
+              <p className="text-[20px] font-bold">-${lastAmount}</p>
             </>
           )}
         </OverlayCard>
       )}
-    </div>
+    </>
   );
 }
 

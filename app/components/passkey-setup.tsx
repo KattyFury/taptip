@@ -26,7 +26,6 @@ import {
     toWebAuthnCredential,
 } from '@circle-fin/modular-wallets-core';
 import { Screen, BackAction, PrimaryButton, TextLink } from "@/components/screen";
-import * as Icon from "@/components/icons";
 import { createPublicClient } from 'viem';
 import {
     toWebAuthnAccount,
@@ -152,7 +151,6 @@ export function PasskeySetup({ username }: PasskeySetupProps) {
 
     return (
         <Screen
-            icon={<Icon.FaceId className="w-full h-full" />}
             title="Set up a passkey"
             action={
                 <BackAction onBack={() => router.push("/sign-in")}>

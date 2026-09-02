@@ -3,59 +3,61 @@
 
 /* ===========================================================================
    TapTip - Design tokens
-   Nguon: design_handoff_taptip/README.md + TapTip Design Recreation.dc.html
+   Nguon: Figma "Taptip" (rLGoWK4AHhqov9CKHXJqqE) - ban ve lai 09-02, thay
+   the toan bo token cu (design_handoff_taptip cu da loi thoi so voi ban nay).
 
    QUY DINH DUNG CHUNG (doc truoc khi sua bat ky component nao):
 
    1. MAU: khong bao gio viet mau truc tiep trong component (khong dung
       text-green-600, bg-gray-100, #fff...). Chi dung token o duoi qua class
       Tailwind: bg-background, text-accent, bg-success-bg, ...
-      Can mau moi -> them token o day truoc, roi moi dung.
+      Chi con dung 4 tong + 2 tong trang thai (xem gia tri duoi) - KHONG tu
+      che them mau/font-size moi, dung dung token co san.
 
-   2. CHU: font-sans (Nunito) cho MOI chu. font-num (Comfortaa) CHI cho gia
-      tri so: so du, so tien USDC, ngay, gio, chu so OTP.
+   2. CHU: font-sans (Inter) cho MOI chu, KE CA so (Figma dung Inter Bold cho
+      so du, khong tach rieng font so nhu ban cu). Logo la file SVG tinh rieng
+      (public/logo-full.svg), khong dinh gi den font-sans.
 
-   3. BO GOC: chi co 2 muc. rounded-xl (12px) cho the/modal/o nhap/khoi;
-      rounded-full cho nut hanh dong va chip. Khong dung muc khac.
-      (rounded-md / rounded-lg deu = 12px de primitive shadcn tu roi vao dung
-      muc, khong phai sua tung call-site.)
+   3. BO GOC: rounded-xl (12px) cho the/modal/o nhap/khoi CU (Screen); rounded-
+      full cho nut hanh dong va chip. rounded-card (10px, token MOI) rieng cho
+      cac card popup kieu moi (Scan/History/Deposit/Withdraw/Tip Setting) -
+      KHONG lan voi rounded-xl, Figma phan biet ro 2 muc nay.
 
    4. DO BONG: dung 4 token co san - shadow-btn (nut/the noi), shadow-modal
       (modal), shadow-popover (toast xu ly/thanh cong), shadow-field (long
       vao trong, cho o nhap lieu).
 
    5. LUOI: xem components/screen.tsx. Khong hardcode pixel cho chieu cao /
-      khoang cach doc - chia theo hang bang flex.
+      khoang cach doc - chia theo hang bang flex. Le trai/phai co dinh 20px
+      (Figma quy dinh margin an toan, khong quy doi theo cqh).
 
-   6. DON VI CHU:
-      - Man toan khung (splash, dang nhap, OTP, username, passkey, Home):
-        dung token text-title / text-lead / text-body / text-small /
-        text-figure. Chung tinh bang `cqh` = 1% chieu cao KHUNG DIEN THOAI
-        (khong phai chieu cao cua so trinh duyet), nho `.tt-frame` dat
-        container-type: size. Nho vay chu co dung ty le voi luoi 10 hang tren
-        moi kich thuoc man.
-      - Trong modal: dung px co dinh nhu ban thiet ke. Modal la the tu co
-        gian theo noi dung, khong nam trong luoi 10 hang.
+   6. DON VI CHU: dung token text-title / text-lead / text-body / text-small /
+      text-figure cho MOI man (ca man toan khung lan card popup). Tinh bang
+      `cqh` = 1% chieu cao KHUNG DIEN THOAI (khong phai chieu cao cua so
+      trinh duyet), nho `.tt-frame` dat container-type: size - quy doi tu
+      ban Figma goc 390x844 bang cong thuc px/844*100. Nho vay chu co dung ty
+      le voi luoi 10 hang tren moi kich thuoc man, dung ca trong the popup
+      (khac ban cu: ban cu dung px co dinh trong modal).
    =========================================================================== */
 
 :root {
   /* --- Nen & chu --- */
   --background: #ffffff;
   --foreground: #000000;
-  --surface: #f5f5f5;          /* nen chim: o nhap, nut phu, the thong tin */
+  --surface: #ededed;          /* xam nhat: nen chim, pill thong bao, o nhap phu */
   --hint: rgba(0, 0, 0, 0.6);  /* chu goi y, nhan mo */
-  --border: rgba(0, 0, 0, 0.14);
+  --border: #000000;           /* vien dac 1px - Figma dung border-black cho moi card/QR/input */
 
   /* --- Thuong hieu --- */
   --primary: #ffcc00;          /* vang: nut hanh dong chinh */
   --primary-foreground: #000000;
-  --accent: #0b53bf;           /* xanh duong: link, icon, nhan phu, caption */
+  --accent: #8e8e93;           /* xam: chu phu, caption, nhan "Balance" */
 
   /* --- Trang thai --- */
-  --success: #16a34a;
+  --success: #34c759;
   --success-bg: #dcfce7;
   --success-fg: #166534;
-  --danger: #dc2626;
+  --danger: #ff383c;
   --danger-bg: #fee2e2;
   --danger-fg: #991b1b;
   --warning-bg: #fef9c3;
@@ -112,6 +114,7 @@
   --radius-md: 12px;
   --radius-lg: 12px;
   --radius-xl: 12px;
+  --radius-card: 10px; /* rieng cho card popup kieu Figma moi (Scan/History/Deposit/Withdraw/Tip Setting) */
 
   /* Do bong */
   --shadow-btn: 0 3px 8px rgba(0, 0, 0, 0.2);
@@ -119,19 +122,19 @@
   --shadow-popover: 0 12px 30px rgba(0, 0, 0, 0.4);
   --shadow-field: inset 0 2px 5px rgba(0, 0, 0, 0.15);
 
-  /* Chu: Nunito moi noi, Comfortaa rieng cho con so */
-  --font-sans: var(--font-nunito), sans-serif;
-  --font-num: var(--font-comfortaa), sans-serif;
+  /* Chu: Inter moi noi, ke ca so - Figma khong tach font rieng cho con so */
+  --font-sans: var(--font-inter), sans-serif;
+  --font-num: var(--font-inter), sans-serif;
 
-  /* Thang chu cho man toan khung. 1cqh = 1% chieu cao khung dien thoai,
-     nen quy doi tu ban thiet ke goc 932px. Tang lead/body/small (08-10,
-     user phan hoi chu con nho voi nguoi lon tuoi): 24px -> 2.58cqh,
-     19px -> 2.04cqh, 16px -> 1.72cqh. title/figure giu nguyen. */
-  --text-title: 3cqh;
-  --text-lead: 2.58cqh;
-  --text-body: 2.04cqh;
-  --text-small: 1.72cqh;
-  --text-figure: 4.94cqh;
+  /* Thang chu quy doi truc tiep tu ban Figma goc 390x844: px/844*100.
+     27 -> 3.2cqh (tieu de), 22 -> 2.61cqh (nut/nhan "Balance"/so tien lich
+     su), 17 -> 2.01cqh (noi dung), 15 -> 1.78cqh (hint/ngay thang),
+     32 -> 3.79cqh (so du lon o Home). */
+  --text-title: 3.2cqh;
+  --text-lead: 2.61cqh;
+  --text-body: 2.01cqh;
+  --text-small: 1.78cqh;
+  --text-figure: 3.79cqh;
 }
 
 @layer base {
@@ -145,7 +148,6 @@
     font-family: var(--font-sans);
   }
 
-  /* Nunito co 800; Comfortaa dung toi 700 la het nac (khong co 800) */
   h1,
   h2,
   h3 {

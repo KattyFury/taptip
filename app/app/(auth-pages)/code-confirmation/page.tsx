@@ -19,7 +19,6 @@
 "use client";
 
 import { Screen, BackAction, PrimaryButton } from "@/components/screen";
-import * as Icon from "@/components/icons";
 import {
   InputOTP,
   InputOTPGroup,
@@ -91,7 +90,6 @@ export default function CodeConfirmation() {
 
   return (
     <Screen
-      icon={<Icon.Mail className="w-full h-full" />}
       // Ca dia chi email cung la tieu de - chi khac mau xanh cho de doc,
       // khong phai dong chu phu.
       title={

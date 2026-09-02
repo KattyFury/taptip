@@ -19,7 +19,6 @@
 "use client"
 
 import { Screen, BackAction, PrimaryButton, Field } from "@/components/screen";
-import * as Icon from "@/components/icons";
 import { GlobalContext } from "@/contexts/global-context";
 import { useRouter } from "next/navigation";
 import { ChangeEventHandler, useContext, useMemo, useState } from "react";
@@ -78,7 +77,6 @@ export default function SignIn() {
 
   return (
     <Screen
-      icon={<Icon.SignIn className="w-full h-full" />}
       title="Enter your email to get started"
       action={
         <BackAction onBack={() => router.push("/")}>
@@ -110,7 +108,7 @@ export default function SignIn() {
               key={domain}
               type="button"
               onClick={() => applyEmailSuggestion(domain)}
-              className="text-body px-[14px] py-[5px] border border-border rounded-full text-hint"
+              className="text-small px-[14px] py-[5px] bg-surface rounded-full text-foreground"
             >
               {localPart}{domain}
             </button>

@@ -1,6 +1,7 @@
 /**
  * Bo icon TapTip - line-art 100x100 viewBox, stroke-width 10, currentColor.
- * Nguon: D:\Files\Claude\icon-storage (khong dung icon library).
+ * Nguon: C:\Users\Dell\Desktop\taptip (bo rieng cho ban ve Figma 09-02),
+ * du thi lay tu D:\Files\Claude\Icons (khong dung icon library).
  *
  * QUY DINH: moi icon trong app phai lay tu file nay. Khong import
  * lucide-react hay bat ky icon library nao khac - de ca app cung mot
@@ -185,15 +186,40 @@ export function Back({ className }: IconProps) {
   );
 }
 
-/** Hai o vuong chong nhau - nut copy dia chi vi trong Menu */
+/** Hai o vuong chong nhau - nut copy dia chi vi. Nguon: Desktop/taptip/copy.svg */
 export function Copy({ className }: IconProps) {
   return (
     <Svg className={className}>
-      <rect x="35" y="35" width="55" height="55" rx="8" {...S} strokeLinejoin="round" />
+      <path d="M10 10H70V30H30V70H10V10Z" {...SRound} strokeLinejoin="round" />
       <path
-        d="M65 35V20C65 14.4772 60.5228 10 55 10H20C14.4772 10 10 14.4772 10 20V55C10 60.5228 14.4772 65 20 65H35"
+        fillRule="evenodd"
+        clipRule="evenodd"
+        d="M70 30H30V70V90H90V30H70Z"
         {...SRound}
+        strokeLinejoin="round"
       />
+    </Svg>
+  );
+}
+
+/** 3 cham tron - nut "Tip option" o Home va hanh dong tung dong trong Tip
+ * Setting. Nguon: Desktop/taptip/option.svg */
+export function Option({ className }: IconProps) {
+  return (
+    <Svg className={className}>
+      <circle cx="20" cy="50" r="10" fill="currentColor" />
+      <circle cx="50" cy="50" r="10" fill="currentColor" />
+      <circle cx="80" cy="50" r="10" fill="currentColor" />
+    </Svg>
+  );
+}
+
+/** Dau X don gian - dong popup card, dismiss thong bao. Khac Cancel (X trong
+ * khung vuong). Nguon: Desktop/taptip/x.svg */
+export function X({ className }: IconProps) {
+  return (
+    <Svg className={className}>
+      <path d="M10 10L90 90M10 90L90 10" {...SRound} />
     </Svg>
   );
 }

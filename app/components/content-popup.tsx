@@ -1,23 +1,28 @@
 "use client";
 
 import type { ReactNode } from "react";
+import * as Icon from "@/components/icons";
 
 /**
- * Khuon dung chung cho MOI popup noi dung (Tip Setting, Lich su giao dich,
- * Nap, Rut...) - khac Dialog cua shadcn: khong can giua toan man hinh, ma
- * rong co dinh = 3/4 chieu ngang khung, cao tu co theo noi dung, va TAM luon
- * nam dung tam hang 5-6 cua luoi 10 hang (top: 50% - dung giua man, cua
- * khung .tt-frame chua no - phai la con truc tiep cua mot the co
- * position:relative + h-full bao het 10 hang, KHONG portal ra ngoai nhu
- * Dialog).
+ * 2 khuon popup dung chung theo ban ve Figma 09-02 - thay the ContentPopup
+ * cu (card 3/4 man, center dung tam 50%).
  */
-export function ContentPopup({
+
+/**
+ * CenteredCard - dung cho Scan to tip / Lich su / Nap / Rut: card trang,
+ * vien den 1px, bo goc 10px (--radius-card), rong = full tru le 20px 2 ben,
+ * neo gan dinh khung (KHONG center dung 50% nhu ban cu), noi dung cuon rieng
+ * neu dai hon khung.
+ */
+export function CenteredCard({
   open,
   onClose,
+  title,
   children,
 }: {
   open: boolean;
   onClose: () => void;
+  title: ReactNode;
   children: ReactNode;
 }) {
   if (!open) return null;
@@ -32,8 +37,59 @@ export function ContentPopup({
       <div
         role="dialog"
         aria-modal="true"
-        style={{ top: "50%" }}
-        className="absolute left-1/2 z-50 w-3/4 -translate-x-1/2 -translate-y-1/2 rounded-xl bg-background shadow-modal overflow-hidden"
+        style={{ top: "10.5cqh", maxHeight: "68cqh" }}
+        className="absolute left-5 right-5 z-50 flex flex-col rounded-card border border-border bg-background shadow-modal overflow-hidden"
+      >
+        <div className="relative shrink-0 flex items-center justify-center px-[18px] py-[14px]">
+          <h2 className="text-title font-semibold text-center">{title}</h2>
+          <button
+            onClick={onClose}
+            aria-label="Đóng"
+            className="absolute right-[14px] top-1/2 -translate-y-1/2 text-danger w-6 h-6 flex items-center justify-center"
+          >
+            <Icon.X className="w-3.5 h-3.5" />
+          </button>
+        </div>
+        <div className="overflow-y-auto">{children}</div>
+      </div>
+    </>
+  );
+}
+
+/**
+ * AnchoredCard - dung cho Tip Setting: card nho, cung style vien/bo goc,
+ * KHONG tu dinh vi - noi goi phai boc trong 1 the `relative` va dat class
+ * dinh vi (vd `absolute bottom-full left-0 mb-2`) qua prop `className`.
+ * Khong co scrim toi (Figma khong lam mo Home phia sau popup nho nay), chi
+ * co lop trong suot de bam ra ngoai la dong.
+ */
+export function AnchoredCard({
+  open,
+  onClose,
+  className = "",
+  children,
+}: {
+  open: boolean;
+  onClose: () => void;
+  className?: string;
+  children: ReactNode;
+}) {
+  if (!open) return null;
+
+  return (
+    <>
+      <div
+        className="fixed inset-0 z-40"
+        onClick={onClose}
+        aria-hidden="true"
+      />
+      <div
+        role="dialog"
+        aria-modal="true"
+        className={
+          "absolute z-50 rounded-card border border-border bg-background shadow-modal overflow-hidden " +
+          className
+        }
       >
         {children}
       </div>
