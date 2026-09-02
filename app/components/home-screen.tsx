@@ -203,7 +203,7 @@ function HomeScreenContent({ primaryWallet }: Props) {
         </div>
 
         <div className="shrink-0 flex items-center gap-2">
-          <span className="text-lead font-semibold">
+          <span className="text-body font-semibold text-accent">
             Account Number: {shortenAddress(primaryWallet.wallet_address)}
           </span>
           <CopyButton value={primaryWallet.wallet_address} label="Copy wallet address" />
