@@ -167,10 +167,12 @@ export const Web3Provider: React.FC<{ children: React.ReactNode }> = ({ children
                     return null;
                 }
 
-                const data = await response.json();
+                const data = (await response.json()) as {
+                    credential?: Array<{ passkey_credential: string }>;
+                };
 
                 // If credential exists in the response
-                if (data?.credential?.length > 0 && data.credential[0].passkey_credential) {
+                if (data?.credential && data.credential.length > 0 && data.credential[0].passkey_credential) {
                     // Parse the credential string from the database
                     const parsedCredential = JSON.parse(data.credential[0].passkey_credential) as P256Credential;
                     setCredential(parsedCredential);
@@ -354,7 +356,7 @@ export const Web3Provider: React.FC<{ children: React.ReactNode }> = ({ children
                 });
 
                 if (!response.ok) {
-                    const errorData = await response.json();
+                    const errorData = (await response.json()) as { error?: string };
                     throw new Error(`Failed to save credential to database: ${errorData.error || response.status}`);
                 }
 
