@@ -99,6 +99,7 @@ export default function CodeConfirmation() {
           <span className="text-lead text-accent break-all">{email}</span>
         </>
       }
+      tightContent
       action={
         <BackAction onBack={() => router.push("/sign-in")}>
           <PrimaryButton

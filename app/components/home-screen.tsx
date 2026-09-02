@@ -42,6 +42,10 @@ function shortenAddress(address: string): string {
   return `0x_${address.slice(-5)}`;
 }
 
+// Ca 5 hang deu dua vao le ngang 20px dat mot lan duy nhat o app/dashboard/
+// layout.tsx (px-5) - KHONG tu them px-5 rieng trong tung hang o day nua,
+// keo cong don thanh 40px (bai hoc 09-02: le kep tren toan man Home).
+
 // BalanceProvider rieng, dia chi biet san tu server (primaryWallet.wallet_address)
 // - khong con phu thuoc Web3Context ket noi WebAuthn xong moi thay so du. Che
 // len BalanceProvider goc o app/layout.tsx (khong dia chi, khong lam gi).
@@ -60,7 +64,6 @@ function HomeScreenContent({ primaryWallet }: Props) {
   const [menuOpen, setMenuOpen] = useState(false);
   const [popup, setPopup] = useState<PopupKind>(null);
   const [sendOpen, setSendOpen] = useState(false);
-  const [addressExpanded, setAddressExpanded] = useState(false);
   const [announcements, setAnnouncements] = useState<Announcement[]>([]);
 
   const hasWallet =
@@ -80,16 +83,17 @@ function HomeScreenContent({ primaryWallet }: Props) {
     <div data-home-root className="relative flex flex-col h-full">
       {/* ================== LUOI 10 HANG MAN HOME (Figma taptip-home 09-02) ===
           1 : logo (trai) + icon Menu (phai)
-          2 : "Balance" + so du lon, xep doc
+          2 : "Balance" + so du lon, xep doc - gon trong đung 1 hang
           3-6 : QR to full + dia chi rut gon [copy]
           7-8 : toi da 3 thong bao co the dismiss
-          9 : nut Option (1/3) + Tip (2/3)
+          9 : nut Option (1/3) + Tip (2/3), tam nut o giua hang 9
+          10 : dem duoi (khong noi dung)
           ==================================================================== */}
 
       {/* Hang 1 */}
       <div
         style={{ flex: "1 1 0", minHeight: 0 }}
-        className="relative flex items-center justify-between px-5"
+        className="relative flex items-center justify-between"
       >
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img src="/logo-full.svg" alt="TapTip" className="h-[3.7cqh] w-auto" />
@@ -108,7 +112,16 @@ function HomeScreenContent({ primaryWallet }: Props) {
               onClick={() => setMenuOpen(false)}
               aria-hidden="true"
             />
-            <div className="absolute right-5 top-full z-50 mt-1.5 w-[210px] rounded-card border border-border bg-background shadow-modal overflow-hidden">
+            <div className="absolute right-0 top-full z-50 mt-1.5 w-[210px] rounded-card border border-border bg-background shadow-modal overflow-hidden">
+              <div className="w-full flex items-center justify-between gap-3 px-4 py-3 border-b border-border">
+                <div className="flex flex-col min-w-0">
+                  <span className="text-small text-accent">Địa chỉ ví</span>
+                  <span className="text-body font-semibold truncate">
+                    {shortenAddress(primaryWallet.wallet_address)}
+                  </span>
+                </div>
+                <CopyButton value={primaryWallet.wallet_address} label="Copy wallet address" />
+              </div>
               <button
                 className="w-full flex items-center gap-3 text-left px-4 py-3 text-body font-semibold border-b border-border"
                 onClick={() => openFromMenu("deposit")}
@@ -144,27 +157,27 @@ function HomeScreenContent({ primaryWallet }: Props) {
         )}
       </div>
 
-      {/* Hang 2 : Balance xep tren so du lon - can 1.6 don vi vi 2 dong chu
-          (nhan + so lon) cao hon 1 hang don, khong thi tran xuong khung QR. */}
+      {/* Hang 2 : Balance xep tren so du lon - dung leading-none de ca 2 dong
+          chu gon dung trong 1 hang, khong lam to hang nhu ban cu (flex 1.6). */}
       <div
-        style={{ flex: "1.6 1 0", minHeight: 0 }}
-        className="flex flex-col items-start justify-center px-5"
+        style={{ flex: "1 1 0", minHeight: 0 }}
+        className="flex flex-col items-start justify-center"
       >
-        <span className="text-lead font-bold text-accent">Balance</span>
-        <span className="text-figure font-bold">
+        <span className="text-lead font-bold text-accent leading-none">Balance</span>
+        <span className="text-figure font-bold leading-none">
           ${formatBalance(balance.token)}
         </span>
       </div>
 
-      {/* Hang 3-4-5-6 : QR to full + dia chi rut gon */}
+      {/* Hang 3-4-5-6 : QR to full + dia chi rut gon, dung du 4 hang */}
       <div
-        style={{ flex: "3.4 1 0", minHeight: 0 }}
-        className="flex flex-col items-center justify-center gap-[1.5cqh] px-5"
+        style={{ flex: "4 1 0", minHeight: 0 }}
+        className="flex flex-col items-center justify-center gap-[1.5cqh]"
       >
         {hasWallet ? (
           <div
             style={{ aspectRatio: "1" }}
-            className="w-full max-h-full p-[1.5cqh] bg-background border border-border rounded-xl flex items-center justify-center"
+            className="w-full max-h-full p-[1.5cqh] bg-background flex items-center justify-center"
           >
             <QRCodeSVG
               value={encodeTapTipQr(primaryWallet.wallet_address)}
@@ -182,14 +195,9 @@ function HomeScreenContent({ primaryWallet }: Props) {
         )}
 
         <div className="flex items-center gap-2">
-          <button
-            onClick={() => setAddressExpanded((v) => !v)}
-            className="text-body font-semibold"
-          >
-            {addressExpanded
-              ? primaryWallet.wallet_address
-              : shortenAddress(primaryWallet.wallet_address)}
-          </button>
+          <span className="text-body font-semibold">
+            Account Number: {shortenAddress(primaryWallet.wallet_address)}
+          </span>
           <CopyButton value={primaryWallet.wallet_address} label="Copy wallet address" />
         </div>
       </div>
@@ -197,7 +205,7 @@ function HomeScreenContent({ primaryWallet }: Props) {
       {/* Hang 7-8 : toi da 3 thong bao, an han neu rong (chua co nguon du lieu that) */}
       <div
         style={{ flex: "2 1 0", minHeight: 0 }}
-        className="flex flex-col justify-center gap-[1cqh] px-5"
+        className="flex flex-col justify-center gap-[1cqh]"
       >
         {announcements.slice(0, 3).map((a) => (
           <div
@@ -216,11 +224,12 @@ function HomeScreenContent({ primaryWallet }: Props) {
         ))}
       </div>
 
-      {/* Hang 9 : nut Option (1/3) + Tip (2/3), ca hai pill vang.
+      {/* Hang 9 : nut Option (1/3) + Tip (2/3), ca hai pill vang, tam nut
+          o giua hang 9 (flex dung dung 1 hang, khong lan qua hang 10 nua).
           `relative` de neo AnchoredCard (Tip Setting) ngay phia tren nut Option. */}
       <div
-        style={{ flex: "2 1 0", minHeight: 0, minWidth: 0 }}
-        className="relative flex items-center gap-2.5 px-5"
+        style={{ flex: "1 1 0", minHeight: 0, minWidth: 0 }}
+        className="relative flex items-center gap-2.5"
       >
         <button
           style={{ flex: "1 1 0", minWidth: 0 }}
@@ -242,11 +251,14 @@ function HomeScreenContent({ primaryWallet }: Props) {
         <AnchoredCard
           open={popup === "tipSetting"}
           onClose={() => setPopup(null)}
-          className="bottom-full left-5 mb-2 w-[62%] min-w-[220px]"
+          className="bottom-full left-0 mb-2 w-[62%] min-w-[220px]"
         >
           <TipSettingPopup onClose={() => setPopup(null)} />
         </AnchoredCard>
       </div>
+
+      {/* Hang 10 : dem duoi, khong noi dung - giu du 10 hang cua luoi. */}
+      <div style={{ flex: "1 1 0", minHeight: 0 }} />
 
       <SendFlow open={sendOpen} onOpenChange={setSendOpen} />
 

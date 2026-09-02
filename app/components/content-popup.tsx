@@ -10,20 +10,25 @@ import * as Icon from "@/components/icons";
 
 /**
  * CenteredCard - dung cho Scan to tip / Lich su / Nap / Rut: card trang,
- * vien den 1px, bo goc 10px (--radius-card), rong = full tru le 20px 2 ben,
- * neo gan dinh khung (KHONG center dung 50% nhu ban cu), noi dung cuon rieng
- * neu dai hon khung.
+ * vien den 1px, bo goc 10px (--radius-card), rong = full khung chua (khung
+ * chua da co le 20px 2 ben tu layout cha - KHONG tu them le o day nua, keo
+ * bi le kep 40px), neo gan dinh khung (KHONG center dung 50% nhu ban cu),
+ * noi dung cuon rieng neu dai hon khung.
  */
 export function CenteredCard({
   open,
   onClose,
   title,
   children,
+  maxHeightCqh = 68,
 }: {
   open: boolean;
   onClose: () => void;
   title: ReactNode;
   children: ReactNode;
+  /** Chieu cao toi da cua card, don vi cqh. Tang len khi noi dung can nhieu
+   * spacing hon (vd Scan to tip co them nut Custom + input). */
+  maxHeightCqh?: number;
 }) {
   if (!open) return null;
 
@@ -37,8 +42,8 @@ export function CenteredCard({
       <div
         role="dialog"
         aria-modal="true"
-        style={{ top: "10.5cqh", maxHeight: "68cqh" }}
-        className="absolute left-5 right-5 z-50 flex flex-col rounded-card border border-border bg-background shadow-modal overflow-hidden"
+        style={{ top: "10.5cqh", maxHeight: `${maxHeightCqh}cqh` }}
+        className="absolute left-0 right-0 z-50 flex flex-col rounded-card border border-border bg-background shadow-modal overflow-hidden"
       >
         <div className="relative shrink-0 flex items-center justify-center px-[18px] py-[14px]">
           <h2 className="text-title font-semibold text-center">{title}</h2>

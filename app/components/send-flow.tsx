@@ -31,13 +31,14 @@ export default function SendFlow({ open, onOpenChange }: Props) {
   const { balance, refreshBalances } = useBalance();
   const [step, setStep] = useState<Step>("scan");
   const [settings, setSettings] = useState<TipSettings | null>(null);
-  const [selectedSlot, setSelectedSlot] = useState<number | null>(null);
+  const [selectedSlot, setSelectedSlot] = useState<number | "custom" | null>(null);
+  const [customAmount, setCustomAmount] = useState("");
   const [scanError, setScanError] = useState<string | null>(null);
   const [lastAmount, setLastAmount] = useState<number | null>(null);
 
   const scannerRef = useRef<Html5Qrcode | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const selectedSlotRef = useRef<number | null>(null);
+  const selectedSlotRef = useRef<number | "custom" | null>(null);
 
   const balanceNum = isNaN(balance.token) ? 0 : balance.token;
 
@@ -84,7 +85,19 @@ export default function SendFlow({ open, onOpenChange }: Props) {
     setScanError(null);
   };
 
-  const selectedAmount = slotAmount(selectedSlot);
+  const selectCustom = () => {
+    selectedSlotRef.current = "custom";
+    setSelectedSlot("custom");
+    setScanError(null);
+  };
+
+  const customAmountNum = parseFloat(customAmount);
+  const selectedAmount =
+    selectedSlot === "custom"
+      ? (customAmount.trim() !== "" && !isNaN(customAmountNum) && customAmountNum > 0
+          ? customAmountNum
+          : null)
+      : slotAmount(selectedSlot);
 
   const startScanner = async () => {
     setScanError(null);
@@ -200,9 +213,16 @@ export default function SendFlow({ open, onOpenChange }: Props) {
 
   return (
     <>
-      {/* Card "Scan to tip" giua man, Home mo phia sau qua scrim cua CenteredCard */}
-      <CenteredCard open={open} onClose={() => onOpenChange(false)} title="Scan to tip">
-        <div className="flex flex-col items-center px-[18px] pb-[18px] gap-[1.4cqh]">
+      {/* Card "Scan to tip" giua man, Home mo phia sau qua scrim cua CenteredCard.
+          maxHeightCqh cao hon mac dinh (68) de co cho spacing thoang hon giua
+          camera/QR, "Upload..." va luoi nut chon tien + Custom. */}
+      <CenteredCard
+        open={open}
+        onClose={() => onOpenChange(false)}
+        title="Scan to tip"
+        maxHeightCqh={80}
+      >
+        <div className="flex flex-col items-center px-[18px] pb-[18px] gap-[2.2cqh]">
           <div className="relative w-full aspect-square rounded-xl overflow-hidden bg-foreground">
             <div id={QR_REGION_ID} className="w-full h-full" />
             <div
@@ -222,7 +242,7 @@ export default function SendFlow({ open, onOpenChange }: Props) {
             <p className="text-small font-semibold text-danger text-center">{scanError}</p>
           )}
 
-          <div className="w-full flex flex-wrap items-center justify-center gap-2.5">
+          <div className="w-full grid grid-cols-2 gap-2.5">
             {([1, 2, 3, 4] as const).map((slot) => {
               const value = slotAmount(slot);
               if (value == null) return null;
@@ -232,7 +252,7 @@ export default function SendFlow({ open, onOpenChange }: Props) {
                   key={slot}
                   onClick={() => selectSlot(slot)}
                   className={
-                    "px-[18px] h-[6.68cqh] min-h-[38px] rounded-full text-lead font-bold " +
+                    "w-full h-[6.68cqh] min-h-[38px] rounded-full text-lead font-bold " +
                     (isSelected
                       ? "bg-primary text-primary-foreground"
                       : "bg-surface text-foreground")
@@ -242,7 +262,33 @@ export default function SendFlow({ open, onOpenChange }: Props) {
                 </button>
               );
             })}
+            <button
+              onClick={selectCustom}
+              className={
+                "w-full h-[6.68cqh] min-h-[38px] rounded-full text-lead font-bold flex items-center justify-center gap-1.5 " +
+                (selectedSlot === "custom"
+                  ? "bg-primary text-primary-foreground"
+                  : "bg-surface text-foreground")
+              }
+            >
+              <Icon.Add className="w-[1.8cqh] h-[1.8cqh] min-w-[12px] min-h-[12px] shrink-0" />
+              Custom
+            </button>
           </div>
+
+          {selectedSlot === "custom" && (
+            <input
+              autoFocus
+              type="number"
+              inputMode="decimal"
+              min={0}
+              step="0.01"
+              value={customAmount}
+              onChange={(e) => setCustomAmount(e.target.value)}
+              placeholder="Enter an amount"
+              className="w-full h-[6cqh] min-h-[44px] rounded-full border border-border bg-background px-4 text-body text-center outline-none focus:ring-2 focus:ring-primary"
+            />
+          )}
         </div>
 
         <input

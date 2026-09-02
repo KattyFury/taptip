@@ -21,9 +21,10 @@
 import { Screen, BackAction, PrimaryButton, Field } from "@/components/screen";
 import { GlobalContext } from "@/contexts/global-context";
 import { useRouter } from "next/navigation";
-import { ChangeEventHandler, useContext, useMemo, useState } from "react";
+import { ChangeEventHandler, useContext, useEffect, useMemo, useState } from "react";
 
 const EMAIL_DOMAIN_SUGGESTIONS = ["@gmail.com", "@icloud.com"];
+const LAST_EMAIL_KEY = "taptip:last-email";
 
 export default function SignIn() {
   const router = useRouter()
@@ -31,6 +32,12 @@ export default function SignIn() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const { updateState } = useContext(GlobalContext)
+
+  // Nho email dang nhap lan truoc lam hint, tranh nguoi dung go lai tu dau.
+  useEffect(() => {
+    const lastEmail = window.localStorage.getItem(LAST_EMAIL_KEY);
+    if (lastEmail) setEmail(lastEmail);
+  }, []);
 
   const isEmailInvalid = useMemo(() => !/^\S+@\S+\.\S+$/.test(email), [email])
 
@@ -70,6 +77,7 @@ export default function SignIn() {
       return
     }
 
+    window.localStorage.setItem(LAST_EMAIL_KEY, email)
     updateState({ email })
 
     router.push('/code-confirmation')
@@ -78,6 +86,7 @@ export default function SignIn() {
   return (
     <Screen
       title="Enter your email to get started"
+      tightContent
       action={
         <BackAction onBack={() => router.push("/")}>
           <PrimaryButton disabled={isEmailInvalid || loading} onClick={signInWithEmail}>
