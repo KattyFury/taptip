@@ -21,6 +21,11 @@
 - Client Key (Modular Wallets): Allowed Domain **và** Passkey Domain (Modular Wallets → Configurator → Passkey) đã khai `taptip.kattyfury1403.workers.dev` (09-01) – 2 chỗ này phải khớp nhau (bài học v1: thiếu 1 chỗ là passkey lỗi "Invalid credentials" trên domain thật).
 - `app/.env.local` đầy đủ Circle (API key + Entity Secret + Client Key/URL) + Resend, đã bỏ hết Supabase.
 
+### ⚠️ Push GitHub KHÔNG tự deploy site production
+`taptip.kattyfury1403.workers.dev` chạy qua Cloudflare Workers, deploy bằng `npm run cf:deploy` (trong `app/`) – **thủ công hoàn toàn, không có CI/CD nào theo dõi push lên `KattyFury/taptip`**. Đã dính thật (09-01→09-02): sửa code, commit, push xong xuôi nhưng user mở site thấy y như cũ vì quên chạy `cf:deploy`. Sau mỗi lần sửa code trong `app/` mà muốn user thấy trên site thật, PHẢI tự chạy `npm run cf:deploy` (không chỉ push GitHub) rồi verify bằng `curl` thật lên domain production.
+
+**Bẫy phát sinh thêm:** `npm run build`/`cf:deploy` chạy `next build` production, type-check NGHIÊM hơn hẳn `next dev` (dev bỏ qua nhiều lỗi type ở route/file chưa được request tới) – lỗi TS ở code chết cũ (Supabase, chưa dọn) từng nằm im vô hại qua bao lần `tsc --noEmit`/`next dev` nhưng chặn đứng `cf:deploy`. Trước khi tin "tsc sạch = deploy được", thử build production thật 1 lần.
+
 ### ⚠️ 3 bài học đau (đừng lặp lại)
 1. SDK `registerEntitySecretCiphertext` của Circle, khi `recoveryFileDownloadPath` trỏ sai (VD đưa tên file thay vì thư mục), vẫn đăng ký ciphertext THÀNH CÔNG với server trước khi bước ghi file thất bại – tức entity secret đã "chốt" phía Circle mà recovery file không có, account coi như hỏng vĩnh viễn (giống hệt lỗi account 08-08). Cách an toàn: đừng dựa vào tham số `recoveryFileDownloadPath` của SDK, tự lấy `response.data.recoveryFile` rồi `fs.writeFileSync` bằng tay ngay lập tức.
 2. `taskkill /IM chrome.exe` tắt **TOÀN BỘ** Chrome trên máy, không chỉ tiến trình debug vừa mở – nếu cần dọn 1 Chrome headless cụ thể (VD dùng để chụp ảnh app qua CDP), phải tắt đúng PID của chính nó, không dùng taskkill theo tên process.
