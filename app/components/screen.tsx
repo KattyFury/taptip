@@ -45,9 +45,19 @@ interface ScreenProps {
   /** true: bo dem 0.5 hang truoc noi dung, cho content bam thang vach 2.5
    * thay vi vach 3.0 (dung cho man can noi dung bam cao hon mac dinh). */
   tightContent?: boolean;
+  /** true: bo tran 320px cua vung noi dung, cho no rong het khung (chi con
+   * le 20px cua layout cha). Dung cho o nhap email - email dai bi cat ngan. */
+  wideContent?: boolean;
 }
 
-export function Screen({ title, children, action, foot, tightContent = false }: ScreenProps) {
+export function Screen({
+  title,
+  children,
+  action,
+  foot,
+  tightContent = false,
+  wideContent = false,
+}: ScreenProps) {
   return (
     <div data-screen-root className="flex flex-col w-full h-full">
       {/* 0.0 -> 1.0 */}
@@ -69,7 +79,10 @@ export function Screen({ title, children, action, foot, tightContent = false }: 
       {/* 2.5 -> 8.0 : noi dung, bam dinh vach 3.0 (dem 0.5 hang truoc noi dung) */}
       <div
         style={{ flex: "5.5 1 0", minHeight: 0 }}
-        className="flex flex-col items-center justify-start gap-[1.8cqh] w-full max-w-[320px] mx-auto"
+        className={
+          "flex flex-col items-center justify-start gap-[1.8cqh] w-full mx-auto " +
+          (wideContent ? "" : "max-w-[320px]")
+        }
       >
         {!tightContent && <div style={{ flexShrink: 0, height: "3.2cqh" }} />}
         {children}

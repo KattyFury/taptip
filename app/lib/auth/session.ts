@@ -2,7 +2,11 @@ import crypto from "node:crypto";
 import { cookies } from "next/headers";
 import { getKv } from "@/lib/cloudflare";
 
-const SESSION_TTL_SECONDS = 15 * 60;
+// 30 ngay. Ban cu de 15 PHUT va khong gia han: mo lai app sau do la moi API
+// tra 401 - so du im lang tut ve 0 (dung ca bug "40 USDC hien $0" 09-02),
+// trong khi nguoi dung khong he thay man dang nhap vi trang da mount san.
+// Session chi cho phep DOC (so du, lich su); gui tien van phai ky rieng.
+const SESSION_TTL_SECONDS = 30 * 24 * 60 * 60;
 const SESSION_COOKIE = "taptip_session";
 
 export async function createSession(userId: string) {

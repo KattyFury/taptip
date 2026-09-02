@@ -87,6 +87,7 @@ export default function SignIn() {
     <Screen
       title="Enter your email to get started"
       tightContent
+      wideContent
       action={
         <BackAction onBack={() => router.push("/")}>
           <PrimaryButton disabled={isEmailInvalid || loading} onClick={signInWithEmail}>
