@@ -17,94 +17,57 @@
  */
 
 import { type NextRequest, NextResponse } from "next/server";
+import { createPublicClient, formatUnits, http, isAddress } from "viem";
 import { z } from "zod";
 import { getSession } from "@/lib/auth/session";
+import { arcTestnet, USDC_ADDRESS, USDC_BALANCE_ABI, USDC_DECIMALS } from "@/lib/chain";
 
-// Schema validation
+/**
+ * So du USDC doc THANG tu Arc RPC.
+ *
+ * Truoc day goi API vi cua Circle bang CIRCLE_API_KEY - them mot mat xich co
+ * the hong (key, quota, vi phai duoc dang ky trong wallet set cua key do)
+ * trong khi chinh chain moi la nguon su that. Doc balanceOf cua ERC-20
+ * 0x3600... vi day dung la tai san ma sendUSDC chuyen di.
+ *
+ * Loi thi tra ve 502, KHONG tra ve "0" - "0" gia lam nguoi dung tuong het
+ * tien (dung cai bay im lang da tung giau bug passkey).
+ */
+
 const WalletIdSchema = z.object({
   walletId: z.string(),
   blockchain: z.literal("arc"),
 });
 
-const ResponseSchema = z.object({
-  balance: z.string().optional(),
-  error: z.string().optional(),
-});
+export async function POST(req: NextRequest) {
+  const userId = await getSession();
+  if (!userId) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
 
-type WalletBalanceResponse = z.infer<typeof ResponseSchema>;
+  const parseResult = WalletIdSchema.safeParse(await req.json().catch(() => null));
+  if (!parseResult.success) {
+    return NextResponse.json({ error: "Invalid walletId format" }, { status: 400 });
+  }
 
-export async function POST(
-  req: NextRequest,
-): Promise<NextResponse<WalletBalanceResponse>> {
+  const walletAddress = parseResult.data.walletId.toLowerCase();
+  if (!isAddress(walletAddress)) {
+    return NextResponse.json({ error: "Invalid wallet address" }, { status: 400 });
+  }
+
   try {
-    // Route nay xai CIRCLE_API_KEY cua app - bat buoc dang nhap, khong de
-    // nguoi la dung lam proxy tra cuu so du mien phi bang key cua minh.
-    const userId = await getSession();
-    if (!userId) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
+    const client = createPublicClient({ chain: arcTestnet, transport: http() });
 
-    const body = await req.json();
-    const parseResult = WalletIdSchema.safeParse(body);
+    const raw = await client.readContract({
+      address: USDC_ADDRESS,
+      abi: USDC_BALANCE_ABI,
+      functionName: "balanceOf",
+      args: [walletAddress],
+    });
 
-    if (!parseResult.success) {
-      return NextResponse.json(
-        { error: "Invalid walletId format" },
-        { status: 400 },
-      );
-    }
-
-    const { walletId } = parseResult.data;
-    const walletAddress = walletId.toLowerCase();
-
-    try {
-      // Use the blockchain + address endpoint to get balances
-      const balanceResponse = await fetch(
-        `https://api.circle.com/v1/w3s/buidl/wallets/ARC-TESTNET/${walletAddress}/balances`,
-        {
-          headers: {
-            "X-Request-Id": crypto.randomUUID(),
-            Authorization: `Bearer ${process.env.CIRCLE_API_KEY}`,
-            "Content-Type": "application/json",
-          },
-        },
-      );
-
-      if (!balanceResponse.ok) {
-        console.error("Circle balance API error:", {
-          status: balanceResponse.status,
-          body: await balanceResponse.text().catch(() => ""),
-        });
-        return NextResponse.json({ balance: "0" });
-      }
-
-      const payload = (await balanceResponse.json()) as {
-        data?: { tokenBalances?: { token?: { symbol?: string }; amount?: string }[] };
-      };
-
-      const usdcBalance =
-        payload.data?.tokenBalances?.find(
-          (balance) => balance.token?.symbol === "USDC",
-        )?.amount || "0";
-
-      return NextResponse.json({ balance: usdcBalance });
-    } catch (error) {
-      console.error("Error fetching balance from Circle API:", error);
-
-      // Return 0 balance instead of error for better UX
-      return NextResponse.json({ balance: "0" });
-    }
+    return NextResponse.json({ balance: formatUnits(raw, USDC_DECIMALS) });
   } catch (error) {
-    console.error("Error in wallet balance endpoint:", error);
-
-    if (error instanceof z.ZodError) {
-      return NextResponse.json(
-        { error: "Invalid request format" },
-        { status: 400 },
-      );
-    }
-
-    // For any other errors, return 0 balance for better UX
-    return NextResponse.json({ balance: "0" });
+    console.error("Could not read USDC balance from Arc:", error);
+    return NextResponse.json({ error: "Could not read balance" }, { status: 502 });
   }
 }

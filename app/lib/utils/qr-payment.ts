@@ -1,4 +1,4 @@
-import { arcTestnet } from "@/components/web3-provider";
+import { arcTestnet } from "@/lib/chain";
 
 const SCHEME = "taptip";
 const CURRENCY = "USDC";

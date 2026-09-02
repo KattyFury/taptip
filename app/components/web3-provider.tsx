@@ -33,7 +33,7 @@
  */
 
 import React, { createContext, useCallback, useContext, useEffect, useRef, useState } from 'react';
-import { createPublicClient, defineChain, parseGwei } from 'viem';
+import { createPublicClient, parseGwei } from 'viem';
 import {
     type P256Credential,
     type SmartAccount,
@@ -48,33 +48,7 @@ import {
     toWebAuthnCredential,
     encodeTransfer,
 } from '@circle-fin/modular-wallets-core';
-
-// Arc Testnet chain definition
-export const arcTestnet = defineChain({
-    id: 5042002,
-    name: 'Arc Testnet',
-    nativeCurrency: {
-        name: 'USDC',
-        symbol: 'USDC',
-        decimals: 18,
-    },
-    rpcUrls: {
-        default: {
-            http: ['https://rpc.testnet.arc.network'],
-        },
-    },
-    blockExplorers: {
-        default: {
-            name: 'ArcScan',
-            url: 'https://testnet.arcscan.app',
-        },
-    },
-    testnet: true,
-});
-
-// USDC on Arc Testnet (native gas token with ERC-20 interface)
-const USDC_ADDRESS = '0x3600000000000000000000000000000000000000';
-const USDC_DECIMALS = 6;
+import { arcTestnet, USDC_ADDRESS, USDC_DECIMALS } from '@/lib/chain';
 
 /** Chi 2 truong nay duoc luu/doc - xem lib/auth/passkey.ts */
 type StoredCredential = Pick<P256Credential, 'id' | 'publicKey'>;

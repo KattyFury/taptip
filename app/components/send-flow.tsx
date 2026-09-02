@@ -122,7 +122,7 @@ export default function SendFlow({ open, onOpenChange }: Props) {
           },
           aspectRatio: 1,
         },
-        (decodedText) => handleScanResult(decodedText),
+        (decodedText) => handleScanResultRef.current(decodedText),
         () => {
           // ignore per-frame "not found" callbacks
         },
@@ -208,6 +208,17 @@ export default function SendFlow({ open, onOpenChange }: Props) {
       setStep("scan");
     }, 2000);
   };
+
+  // Camera dang ky callback quet MOT LAN luc scanner.start(), nen callback do
+  // "dong bang" moi state tai thoi diem ay - luc do `settings` con dang fetch
+  // nen chua chon slot nao, `selectedAmount` = null. UI render lai thay $1
+  // sang len nhung callback cu van cam null -> quet xong bao "Choose an amount
+  // first" du man hinh dang hien $1 (va khong bao gio hoi passkey vi chua
+  // toi buoc ky). Tro nay luon tro toi ban moi nhat cua handleScanResult.
+  const handleScanResultRef = useRef(handleScanResult);
+  useEffect(() => {
+    handleScanResultRef.current = handleScanResult;
+  });
 
   const isOverlayStep = step === "sending" || step === "success";
 

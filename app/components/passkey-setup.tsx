@@ -34,7 +34,7 @@ import {
     toCircleSmartAccount,
     toModularTransport,
 } from '@circle-fin/modular-wallets-core';
-import { arcTestnet } from '@/components/web3-provider';
+import { arcTestnet } from '@/lib/chain';
 
 interface PasskeySetupProps {
     username: string;

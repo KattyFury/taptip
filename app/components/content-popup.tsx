@@ -9,13 +9,17 @@ import * as Icon from "@/components/icons";
  */
 
 /**
- * CenteredCard - dung cho Scan to tip / Lich su / Nap / Rut: card trang,
- * vien den 1px, bo goc 10px (--radius-card), giu le 20px 2 ben cho thoang
- * (KHONG full-bleed) - khop voi le cua cac hang noi dung Home. Le nay da
- * co san tu px-5 cua dashboard/layout.tsx (home-root nam ben trong do),
- * nen o day chi can left-0/right-0, KHONG tu them le rieng nua keo bi le
- * kep 40px. Neo gan dinh khung (KHONG center dung 50% nhu ban cu), noi
- * dung cuon rieng neu dai hon khung.
+ * CenteredCard - dung cho Scan to tip / Lich su / Nap / Rut.
+ *
+ * HAI LOP CO LE KHAC NHAU, dung lan:
+ * - Lop scrim (lam mo phia sau): PHU TRAN ca khung dien thoai. `home-root`
+ *   nam trong px-5 cua dashboard/layout.tsx nen mac dinh scrim bi thut vao
+ *   20px, de lo 2 vet TRANG o mep khung - phai -mx-5 de "tra lai" 20px do.
+ * - Card trang: GIU le 20px 2 ben cho thoang (dung luon le san co cua
+ *   layout cha, chi can left-0/right-0 - tu them le nua la thanh 40px).
+ *
+ * Card vien den 1px, bo goc 10px (--radius-card), neo gan dinh khung (KHONG
+ * center dung 50% nhu ban cu), noi dung cuon rieng neu dai hon khung.
  */
 export function CenteredCard({
   open,
@@ -37,7 +41,7 @@ export function CenteredCard({
   return (
     <>
       <div
-        className="absolute inset-0 z-40 bg-scrim"
+        className="absolute inset-0 -mx-5 z-40 bg-scrim"
         onClick={onClose}
         aria-hidden="true"
       />

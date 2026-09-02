@@ -32,9 +32,12 @@ interface Announcement {
   text: string;
 }
 
-function formatBalance(token: number): number {
-  if (isNaN(token)) return 0;
-  return Math.max(0, Math.floor(token));
+/** Lam tron XUONG 2 chu so thap phan - khong bao gio hien nhieu hon so that co. */
+function formatBalance(token: number): string {
+  if (isNaN(token) || token <= 0) return "0";
+  return (Math.floor(token * 100) / 100).toLocaleString("en-US", {
+    maximumFractionDigits: 2,
+  });
 }
 
 function shortenAddress(address: string): string {
@@ -158,14 +161,21 @@ function HomeScreenContent({ primaryWallet }: Props) {
       </div>
 
       {/* Hang 2 : Balance can giua (ngang), so du lon cach nhan "Balance"
-          1 khoang tho (gap) - van dung leading-none de gon dung trong 1 hang. */}
+          1 khoang tho (gap) - van dung leading-none de gon dung trong 1 hang.
+          Hien "40 USDC ≈ $40" de nguoi dung biet app tip bang USDC; phan quy
+          doi ra do de nho + xam cho khoi tran ngang khi so tien dai. */}
       <div
         style={{ flex: "1 1 0", minHeight: 0 }}
         className="flex flex-col items-center justify-center gap-[0.8cqh]"
       >
         <span className="text-lead font-bold text-accent leading-none">Balance</span>
-        <span className="text-figure font-bold leading-none">
-          ${formatBalance(balance.token)}
+        <span className="flex items-baseline gap-2 leading-none whitespace-nowrap">
+          <span className="text-figure font-bold">
+            {formatBalance(balance.token)} USDC
+          </span>
+          <span className="text-lead font-bold text-accent">
+            ≈ ${formatBalance(balance.token)}
+          </span>
         </span>
       </div>
 
@@ -202,11 +212,19 @@ function HomeScreenContent({ primaryWallet }: Props) {
           )}
         </div>
 
-        <div className="shrink-0 flex items-center gap-2">
-          <span className="text-body font-semibold text-accent">
-            Account Number: {shortenAddress(primaryWallet.wallet_address)}
+        <div className="shrink-0 flex flex-col items-center gap-[0.6cqh]">
+          {/* Canh bao mang: tien gui nham mang khac la mat, phai noi ro ngay
+              tren dia chi vi truoc khi nguoi ta dua QR cho nguoi khac. */}
+          <span className="text-small font-semibold text-danger text-center">
+            Current available network: Arc Testnet
           </span>
-          <CopyButton value={primaryWallet.wallet_address} label="Copy wallet address" />
+
+          <div className="flex items-center gap-2">
+            <span className="text-body font-semibold text-accent">
+              Account Number: {shortenAddress(primaryWallet.wallet_address)}
+            </span>
+            <CopyButton value={primaryWallet.wallet_address} label="Copy wallet address" />
+          </div>
         </div>
       </div>
 

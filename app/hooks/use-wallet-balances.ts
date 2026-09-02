@@ -50,10 +50,12 @@ export function useWalletBalances(knownAddress?: string) {
     balance: string;
   }
 
-  // Fetch balance from API
+  // Fetch balance from API. Tra ve null khi KHONG doc duoc - khong tra "0",
+  // vi "0" gia khien nguoi dung tuong minh het tien (day dung la cai bay im
+  // lang tung giau bug passkey suot nhieu tuan).
   const fetchBalanceFromAPI = useCallback(
-    async (address: string): Promise<string> => {
-      if (!address) return "0";
+    async (address: string): Promise<number | null> => {
+      if (!address) return null;
 
       try {
         const response = await fetch("/api/wallet/balance", {
@@ -62,13 +64,17 @@ export function useWalletBalances(knownAddress?: string) {
           body: JSON.stringify({ walletId: address, blockchain: "arc" }),
         });
 
-        if (!response.ok) return "0";
+        if (!response.ok) {
+          console.error("Balance endpoint returned", response.status);
+          return null;
+        }
 
         const data = (await response.json()) as BalanceResponse;
-        return data.balance || "0";
+        const parsed = parseFloat(data.balance);
+        return isNaN(parsed) ? null : parsed;
       } catch (error) {
         console.error("Error fetching balance from API:", error);
-        return "0";
+        return null;
       }
     },
     [],
@@ -93,11 +99,17 @@ export function useWalletBalances(knownAddress?: string) {
 
     try {
       const apiBalance = await fetchBalanceFromAPI(effectiveAddress);
-      const finalBalance = parseFloat(apiBalance) || 0;
+
+      if (apiBalance == null) {
+        // Giu nguyen so du cu, danh dau chua doc duoc de con thu lai lan sau.
+        toast.error("Could not read your balance");
+        setBalance((prev) => ({ ...prev, loading: false }));
+        return;
+      }
 
       setBalance((prev) => ({
         native: prev.native,
-        token: finalBalance,
+        token: apiBalance,
         loading: false,
       }));
 
