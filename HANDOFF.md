@@ -11,7 +11,29 @@
 
 ---
 
-## Trạng thái 09-01 – đọc trước khi làm gì tiếp (MỚI NHẤT, đọc mục này trước)
+## Trạng thái 09-02 – đọc trước khi làm gì tiếp (MỚI NHẤT, đọc mục này trước)
+
+**Áp thiết kế Figma mới vào toàn bộ code (thay hẳn wireframe v2 08-31 cũ).** User tự vẽ lại UI trong Figma (`Taptip`, file key `rLGoWK4AHhqov9CKHXJqqE`) + đưa quy định lưới/font-size/màu bằng lời trong chat, đưa sẵn logo + bộ icon mới ở `C:\Users\Dell\Desktop\taptip\`. Quy trình: kéo `get_design_context` thật cho 7 frame đại diện (không đoán từ ảnh) → viết plan (`EnterPlanMode`) → code → verify bằng Chrome headless thật qua CDP (tự tạo session KV giả trong D1/KV `--local` để chụp ảnh Home/popup có đăng nhập, không cần user test tay) → build production sạch → deploy thật.
+
+**Đổi cốt lõi so với 08-31:**
+- **Token** (`globals.css`): màu rút về đúng 4 tông + 2 trạng thái - vàng `#FFCC00`, đen, xám `#8E8E93` (đổi từ xanh dương `--accent` cũ), xám nhạt `#EDEDED`, đỏ `#FF383C`, xanh lá `#34C759`. Viền chuyển từ xám mờ 14% sang **đen đặc 1px**. Thêm `--radius-card: 10px` riêng cho card popup (khác `--radius-xl` 12px cũ). Thang chữ quy đổi thẳng từ khung Figma 390×844 (title 27/lead 22/body 17/small 15/figure 32, vẫn dùng đơn vị `cqh` như cũ).
+- **Font: Nunito + Comfortaa → Inter duy nhất** (kể cả số - Figma dùng Inter cho mọi chữ, không tách font riêng).
+- **`screen.tsx`** (dùng chung cho Add-to-Home/Sign-in/OTP/Passkey Setup): bỏ hẳn khối icon lớn đầu màn, nút Back đổi từ viền sang **pill vàng cùng kiểu nút chính** (icon tam giác đặc mới), `Field` đổi từ nền xám chìm sang viền đen trong suốt.
+- **Home**: "Balance" xếp DỌC trên số dư lớn (trước nằm ngang cùng "USDC"). Nút "Tip Setting" đổi thành icon "•••" (Option), mở **popup neo ngay phía trên nó** (`AnchoredCard`) thay vì popup giữa màn - đúng ý user "popup nằm ngay chỗ nút". Copy địa chỉ ví đổi từ toast sang **icon Copy→Check xanh lá tại chỗ** (`copy-button.tsx` mới, dùng chung Home + Deposit).
+- **`content-popup.tsx`**: `ContentPopup` cũ (center 50%, 3/4 màn) tách thành `CenteredCard` (Scan/History/Deposit/Withdraw - neo gần đỉnh, rộng gần full trừ margin 20px) và `AnchoredCard` (Tip Setting - neo tại nút trigger).
+- **Send flow → "Scan to tip"**: đổi từ full-screen sang card giữa màn (Home dim phía sau), **giữ nguyên 100% logic gửi tiền thật** (sendUSDC/ghi transactions/refreshBalances) - chỉ đổi khung + thêm nút "Upload a QR image instead" bấm được (input file vốn có sẵn nhưng trước đó KHÔNG có nút bấm nào trigger nó - bug ẩn từ trước, giờ mới lộ ra và sửa luôn).
+- **Tip Setting**: đổi từ 4 ô luôn hiện sang danh sách hàng "Default/Option $X •••", "+ Add more option" chỉ hiện khi còn slot trống (vẫn giới hạn 4 slot D1, không đổi schema).
+- **Toàn bộ UI chuyển hẳn sang tiếng Anh** (khớp Figma 100% tiếng Anh) - giải quyết luôn vấn đề "lẫn ngôn ngữ" đã ghi nhận trước đó (Home từng lẫn cả Anh lẫn Việt trong cùng 1 màn).
+- **Nạp/Rút** giờ đã qua khuôn `CenteredCard` đồng bộ với Scan/History, không còn là "nội dung tạm" như trước.
+
+**Kỹ thuật đáng nhớ:** dùng `wrangler kv key put --local` tạo session giả cho 1 user test có sẵn trong D1 local, rồi Chrome headless `--remote-debugging-port` + CDP `Network.setCookie` (httpOnly, JS thường không set được) để chụp ảnh màn hình ĐÃ đăng nhập mà không cần user tự test tay - cách này bắt được 1 lỗi thật ngay lập tức (chữ "Balance"/"$0" 2 dòng tràn đè lên khung QR do thiếu flex cho hàng 2), sửa xong verify lại bằng ảnh thật chứ không chỉ đọc code.
+
+### CÒN LẠI sau đợt redesign 09-02
+1. **Cần USER tự làm** – test passkey thật + quét QR camera thật + gửi tip thật trên điện thoại tại bản production (giờ đã lên giao diện mới) - vẫn chưa tự động hoá được vì cần tương tác WebAuthn/camera thật.
+2. `components/web3-provider.tsx` (+ chưa rà `app/api/webhooks/circle/route.ts`) – vẫn còn 2 hàm chết `registerPasskey`/`loginWithPasskey` từ trước, CHƯA đụng trong đợt redesign này (chỉ sửa phần gọi `sendUSDC` gián tiếp qua `useWeb3()`, không sửa file này) – vẫn cần đọc kỹ toàn bộ trước khi tách.
+3. Khung thông báo hàng 7-8 ở Home đã dựng UI (pill dismiss-được, đúng khuôn Figma) nhưng CHƯA có nguồn dữ liệu thật nào nuôi nó – đang render mảng rỗng, chờ tính năng thật ở phiên sau.
+
+## Trạng thái 09-01 – lịch sử, không còn là trạng thái hiện tại
 
 **PRD v2 + Product Discovery v2 + Stack v2 + Wireframe v2 đã chốt xong hết** (chạy qua Claude Chat theo quy trình `build-on-arc`, lưu ở `docs/02-v2-hoan-thien-y-tuong.md` / `docs/03-planning-v2.md` / `docs/04-wireframe-v2.md`). Đổi lớn nhất so với v1: thêm Tip Setting (4 ô số tiền tùy chỉnh), chọn số tiền ngay trên màn quét QR thay vì popup riêng, định danh ví hiển thị rút gọn `0x_NNNNN` (5 số cuối), bỏ Supabase sang Cloudflare D1 + KV.
 
