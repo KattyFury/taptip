@@ -42,9 +42,12 @@ interface ScreenProps {
   action?: ReactNode;
   /** Hang 9-10: link phu (Skip) hoac dong bao loi */
   foot?: ReactNode;
+  /** true: bo dem 0.5 hang truoc noi dung, cho content bam thang vach 2.5
+   * thay vi vach 3.0 (dung cho man can noi dung bam cao hon mac dinh). */
+  tightContent?: boolean;
 }
 
-export function Screen({ title, children, action, foot }: ScreenProps) {
+export function Screen({ title, children, action, foot, tightContent = false }: ScreenProps) {
   return (
     <div data-screen-root className="flex flex-col w-full h-full">
       {/* 0.0 -> 1.0 */}
@@ -68,7 +71,7 @@ export function Screen({ title, children, action, foot }: ScreenProps) {
         style={{ flex: "5.5 1 0", minHeight: 0 }}
         className="flex flex-col items-center justify-start gap-[1.8cqh] w-full max-w-[320px] mx-auto"
       >
-        <div style={{ flexShrink: 0, height: "3.2cqh" }} />
+        {!tightContent && <div style={{ flexShrink: 0, height: "3.2cqh" }} />}
         {children}
       </div>
 

@@ -28,10 +28,10 @@ const SPLASH_DURATION_MS = 1600;
 const INSTALL_STEPS: Record<"ios" | "android", ReactNode[]> = {
   ios: [
     <>Open <strong className="font-extrabold">TapTip in Safari</strong></>,
-    <>Tap Option in Safari</>,
-    <>Tap <strong className="font-extrabold">Share</strong> ⤴</>,
+    <>Tap <strong className="font-extrabold">Option</strong> in Safari</>,
+    <>Tap <strong className="font-extrabold">Share</strong></>,
     <>Tap <strong className="font-extrabold">Add to Home Screen</strong></>,
-    <>Tap <strong className="font-extrabold">Add</strong> — you&apos;re done!</>,
+    <>Tap <strong className="font-extrabold">Add</strong> – you&apos;re done!</>,
   ],
   android: [
     <>Open <strong className="font-extrabold">TapTip in Chrome</strong></>,
@@ -80,7 +80,14 @@ export default function Splash() {
   return (
     <div className="h-full px-5">
       <Screen
-        title="Add TapTip to Home Screen"
+        title={
+          <>
+            Add TapTip to your
+            <br />
+            Home Screen
+          </>
+        }
+        tightContent
         action={
           <SingleAction>
             <PrimaryButton onClick={() => router.push("/sign-in")}>
@@ -88,7 +95,11 @@ export default function Splash() {
             </PrimaryButton>
           </SingleAction>
         }
-        foot={<TextLink onClick={() => router.push("/sign-in")}>Skip</TextLink>}
+        foot={
+          <div style={{ marginTop: "-2.5cqh" }}>
+            <TextLink onClick={() => router.push("/sign-in")}>Skip</TextLink>
+          </div>
+        }
       >
         <ol className="w-fit flex flex-col gap-[1.5cqh]">
           {INSTALL_STEPS[platform].map((label, index) => (
