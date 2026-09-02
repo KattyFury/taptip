@@ -175,8 +175,14 @@ export default function SendFlow({ open, onOpenChange }: Props) {
     }
 
     const decoded = decodeTapTipQr(decodedText);
-    if (!decoded) {
-      setScanError("Invalid QR code — wrong network, wrong asset, or not a TapTip code.");
+    if (!decoded.ok) {
+      // Log nguyen van de con lan ra QR nao khong doc duoc, thay vi doan mo.
+      console.warn("Rejected QR:", decodedText);
+      setScanError(
+        decoded.reason === "wrong-network"
+          ? "This QR is for another network. TapTip only sends on Arc Testnet."
+          : "That doesn't look like a wallet QR code.",
+      );
       return;
     }
 
