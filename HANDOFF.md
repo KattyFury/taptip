@@ -11,7 +11,38 @@
 
 ---
 
-## Chuyển sang Developer-Controlled Wallets 09-02 – MỚI NHẤT, đọc mục này trước
+## 👉 BẮT ĐẦU TỪ ĐÂY (nghỉ 09-02, cuối ngày)
+
+**Việc đầu tiên khi quay lại — user tự làm, 1 phút:**
+Vào https://faucet.circle.com/ → chọn **Arc Testnet** → dán địa chỉ ví mới:
+```
+0xe25d59aa23bfba0f40654f526bcb318c0d76c5b0
+```
+Chưa nạp thì **không test được gì** về tip, vì ví đang 0 USDC.
+
+**Sau khi nạp, test thật trên điện thoại** (đây là thứ duy nhất còn chặn):
+mở app → bấm Tip → quét QR ví bất kỳ trên Arc → tiền phải đi **ngay, không hỏi Face ID**.
+Đây là lần đầu tiên toàn tuyến được chạy thật; mọi thứ trước đó chỉ verify từng mắt xích rời.
+
+**Trạng thái:** repo sạch, đã push, production đang chạy bản mới nhất.
+Ví mới `0xe25d59aa…76c5b0` · wallet set `214e3fa8-4f85-5782-a6f0-a3bdd992617e`
+
+**Nếu tip lỗi, xem theo thứ tự này (đã dính thật, đừng đoán lại từ đầu):**
+1. Secret trên Worker có khớp `.env.local` không → Circle trả "Invalid credentials" **chỉ ở production** trong khi script local vẫn chạy ngon.
+2. `createTransaction` phải dùng cặp (`walletAddress` + `blockchain`), **không** dùng `walletId` → nếu sai sẽ ra "API parameter invalid", lỗi chung chung và SDK nuốt mất chi tiết.
+3. Ví tự trả gas bằng USDC của chính nó (Gas Station chưa cấu hình policy) → tip đúng bằng toàn bộ số dư sẽ thiếu gas. Tip ít hơn số dư một chút.
+
+**Còn nợ, không gấp:**
+- Gas Station: chưa tạo policy nên app chưa thật sự "trả gas thay user" như spec.
+- Passkey mở app: `docs/03-planning-v2.md:29` nói passkey xác thực lại mỗi lần mở app. Giờ **không còn passkey ở đâu cả** — đã bỏ khỏi luồng tiền là đúng, nhưng vai trò "khoá cửa app" thì chưa làm.
+- `docs/03-planning-v2.md:72` vẫn liệt kê "Cơ chế passkey/Circle Modular Wallets" là quyết định đã khoá → tài liệu tự mâu thuẫn với chính nó, nên sửa cho khớp.
+- Worker còn 2 secret Supabase thừa (`NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`) — xoá được, code không còn dùng Supabase.
+- Session 30 ngày nhưng **không gia hạn trượt**: đúng ngày thứ 31 là văng ra đăng nhập lại.
+- 40 USDC testnet kẹt ở ví passkey cũ `0xe42efd03…d50e26`. App không ký được cho ví đó nữa. Là tiền testnet nên lấy lại từ faucet; code passkey còn trong git history (commit trước `bf985ab`) nếu thật sự cần cứu.
+
+---
+
+## Chuyển sang Developer-Controlled Wallets 09-02 – chi tiết kỹ thuật
 
 **Code đã chạy sai kiến trúc so với tài liệu suốt từ đầu.** `docs/01-ideation.md:18` và `docs/03-planning-v2.md:31,44,56` chốt **Circle Developer-Controlled Wallets**, nhưng code chạy **Modular Wallets (passkey)** — kiến trúc này đi kèm sẵn trong bản fork `arc-p2p-payments` ở commit `a2015a9` và không ai đối chiếu lại với tài liệu. Hệ quả đúng như tài liệu đã cảnh báo: passkey bắt user ký từng giao dịch, tức là **vi phạm chính yêu cầu số 1 (tốc độ)** — cũng là lý do `01-ideation.md` gạt Privy.
 
