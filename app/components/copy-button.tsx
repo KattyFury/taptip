@@ -5,7 +5,7 @@ import * as Icon from "@/components/icons";
 
 /**
  * Nut copy dung chung (dia chi vi o Home + popup Deposit). Bam xong: icon
- * Copy doi sang Check mau --success trong 1.8s roi tu quay lai - KHONG dung
+ * Copy doi sang Check mau --success trong 3s roi tu quay lai - KHONG dung
  * toast (theo yeu cau dong bo thiet ke 09-02).
  */
 export function CopyButton({ value, label }: { value: string; label: string }) {
@@ -14,7 +14,7 @@ export function CopyButton({ value, label }: { value: string; label: string }) {
   const handleCopy = () => {
     navigator.clipboard.writeText(value);
     setCopied(true);
-    setTimeout(() => setCopied(false), 1800);
+    setTimeout(() => setCopied(false), 3000);
   };
 
   return (

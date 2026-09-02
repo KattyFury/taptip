@@ -38,8 +38,8 @@ function formatBalance(token: number): number {
 }
 
 function shortenAddress(address: string): string {
-  if (!address || address.length < 8) return address;
-  return `0x_${address.slice(-5)}`;
+  if (!address || address.length < 6) return address;
+  return `0x...${address.slice(-4)}`;
 }
 
 // Ca 5 hang deu dua vao le ngang 20px dat mot lan duy nhat o app/dashboard/
@@ -169,34 +169,42 @@ function HomeScreenContent({ primaryWallet }: Props) {
         </span>
       </div>
 
-      {/* Hang 3-4-5-6 : QR to full + dia chi rut gon, dung du 4 hang */}
+      {/* Hang 3-4-5-6 : QR to full + dia chi rut gon, dung du 4 hang.
+          Khung QR boc trong 1 lop flex-1 min-h-0 rieng - lay dung phan
+          chieu cao CON LAI sau khi tru hang dia chi (auto height) o duoi,
+          roi moi ap aspect-square + h-full (cao truoc, rong suy tu ty le) -
+          tranh QR to hon budget that su cua no ma tran sang hang 2/7 (bug
+          cu: w-full + aspect-ratio suy rong truoc, khong biet truoc chieu
+          cao con lai bao nhieu nen bi tran). */}
       <div
         style={{ flex: "4 1 0", minHeight: 0 }}
         className="flex flex-col items-center justify-center gap-[1.5cqh]"
       >
-        {hasWallet ? (
-          <div
-            style={{ aspectRatio: "1" }}
-            className="w-full max-h-full p-[1.5cqh] bg-background flex items-center justify-center"
-          >
-            <QRCodeSVG
-              value={encodeTapTipQr(primaryWallet.wallet_address)}
-              size={260}
-              className="w-full h-full"
-            />
-          </div>
-        ) : (
-          <div
-            style={{ aspectRatio: "1" }}
-            className="w-full flex items-center justify-center border border-border rounded-xl text-body text-accent text-center px-4"
-          >
-            Setting up your wallet...
-          </div>
-        )}
+        <div className="w-full flex-1 min-h-0 flex items-center justify-center">
+          {hasWallet ? (
+            <div
+              style={{ aspectRatio: "1" }}
+              className="h-full max-w-full p-[1.5cqh] bg-background flex items-center justify-center"
+            >
+              <QRCodeSVG
+                value={encodeTapTipQr(primaryWallet.wallet_address)}
+                size={260}
+                className="w-full h-full"
+              />
+            </div>
+          ) : (
+            <div
+              style={{ aspectRatio: "1" }}
+              className="h-full max-w-full flex items-center justify-center border border-border rounded-xl text-body text-accent text-center px-4"
+            >
+              Setting up your wallet...
+            </div>
+          )}
+        </div>
 
-        <div className="flex items-center gap-2">
+        <div className="shrink-0 flex items-center gap-2">
           <span className="text-body font-semibold">
-            Account Number: {shortenAddress(primaryWallet.wallet_address)}
+            {shortenAddress(primaryWallet.wallet_address)}
           </span>
           <CopyButton value={primaryWallet.wallet_address} label="Copy wallet address" />
         </div>
@@ -241,11 +249,10 @@ function HomeScreenContent({ primaryWallet }: Props) {
         </button>
         <button
           style={{ flex: "2 1 0", minWidth: 0 }}
-          className="h-[6.8cqh] min-h-[52px] rounded-full bg-primary text-primary-foreground shadow-btn text-lead font-bold flex items-center justify-center gap-2"
+          className="h-[6.8cqh] min-h-[52px] rounded-full bg-primary text-primary-foreground shadow-btn text-lead font-bold flex items-center justify-center"
           onClick={() => setSendOpen(true)}
         >
-          <Icon.Tip className="w-[2.4cqh] h-[2.4cqh] min-w-[16px] min-h-[16px] shrink-0" />
-          Tip
+          Tap to Tip
         </button>
 
         <AnchoredCard
