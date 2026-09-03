@@ -18,14 +18,21 @@
  * app tai lai. Dung the moi dam bao "MOI LAN" thay vi chi 1 lan roi nho
  * trong bao lau.
  *
- * LUOI + CHU DUNG DUNG BAN "Passkey setup" trong
- * design_handoff_taptip/TapTip Design Recreation.dc.html (icon FaceID +
- * tieu de "Set up a passkey" hang 1-6, hang 9 = Back (1/3) + "Set up
- * passkey" (2/3), hang 10 = "Skip for now") - KHONG tu bia layout/chu rieng.
- * Nut Back trong ban goc la buoc lui cua wizard dang nhap (passkey tung LA
- * co che dang nhap); o day khong con "buoc truoc" nao de lui ve nen dung lai
- * dung vi tri/icon do cho hanh dong gan nghia nhat: dang xuat.
- * `TextLink` (screen.tsx) von co san dung cho "Skip for now" nay.
+ * LUOI + CHU dua theo ban "Passkey setup" trong
+ * design_handoff_taptip/TapTip Design Recreation.dc.html (tieu de "Set up
+ * a passkey", hang 9 = Back (1/3) + "Set up passkey" (2/3), hang 10 =
+ * "Skip for now") - KHONG tu bia layout/chu rieng. Nut Back trong ban goc
+ * la buoc lui cua wizard dang nhap (passkey tung LA co che dang nhap); o
+ * day khong con "buoc truoc" nao de lui ve nen dung lai dung vi tri do cho
+ * hanh dong gan nghia nhat: dang xuat. `TextLink` (screen.tsx) von co san
+ * dung cho "Skip for now" nay.
+ *
+ * Sua theo phan hoi 09-03 (lan 2): BO icon + cau mo ta o man dau tien -
+ * chi con tieu de + 2 nut. Va TU LAN THU 2 TRO DI (da co passkey), KHONG
+ * ve man rieng nao ca - goi thang prompt Face ID/Touch ID cua trinh duyet,
+ * xac thuc xong la vao Home luon. Chi khi lan xac thuc tu dong that bai
+ * (nguoi dung huy, hoac loi that) moi hien 1 man toi thieu de bam thu lai -
+ * khong the de nguoi dung dung truoc man trang mai khong co loi thoat.
  */
 
 import { useCallback, useEffect, useRef, useState } from "react";
@@ -38,7 +45,6 @@ import {
   type PublicKeyCredentialRequestOptionsJSON,
 } from "@simplewebauthn/browser";
 import { Screen, BackAction, PrimaryButton, TextLink } from "@/components/screen";
-import * as Icon from "@/components/icons";
 import { signOutAction } from "@/app/actions";
 
 type GateState =
@@ -188,42 +194,59 @@ export function AppLockGate({ children }: { children: React.ReactNode }) {
     return <>{children}</>;
   }
 
-  if (state === "checking") {
+  // "checking", va "need-auth"/"authenticating" khi CHUA co loi: khong ve
+  // man hinh nao ca. Lan 2 tro di la quet passkey xong vao thang app luon -
+  // khong can them 1 man rieng, prompt Face ID/Touch ID cua he dieu hanh la
+  // du (tu dong bat o effect ben tren). Chi khi that bai (huy/loi that) moi
+  // hien UI de bam thu lai, vi khong the de nguoi dung dung truoc man trang
+  // mai khong co loi thoat.
+  if (state === "checking" || (state === "need-auth" && !error) || state === "authenticating") {
     return null;
   }
 
   const isRegister = state === "need-register" || state === "registering";
-  const busy = state === "registering" || state === "authenticating";
 
+  // Man dau tien setup - CHI tieu de + 2 nut, khong icon/khong mo ta thua
+  // (yeu cau 09-03: bo icon FaceId + cau mo ta "cau xam xi").
+  if (isRegister) {
+    return (
+      <Screen
+        title="Set up a passkey"
+        action={
+          <BackAction onBack={() => void signOutAction()} backLabel="Log out">
+            <PrimaryButton onClick={register} disabled={state === "registering"}>
+              {state === "registering" ? "Waiting..." : "Set up passkey"}
+            </PrimaryButton>
+          </BackAction>
+        }
+        foot={
+          error ? (
+            <p className="text-danger text-small font-extrabold text-center px-4">
+              {error}
+            </p>
+          ) : (
+            <TextLink onClick={() => setState("skipped")}>Skip for now</TextLink>
+          )
+        }
+      />
+    );
+  }
+
+  // Chi toi day khi lan xac thuc tu dong da that bai (huy/loi that) - can
+  // mot cach de bam thu lai, khong the tiep tuc de man trang.
   return (
     <Screen
-      title={isRegister ? "Set up a passkey" : "Welcome back"}
+      title="Welcome back"
       action={
         <BackAction onBack={() => void signOutAction()} backLabel="Log out">
-          <PrimaryButton
-            onClick={isRegister ? register : authenticate}
-            disabled={busy}
-          >
-            {busy ? "Waiting..." : isRegister ? "Set up passkey" : "Unlock"}
-          </PrimaryButton>
+          <PrimaryButton onClick={authenticate}>Unlock</PrimaryButton>
         </BackAction>
       }
       foot={
-        error ? (
-          <p className="text-danger text-small font-extrabold text-center px-4">
-            {error}
-          </p>
-        ) : (
-          <TextLink onClick={() => setState("skipped")}>Skip for now</TextLink>
-        )
+        <p className="text-danger text-small font-extrabold text-center px-4">
+          {error}
+        </p>
       }
-    >
-      <Icon.FaceId className="w-[14cqh] h-[14cqh] min-w-[72px] min-h-[72px] text-foreground" />
-      <p className="text-body text-accent text-center">
-        {isRegister
-          ? "Use Face ID or Touch ID to keep TapTip locked to only you."
-          : "Confirm it's you before we show your balance and history."}
-      </p>
-    </Screen>
+    />
   );
 }
