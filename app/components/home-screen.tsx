@@ -9,6 +9,7 @@ import { CenteredCard, AnchoredCard } from "@/components/content-popup";
 import { TipSettingPopup } from "@/components/tip-setting-popup";
 import { HistoryPopup } from "@/components/history-popup";
 import { CopyButton } from "@/components/copy-button";
+import { PasskeyMenuItem } from "@/components/passkey-menu-item";
 import { encodeTapTipQr } from "@/lib/utils/qr-payment";
 import { signOutAction } from "@/app/actions";
 
@@ -155,6 +156,7 @@ function HomeScreenContent({ primaryWallet }: Props) {
                 <Icon.Clock className="w-4 h-4 shrink-0" />
                 History
               </button>
+              <PasskeyMenuItem />
               <form action={signOutAction}>
                 <button
                   type="submit"

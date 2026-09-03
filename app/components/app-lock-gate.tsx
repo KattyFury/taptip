@@ -2,65 +2,44 @@
 
 /**
  * Khoa cua app bang passkey - xac thuc lai MOI LAN mo app hoac quay lai tu
- * nen (docs/03-planning-v2.md Nhom 5, ghi no trong HANDOFF 09-02, lam theo
- * yeu cau 09-03).
+ * nen, NHUNG CHI KHI nguoi dung DA TU BAT no (xem components/passkey-menu-
+ * item.tsx trong menu Home). Mac dinh KHONG khoa gi ca - khong ep bat buoc
+ * cai passkey, khong popup chan Home o lan mo dau tien. "Hoi" nguoi dung
+ * bang cach dat lua chon co san trong menu, khong bang popup chan duong.
+ *
+ * Lich su sua trong ngay 09-03 (nhieu vong phan hoi):
+ * - Ban dau: popup "Set up a passkey" ep bat buoc moi lan mo app chua co
+ *   passkey. BO HAN theo phan hoi: "lua chon them hay khong la cua nguoi
+ *   dung, chuyen cua app la hoi nguoi dung khi ho chua dung" - tuc la dat
+ *   san lua chon (menu), khong tu y bat/chan.
+ * - Con lai o day: SAU KHI da bat (co credential), Home moi thuc su bi
+ *   khoa - xac thuc tu dong khi mo/quay lai tu nen, that bai that (huy/loi)
+ *   moi hien popup "Try again" (CenteredCard, khong the bam ra ngoai de
+ *   lach, chi con Unlock hoac Log out).
  *
  * TACH BIET HOAN TOAN voi vi Circle Developer-Controlled Wallets o
  * components/send-flow.tsx: cai nay KHONG ky giao dich gi ca, Circle van tu
- * ky gui tien phia server y nguyen (toc do gui tip khong doi). Day chi la
- * mot buoc chan dat TREN Home - giong Face ID mo lai app cua nhieu vi
- * khac, muc dich la chan nguoi khac cam dien thoai da mo san lien xem duoc
- * so du/lich su, KHONG phai co che uy quyen giao dich (giao dich von da
- * khong co buoc xac nhan nao, xem send-flow.tsx).
+ * ky gui tien phia server y nguyen (toc do gui tip khong doi).
  *
  * Trang thai KHONG luu server (khong dat cookie "da mo khoa") - unlocked
  * chi la React state cuc bo, tu mat khi tab an di (visibilitychange) hoac
  * app tai lai. Dung the moi dam bao "MOI LAN" thay vi chi 1 lan roi nho
  * trong bao lau.
- *
- * Sua theo phan hoi 09-03 (lan 3): day KHONG PHAI 1 man rieng thay the
- * Home - Home LUON duoc render (con o phia sau), khoa la 1 POPUP chan o
- * TREN dung khuon CenteredCard co san (Scan/History/Deposit/Withdraw deu
- * dung khuon nay) - lam mo Home phia sau bang scrim, dong bo voi moi popup
- * khac trong app thay vi tu dung Screen/BackAction rieng cho man nay.
- * - Luc dang tu dong thu xac thuc (prompt Face ID/Touch ID cua trinh
- *   duyet): Home van mo, KHONG hien popup rieng - trinh duyet da tu chan
- *   tuong tac roi nen khong can popup cua app chan them.
- * - That bai that (huy/loi) -> hien popup "Try again" (dung CenteredCard).
- * - Lan dau chua co passkey -> hien popup "Set up a passkey" (cung khuon).
- *
- * Sua tiep theo phan hoi 09-03 (lan 4) - phan biet ro 2 muc do "bo qua":
- * - Popup "Set up a passkey" (CHUA thiet lap gi ca): CO nut X + bam ra
- *   ngoai = "Skip for now" - bo qua LAN NAY, lan mo app ke tiep se hien
- *   lai popup nay tu dau (khong luu gi ca, khong tinh la da bo qua han).
- * - Popup "Try again" (DA thiet lap passkey - Home dang THAT SU bi khoa):
- *   KHONG the bam X/ra ngoai de lach qua (`dismissible={false}` tren
- *   CenteredCard) - chi con 2 duong: xac thuc lai thanh cong, hoac dang
- *   xuat han (nut rieng trong popup). Day moi dung nghia "khoa".
  */
 
 import { useCallback, useEffect, useRef, useState } from "react";
-import {
-  browserSupportsWebAuthn,
-  startAuthentication,
-  startRegistration,
-  type PublicKeyCredentialCreationOptionsJSON,
-  type PublicKeyCredentialRequestOptionsJSON,
-} from "@simplewebauthn/browser";
+import { startAuthentication, type PublicKeyCredentialRequestOptionsJSON } from "@simplewebauthn/browser";
 import { CenteredCard } from "@/components/content-popup";
 import { signOutAction } from "@/app/actions";
 
 type GateState =
   | "checking"
-  | "unsupported"
-  | "need-register"
-  | "registering"
+  // Chua bat khoa (khong co credential nao) - Home mo binh thuong, khong
+  // popup, khong chan gi ca.
+  | "off"
   | "need-auth"
   | "authenticating"
-  | "unlocked"
-  // Dong popup (X / bam ra ngoai): cho vao Home LAN NAY, khong huy passkey/
-  // khong luu gi ca - visibilitychange van khoa lai binh thuong.
-  | "skipped";
+  | "unlocked";
 
 async function postJson<T>(url: string, body?: unknown): Promise<T> {
   const res = await fetch(url, {
@@ -78,10 +57,6 @@ async function postJson<T>(url: string, body?: unknown): Promise<T> {
 export function AppLockGate({ children }: { children: React.ReactNode }) {
   const [state, setState] = useState<GateState>("checking");
   const [error, setError] = useState<string | null>(null);
-  // Da tung xac dinh la CO passkey - dung de quyet dinh re-lock ve
-  // "need-auth" (co the unlock lai) hay bo qua (chua tung setup thi khong
-  // co gi de doi passkey khi quay lai tu nen).
-  const hasCredentialRef = useRef(false);
 
   const authenticate = useCallback(async () => {
     setState("authenticating");
@@ -106,109 +81,68 @@ export function AppLockGate({ children }: { children: React.ReactNode }) {
     }
   }, []);
 
-  const register = useCallback(async () => {
-    setState("registering");
-    setError(null);
-    try {
-      const options = await postJson<PublicKeyCredentialCreationOptionsJSON>(
-        "/api/applock/register-options",
-      );
-      const response = await startRegistration({ optionsJSON: options });
-      await postJson("/api/applock/register-verify", { response });
-      hasCredentialRef.current = true;
-      setState("unlocked");
-    } catch (err) {
-      console.warn("App-lock registration failed:", err);
-      setError(
-        err instanceof Error && err.name === "NotAllowedError"
-          ? "Cancelled. Try again when you're ready."
-          : err instanceof Error
-            ? err.message
-            : "Could not set up, try again.",
-      );
-      setState("need-register");
-    }
-  }, []);
-
-  // Kiem tra 1 lan luc mount: user da co passkey chua. CHI bo qua khoa nay
-  // khi trinh duyet KHONG CO API WebAuthn (`browserSupportsWebAuthn`, kiem
-  // tra dong bo, dang tin cay) - day la truong hop duy nhat coi nhu that su
-  // "unsupported". KHONG con dung `platformAuthenticatorIsAvailable()` hay
-  // "goi /api/applock/status that bai" lam ly do bo qua khoa nua: 2 thu do
-  // tung khien nguoi CHUA TUNG cai passkey van lot thang vao Home ma khong
-  // hien popup Set up (loi thuc te 09-03) - gio moi tinh huong con lai deu
-  // roi ve "need-register", popup Set up tu no da co Skip neu thiet bi that
-  // su khong lam duoc (xem register()).
+  // Kiem tra 1 lan luc mount: user co bat khoa nay chua (co credential
+  // khong). KHONG co thi "off" thang - khong hoi gi ca, khong popup nao.
   useEffect(() => {
     let cancelled = false;
 
-    (async () => {
-      if (!browserSupportsWebAuthn()) {
-        if (!cancelled) setState("unsupported");
-        return;
-      }
-
-      const status = await fetch("/api/applock/status")
-        .then((r) => (r.ok ? (r.json() as Promise<{ hasCredential: boolean }>) : null))
-        .catch(() => null);
-
-      if (cancelled) return;
-
-      hasCredentialRef.current = status?.hasCredential ?? false;
-      setState(status?.hasCredential ? "need-auth" : "need-register");
-    })();
+    fetch("/api/applock/status")
+      .then((r) => (r.ok ? (r.json() as Promise<{ hasCredential: boolean }>) : null))
+      .catch(() => null)
+      .then((status) => {
+        if (cancelled) return;
+        // Khong hoi duoc trang thai (mat mang...) - khong khoa cung nguoi
+        // dung, coi nhu "off" cho lan nay, se thu lai o lan mo ke tiep.
+        setState(status?.hasCredential ? "need-auth" : "off");
+      });
 
     return () => {
       cancelled = true;
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // Da co passkey + dang o trang thai "need-auth" thi tu mo prompt luon,
+  // Da bat khoa + dang o trang thai "need-auth" thi tu mo prompt luon,
   // khong bat nguoi dung bam them 1 nhip - trinh duyet co the chan (khong
   // co user gesture) nhung khi do chi roi ve popup "Try again" ben duoi,
   // khong loi gi ca.
   useEffect(() => {
-    if (state === "need-auth" && hasCredentialRef.current && !error) {
+    if (state === "need-auth" && !error) {
       authenticate();
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [state === "need-auth"]);
 
-  // "quay lai tu nen": tab/app an di roi hien lai thi khoa lai NGAY - ke ca
-  // luc dang o trang thai "skipped" (dong popup chi bo qua LAN NAY, khong
-  // tat han co che nay). Khong dong khi dang o giua chung dang ky/xac thuc
-  // vi se lam gian doan ceremony WebAuthn.
+  // "quay lai tu nen": tab/app an di roi hien lai thi khoa lai NGAY - chi
+  // ap dung khi da tung mo khoa that su (khong dong khi dang giua chung
+  // xac thuc, se lam gian doan ceremony WebAuthn). Khong dinh gi den
+  // trang thai "off" - chua bat khoa thi khong co gi de khoa lai.
   useEffect(() => {
     const onVisibilityChange = () => {
       if (document.visibilityState !== "hidden") return;
-      setState((prev) => {
-        if (prev !== "unlocked" && prev !== "skipped") return prev;
-        return hasCredentialRef.current ? "need-auth" : "need-register";
-      });
+      setState((prev) => (prev === "unlocked" ? "need-auth" : prev));
     };
     document.addEventListener("visibilitychange", onVisibilityChange);
     return () => document.removeEventListener("visibilitychange", onVisibilityChange);
   }, []);
 
-  const isRegister = state === "need-register" || state === "registering";
-  // Popup chi hien khi CAN nguoi dung bam gi do: lan dau setup, hoac xac
-  // thuc tu dong da that bai that su. Luc dang tu dong thu (khong loi) thi
-  // KHONG popup - prompt cua trinh duyet la du, Home chi mo (xem duoi).
-  const showCard = isRegister || (state === "need-auth" && !!error);
-  // Home mo trong SUOT thoi gian con khoa (ke ca luc dang tu dong thu xac
-  // thuc, chua bao loi) - dung y "man Home se bi lam mo" thay vi mot man
-  // trang tach biet.
-  const showScrim = state !== "unlocked" && state !== "skipped" && state !== "unsupported";
+  // Popup "Try again" chi hien khi xac thuc TU DONG da that bai that su
+  // (huy/loi) - luc dang tu dong thu (chua co loi) thi KHONG popup, prompt
+  // cua trinh duyet la du, Home chi mo (scrim) phia sau.
+  const showCard = state === "need-auth" && !!error;
+  const showScrim = state === "need-auth" || state === "authenticating";
+
+  if (state === "checking" || state === "off" || state === "unlocked") {
+    return <>{children}</>;
+  }
 
   return (
     // Boc trong 1 lop `relative` rieng, KHONG padding - dung y het cach
     // data-home-root (home-screen.tsx) dang lam de popup cua no tu nhien co
-    // le 20px 2 ben. AppLockGate boc HomeScreen tu BEN NGOAI dashboard/
-    // page.tsx (ngang hang px-5 cua dashboard/layout.tsx, KHONG phai ben
-    // trong data-home-root) nen neu tha thang left-0/right-0 se lay dung
-    // MEP CUA VUNG PADDING (bo qua padding) -> popup tran full-bleed, sai
-    // le so voi Scan/History/Deposit/Withdraw (loi thuc te 09-03).
+    // le 20px 2 ben (xem ghi chu dai hon trong lich su sua doi cua file
+    // nay o git log neu can, tom tat: AppLockGate boc HomeScreen NGANG
+    // HANG voi px-5 cua dashboard/layout.tsx, khong phai BEN TRONG data-
+    // home-root, nen left-0/right-0 tran cua CenteredCard se bo qua
+    // padding neu khong co lop boc nay).
     <div className="relative flex flex-col h-full">
       {children}
 
@@ -218,35 +152,30 @@ export function AppLockGate({ children }: { children: React.ReactNode }) {
 
       <CenteredCard
         open={showCard}
-        // Chi popup SETUP (lan dau) moi cho bam X/ra ngoai de bo qua - popup
-        // Try again la khoa THAT SU sau khi da thiet lap passkey roi, khong
-        // co duong lach qua ngoai xac thuc lai hoac dang xuat.
-        dismissible={isRegister}
-        onClose={() => setState("skipped")}
-        title={isRegister ? "Set up a passkey" : "Try again"}
-        // Popup ngan (tieu de + 1 nut, khong can cuon) - can giua hang 3
-        // theo quy dinh cua user, khong neo gan dinh nhu popup dai.
+        // Da bat khoa roi thi KHONG the bam X/ra ngoai de lach qua - chi
+        // con 2 duong: xac thuc lai thanh cong, hoac dang xuat han.
+        dismissible={false}
+        onClose={() => {}}
+        title="Try again"
+        // Popup ngan (tieu de + 1 nut) - can giua hang 3, khong neo dinh.
         small
       >
         <div className="flex flex-col gap-3 p-[18px]">
           <button
-            className="h-11 rounded-full bg-primary text-primary-foreground font-bold disabled:opacity-50"
-            onClick={isRegister ? register : authenticate}
-            disabled={state === "registering"}
+            className="h-11 rounded-full bg-primary text-primary-foreground font-bold"
+            onClick={authenticate}
           >
-            {isRegister ? (state === "registering" ? "Waiting..." : "Set up passkey") : "Unlock"}
+            Unlock
           </button>
           {error && (
             <p className="text-danger text-small font-extrabold text-center">{error}</p>
           )}
-          {!isRegister && (
-            <button
-              className="text-danger text-small font-semibold text-center"
-              onClick={() => void signOutAction()}
-            >
-              Log out
-            </button>
-          )}
+          <button
+            className="text-danger text-small font-semibold text-center"
+            onClick={() => void signOutAction()}
+          >
+            Log out
+          </button>
         </div>
       </CenteredCard>
     </div>

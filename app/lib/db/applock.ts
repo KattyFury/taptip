@@ -75,3 +75,14 @@ export async function updateApplockCredentialCounter(
     .bind(counter, credentialId)
     .run();
 }
+
+/** Tat khoa cua app: xoa het credential cua user - dung khi bam "Turn off"
+ * trong menu Home. Xoa het (khong chi 1 thiet bi) vi day la cong tat/bat
+ * mot tinh nang, khong phai quan ly tung thiet bi rieng le. */
+export async function deleteApplockCredentialsByUserId(userId: string): Promise<void> {
+  const db = await getDb();
+  await db
+    .prepare("DELETE FROM applock_credentials WHERE user_id = ?")
+    .bind(userId)
+    .run();
+}
