@@ -28,8 +28,15 @@
  *   tuong tac roi nen khong can popup cua app chan them.
  * - That bai that (huy/loi) -> hien popup "Try again" (dung CenteredCard).
  * - Lan dau chua co passkey -> hien popup "Set up a passkey" (cung khuon).
- * - Dong popup (X hoac bam ra ngoai, dung nghia "Skip for now") chi bo
- *   qua LAN NAY, khong tat han co che - visibilitychange van khoa lai.
+ *
+ * Sua tiep theo phan hoi 09-03 (lan 4) - phan biet ro 2 muc do "bo qua":
+ * - Popup "Set up a passkey" (CHUA thiet lap gi ca): CO nut X + bam ra
+ *   ngoai = "Skip for now" - bo qua LAN NAY, lan mo app ke tiep se hien
+ *   lai popup nay tu dau (khong luu gi ca, khong tinh la da bo qua han).
+ * - Popup "Try again" (DA thiet lap passkey - Home dang THAT SU bi khoa):
+ *   KHONG the bam X/ra ngoai de lach qua (`dismissible={false}` tren
+ *   CenteredCard) - chi con 2 duong: xac thuc lai thanh cong, hoac dang
+ *   xuat han (nut rieng trong popup). Day moi dung nghia "khoa".
  */
 
 import { useCallback, useEffect, useRef, useState } from "react";
@@ -42,6 +49,7 @@ import {
   type PublicKeyCredentialRequestOptionsJSON,
 } from "@simplewebauthn/browser";
 import { CenteredCard } from "@/components/content-popup";
+import { signOutAction } from "@/app/actions";
 
 type GateState =
   | "checking"
@@ -207,6 +215,10 @@ export function AppLockGate({ children }: { children: React.ReactNode }) {
 
       <CenteredCard
         open={showCard}
+        // Chi popup SETUP (lan dau) moi cho bam X/ra ngoai de bo qua - popup
+        // Try again la khoa THAT SU sau khi da thiet lap passkey roi, khong
+        // co duong lach qua ngoai xac thuc lai hoac dang xuat.
+        dismissible={isRegister}
         onClose={() => setState("skipped")}
         title={isRegister ? "Set up a passkey" : "Try again"}
       >
@@ -220,6 +232,14 @@ export function AppLockGate({ children }: { children: React.ReactNode }) {
           </button>
           {error && (
             <p className="text-danger text-small font-extrabold text-center">{error}</p>
+          )}
+          {!isRegister && (
+            <button
+              className="text-danger text-small font-semibold text-center"
+              onClick={() => void signOutAction()}
+            >
+              Log out
+            </button>
           )}
         </div>
       </CenteredCard>

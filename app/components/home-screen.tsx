@@ -98,14 +98,15 @@ function HomeScreenContent({ primaryWallet }: Props) {
         style={{ flex: "1 1 0", minHeight: 0 }}
         className="relative flex items-center justify-between"
       >
-        {/* Logo ha xuong 10px NET so voi tam hang 1 (09-03: 5px, roi +5px nua).
-            Phai dung transform: margin/padding se lam hang 1 cao them va day ca
-            luoi 10 hang lech theo, transform thi khong dung den layout. */}
+        {/* Logo ha xuong 5px NET so voi tam hang 1 (09-03: +5, roi +5 nua thanh
+            10, roi lui lai dung 5). Phai dung transform: margin/padding se lam
+            hang 1 cao them va day ca luoi 10 hang lech theo, transform thi
+            khong dung den layout. */}
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
           src="/logo-full.svg"
           alt="TapTip"
-          style={{ transform: "translateY(10px)" }}
+          style={{ transform: "translateY(5px)" }}
           className="h-[3.7cqh] w-auto"
         />
         <button

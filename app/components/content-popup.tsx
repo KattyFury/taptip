@@ -27,6 +27,7 @@ export function CenteredCard({
   title,
   children,
   maxHeightCqh = 68,
+  dismissible = true,
 }: {
   open: boolean;
   onClose: () => void;
@@ -35,6 +36,12 @@ export function CenteredCard({
   /** Chieu cao toi da cua card, don vi cqh. Tang len khi noi dung can nhieu
    * spacing hon (vd Scan to tip co them nut Custom + input). */
   maxHeightCqh?: number;
+  /** false: an nut X, bam ra ngoai khong dong duoc - dung cho popup khoa
+   * that su (vd xac thuc lai passkey sau khi da thiet lap: khong duoc bam
+   * ra ngoai de "lach" qua khoa, chi con lai skip o LAN DAU thiet lap la
+   * co the bo qua). Mac dinh true, giu nguyen hanh vi cu cho moi popup
+   * khac (Scan/History/Deposit/Withdraw). */
+  dismissible?: boolean;
 }) {
   if (!open) return null;
 
@@ -42,7 +49,7 @@ export function CenteredCard({
     <>
       <div
         className="absolute inset-0 -mx-5 z-40 bg-scrim"
-        onClick={onClose}
+        onClick={dismissible ? onClose : undefined}
         aria-hidden="true"
       />
       <div
@@ -53,13 +60,15 @@ export function CenteredCard({
       >
         <div className="relative shrink-0 flex items-center justify-center px-[18px] py-[14px]">
           <h2 className="text-title font-semibold text-center">{title}</h2>
-          <button
-            onClick={onClose}
-            aria-label="Đóng"
-            className="absolute right-[14px] top-1/2 -translate-y-1/2 text-danger w-6 h-6 flex items-center justify-center"
-          >
-            <Icon.X className="w-3.5 h-3.5" />
-          </button>
+          {dismissible && (
+            <button
+              onClick={onClose}
+              aria-label="Đóng"
+              className="absolute right-[14px] top-1/2 -translate-y-1/2 text-danger w-6 h-6 flex items-center justify-center"
+            >
+              <Icon.X className="w-3.5 h-3.5" />
+            </button>
+          )}
         </div>
         <div className="overflow-y-auto">{children}</div>
       </div>
