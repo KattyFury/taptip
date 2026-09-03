@@ -110,22 +110,29 @@ function HomeScreenContent({ primaryWallet }: Props) {
           style={{ transform: "translateY(5px)" }}
           className="h-[3.7cqh] w-auto"
         />
-        <button
-          onClick={() => setMenuOpen((v) => !v)}
-          aria-label="Open menu"
-          className="w-[6cqh] h-[6cqh] min-w-[38px] min-h-[38px] flex items-center justify-center"
-        >
-          <Icon.Menu className="w-[3.2cqh] h-[3.2cqh] min-w-[18px] min-h-[18px] text-foreground" />
-        </button>
+        {/* `relative` rieng cho nut Menu (khong phai ca hang 1) - popup neo
+            theo dung nut nay bang top-full, khong bi le xuong day ca hang 1
+            cao hon nhieu so voi nut (loi thuc te 09-03: popup hien qua xa
+            icon Menu). */}
+        <div className="relative">
+          <button
+            onClick={() => setMenuOpen((v) => !v)}
+            aria-label="Open menu"
+            className="w-[6cqh] h-[6cqh] min-w-[38px] min-h-[38px] flex items-center justify-center"
+          >
+            <Icon.Menu className="w-[3.2cqh] h-[3.2cqh] min-w-[18px] min-h-[18px] text-foreground" />
+          </button>
 
-        {menuOpen && (
-          <>
-            <div
-              className="fixed inset-0 z-40"
-              onClick={() => setMenuOpen(false)}
-              aria-hidden="true"
-            />
-            <div className="absolute right-0 top-full z-50 mt-1.5 w-[210px] rounded-card border border-border bg-background shadow-modal overflow-hidden">
+          {menuOpen && (
+            <>
+              <div
+                className="fixed inset-0 z-40"
+                onClick={() => setMenuOpen(false)}
+                aria-hidden="true"
+              />
+              {/* w-max thay vi w co dinh - "Turn off Face ID lock" (dong dai
+                  nhat) tung bi mo coi 1 chu xuong hang 2 vi khung qua hep. */}
+              <div className="absolute right-0 top-full z-50 mt-1.5 w-max rounded-card border border-border bg-background shadow-modal overflow-hidden">
               <div className="w-full flex items-center justify-between gap-3 px-4 py-3 border-b border-border">
                 <div className="flex flex-col min-w-0">
                   <span className="text-small text-accent">Account Number</span>
@@ -169,6 +176,7 @@ function HomeScreenContent({ primaryWallet }: Props) {
             </div>
           </>
         )}
+        </div>
       </div>
 
       {/* Hang 2 : Balance can giua (ngang), so du lon cach nhan "Balance"

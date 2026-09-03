@@ -88,7 +88,7 @@ export function PasskeyMenuItem() {
     >
       <Icon.FaceId className="w-4 h-4 shrink-0" />
       <span className="flex flex-col min-w-0">
-        <span>
+        <span className="whitespace-nowrap">
           {status === "on"
             ? "Turn off Face ID lock"
             : status === "busy"
