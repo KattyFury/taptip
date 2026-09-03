@@ -65,8 +65,11 @@ export default async function RootLayout({
             <Toaster expand />
             <div className="flex items-center justify-center min-h-dvh">
               {/* Khung dien thoai 430x932. `tt-frame` bat container-type: size
-                  de don vi cqh cua chu/icon bam theo chieu cao khung nay. */}
-              <div className="tt-frame relative w-full max-w-[430px] h-dvh max-h-[932px] flex flex-col bg-background shadow-modal overflow-hidden">
+                  de don vi cqh cua chu/icon bam theo chieu cao khung nay.
+                  Vien den 2px + nen ngoai trang (09-03): bo shadow-modal vi
+                  bong do 30% lam vien trang quanh app xam lai - dung cai
+                  ma yeu cau nay muon bo di. */}
+              <div className="tt-frame relative w-full max-w-[430px] h-dvh max-h-[932px] flex flex-col bg-background border-2 border-border overflow-hidden">
                 <main className="flex-1 flex flex-col items-center overflow-hidden">
                   <div className="flex flex-col w-full flex-1">{children}</div>
                 </main>

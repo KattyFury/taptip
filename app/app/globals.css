@@ -63,8 +63,10 @@
   --warning-bg: #fef9c3;
   --warning-fg: #854d0e;
 
-  /* --- Nen ngoai khung dien thoai (chi thay tren desktop) --- */
-  --page-backdrop: #e5e3e1;
+  /* --- Nen ngoai khung dien thoai (chi thay tren desktop) ---
+     Trang, khong con xam: app cung nen trang nen nen xam bao quanh trong
+     roi rac; ranh gioi gio do VIEN DEN 2px cua khung dam nhiem (09-03). */
+  --page-backdrop: #ffffff;
 
   /* Lop lam toi phia sau modal */
   --scrim: rgba(0, 0, 0, 0.55);

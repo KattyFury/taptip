@@ -98,14 +98,14 @@ function HomeScreenContent({ primaryWallet }: Props) {
         style={{ flex: "1 1 0", minHeight: 0 }}
         className="relative flex items-center justify-between"
       >
-        {/* Logo ha xuong 5px NET so voi tam hang 1 (yeu cau 09-03). Phai dung
-            transform: margin/padding se lam hang 1 cao them 5px va day ca luoi
-            10 hang lech theo, transform thi khong dung den layout. */}
+        {/* Logo ha xuong 10px NET so voi tam hang 1 (09-03: 5px, roi +5px nua).
+            Phai dung transform: margin/padding se lam hang 1 cao them va day ca
+            luoi 10 hang lech theo, transform thi khong dung den layout. */}
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
           src="/logo-full.svg"
           alt="TapTip"
-          style={{ transform: "translateY(5px)" }}
+          style={{ transform: "translateY(10px)" }}
           className="h-[3.7cqh] w-auto"
         />
         <button
@@ -170,21 +170,20 @@ function HomeScreenContent({ primaryWallet }: Props) {
 
       {/* Hang 2 : Balance can giua (ngang), so du lon cach nhan "Balance"
           1 khoang tho (gap) - van dung leading-none de gon dung trong 1 hang.
-          Hien "40 USDC ≈ $40": so USDC nho + xam (thong tin ky thuat, van phai
-          co vi app tip bang USDC), con so DOLA moi la con so LON - nguoi dung
-          nghi bang dola chu khong nghi bang token (yeu cau 09-03, dao lai co
-          chu so voi ban 09-02). */}
+          Hien "$40 (40 USDC)": con so DOLA la con so LON vi nguoi dung nghi
+          bang dola chu khong nghi bang token; so USDC lui ve trong ngoac, nho
+          + xam - van phai co vi app tip bang USDC. */}
       <div
         style={{ flex: "1 1 0", minHeight: 0 }}
         className="flex flex-col items-center justify-center gap-[0.8cqh]"
       >
         <span className="text-lead font-bold text-accent leading-none">Balance</span>
         <span className="flex items-baseline gap-2 leading-none whitespace-nowrap">
-          <span className="text-lead font-bold text-accent">
-            {formatBalance(balance.token)} USDC
-          </span>
           <span className="text-figure font-bold">
-            ≈ ${formatBalance(balance.token)}
+            ${formatBalance(balance.token)}
+          </span>
+          <span className="text-lead font-bold text-accent">
+            ({formatBalance(balance.token)} USDC)
           </span>
         </span>
       </div>
@@ -232,7 +231,10 @@ function HomeScreenContent({ primaryWallet }: Props) {
           </span>
 
           <div className="flex items-center gap-2">
-            <span className="text-body font-semibold text-accent">
+            {/* text-lead = 22px quy chieu khung 390x844 (yeu cau 09-03) - day
+                la thong tin nguoi khac phai doc de doi chieu vi, khong phai
+                caption. */}
+            <span className="text-lead font-semibold text-accent">
               Account Number: {shortenAddress(primaryWallet.wallet_address)}
             </span>
             <CopyButton value={primaryWallet.wallet_address} label="Copy wallet address" />
