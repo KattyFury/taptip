@@ -11,6 +11,8 @@
     "@circle-fin/developer-controlled-wallets": "^10.8.0",
     "@circle-fin/modular-wallets-core": "^1.0.13",
     "@opennextjs/cloudflare": "^1.20.2",
+    "@simplewebauthn/browser": "^14.0.0",
+    "@simplewebauthn/server": "^14.0.0",
     "clsx": "^2.1.1",
     "html5-qrcode": "^2.3.8",
     "input-otp": "^1.4.2",

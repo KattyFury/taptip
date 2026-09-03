@@ -11,18 +11,18 @@
 
 ---
 
-## 👉 BẮT ĐẦU TỪ ĐÂY (nghỉ 09-02, cuối ngày)
+## 👉 BẮT ĐẦU TỪ ĐÂY (09-03, cuối ngày)
 
-**Việc đầu tiên khi quay lại — user tự làm, 1 phút:**
-Vào https://faucet.circle.com/ → chọn **Arc Testnet** → dán địa chỉ ví mới:
-```
-0xe25d59aa23bfba0f40654f526bcb318c0d76c5b0
-```
-Chưa nạp thì **không test được gì** về tip, vì ví đang 0 USDC.
+**2 việc còn lại — chỉ user làm được, cần thiết bị thật:**
 
-**Sau khi nạp, test thật trên điện thoại** (đây là thứ duy nhất còn chặn):
-mở app → bấm Tip → quét QR ví bất kỳ trên Arc → tiền phải đi **ngay, không hỏi Face ID**.
-Đây là lần đầu tiên toàn tuyến được chạy thật; mọi thứ trước đó chỉ verify từng mắt xích rời.
+1. Vào https://faucet.circle.com/ → chọn **Arc Testnet** → dán địa chỉ ví mới:
+   ```
+   0xe25d59aa23bfba0f40654f526bcb318c0d76c5b0
+   ```
+   Chưa nạp thì **không test được gì** về tip, vì ví đang 0 USDC.
+2. **Test thật trên điện thoại** (chưa ai chạy toàn tuyến thật):
+   - Mở app → bấm Tip → quét QR ví bất kỳ trên Arc → tiền phải đi **ngay, không hỏi Face ID** (gửi tiền do Circle ký phía server, không đụng passkey).
+   - **Lần đầu tiên mở app** (hoặc sau khi tài khoản Circle ngừng dùng passkey cũ) sẽ hiện màn **"Lock TapTip"** — đây là tính năng MỚI 09-03, xem chi tiết bên dưới — bấm "Set up" và cho Face ID/Touch ID/Windows Hello thật. Các lần mở lại/quay lại từ nền sau đó sẽ hỏi lại passkey này (màn "Welcome back") — đây là hành vi ĐÚNG THIẾT KẾ, không phải bug.
 
 **Trạng thái:** repo sạch, đã push, production đang chạy bản mới nhất.
 Ví mới `0xe25d59aa…76c5b0` · wallet set `214e3fa8-4f85-5782-a6f0-a3bdd992617e`
@@ -34,11 +34,27 @@ Ví mới `0xe25d59aa…76c5b0` · wallet set `214e3fa8-4f85-5782-a6f0-a3bdd9926
 
 **Còn nợ, không gấp:**
 - Gas Station: chưa tạo policy nên app chưa thật sự "trả gas thay user" như spec.
-- Passkey mở app: `docs/03-planning-v2.md:29` nói passkey xác thực lại mỗi lần mở app. Giờ **không còn passkey ở đâu cả** — đã bỏ khỏi luồng tiền là đúng, nhưng vai trò "khoá cửa app" thì chưa làm.
-- `docs/03-planning-v2.md:72` vẫn liệt kê "Cơ chế passkey/Circle Modular Wallets" là quyết định đã khoá → tài liệu tự mâu thuẫn với chính nó, nên sửa cho khớp.
 - Worker còn 2 secret Supabase thừa (`NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`) — xoá được, code không còn dùng Supabase.
 - Session 30 ngày nhưng **không gia hạn trượt**: đúng ngày thứ 31 là văng ra đăng nhập lại.
 - 40 USDC testnet kẹt ở ví passkey cũ `0xe42efd03…d50e26`. App không ký được cho ví đó nữa. Là tiền testnet nên lấy lại từ faucet; code passkey còn trong git history (commit trước `bf985ab`) nếu thật sự cần cứu.
+
+---
+
+## Passkey khoá cửa app (09-03) – chi tiết kỹ thuật
+
+Nợ được ghi từ 09-02: `docs/03-planning-v2.md:29` (Nhóm 5 – Bảo mật) chốt "Passkey xác thực lại **mỗi lần mở app hoặc quay lại từ nền**". Sau khi chuyển sang Developer-Controlled Wallets thì hoàn toàn không còn passkey ở đâu cả — giờ làm lại, nhưng **KHÁC HẲN** kiến trúc passkey cũ (Circle Modular Wallets):
+
+- Passkey cũ: **ký giao dịch**, gắn liền với ví (Circle Console Passkey Domain, `toWebAuthnAccount`...). Đã bỏ hẳn 09-02 vì mỗi lần tip phải Face ID, vi phạm yêu cầu số 1 (tốc độ).
+- Passkey mới: **KHÔNG dính gì đến ví/giao dịch**. Thuần là WebAuthn chuẩn (`@simplewebauthn/server` + `@simplewebauthn/browser`, tự cài đặt — không dùng Circle Modular Wallets SDK) làm cổng xác thực cục bộ trước khi cho vào Home. Circle vẫn tự ký gửi tiền phía server y nguyên như từ 09-02, tốc độ gửi tip không đổi.
+- Do đó `docs/03-planning-v2.md:72` ("Cơ chế passkey/Circle Modular Wallets — gắn liền cách user cũ truy cập lại ví" là quyết định khó đổi) **không còn đúng nữa** — đã lỗi thời từ lúc bỏ Modular Wallets 09-02, ghi chú lại ở đây thay vì sửa doc gốc (giữ lịch sử quyết định).
+
+**Đã làm:**
+- Migration `0004` — bảng `applock_credentials` riêng (credential_id, public_key COSE, counter chống replay). KHÔNG dùng lại cột `passkey_credential` cũ trên `users` — cột đó lưu JSON thô `{id,publicKey}` theo kiến trúc MSCA cũ, không có counter, không qua xác minh WebAuthn thật, không đủ chuẩn cho một cơ chế xác thực độc lập.
+- 5 route `app/api/applock/*`: `status` (đã setup chưa), `register-options`/`register-verify`, `auth-options`/`auth-verify` — verify chữ ký thật qua `@simplewebauthn/server`, RP ID/origin lấy thẳng từ request (`req.nextUrl`) nên tự đúng trên cả localhost lẫn production, không cần biến môi trường mới.
+- `components/app-lock-gate.tsx` — bọc quanh `<HomeScreen>` ở `app/dashboard/page.tsx`. Trạng thái mở khoá **chỉ là React state cục bộ, KHÔNG có cookie "đã mở khoá"** — tự khoá lại mỗi khi `visibilitychange` báo tab ẩn đi, đúng nghĩa "mỗi lần" chứ không phải "1 lần rồi nhớ".
+- Thiết bị không có sinh trắc (`platformAuthenticatorIsAvailable()` trả `false`, ví dụ desktop không Windows Hello) → **bỏ qua khoá này hoàn toàn**, không chặn cứng — lớp bảo vệ chính vẫn là session cookie httpOnly như cũ, đây chỉ là lớp riêng tư bổ sung (chặn người khác cầm điện thoại đã đăng nhập sẵn xem lén số dư), không phải cơ chế bắt buộc tuyệt đối.
+
+**Verify:** Chrome headless thật + CDP `WebAuthn.addVirtualAuthenticator` (giả lập thiết bị có Face ID, tự động chấp thuận — đi qua đúng đường dây WebAuthn/`@simplewebauthn` thật, không mock code) trên `next dev` + D1 `--local`. Cả 4 bước đều đúng: màn "Set up" khi chưa có passkey → đăng ký xong vào thẳng Home → giả lập ẩn tab → khoá lại ngay ("Welcome back") → tự thử mở khoá lại và vào lại Home. Build production sạch. **Chưa test được Face ID/Touch ID THẬT trên điện thoại** — xem mục "Bắt đầu từ đây" ở trên.
 
 ---
 

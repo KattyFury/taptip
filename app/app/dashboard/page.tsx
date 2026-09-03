@@ -20,6 +20,7 @@ import { redirect } from "next/navigation";
 import { getSession } from "@/lib/auth/session";
 import { getUserById } from "@/lib/db/users";
 import HomeScreen from "@/components/home-screen";
+import { AppLockGate } from "@/components/app-lock-gate";
 
 export default async function Dashboard() {
   const userId = await getSession();
@@ -39,5 +40,12 @@ export default async function Dashboard() {
   const primaryWallet = { wallet_address: user.wallet_address };
   const profile = { id: user.id, name: "", daily_tip_limit: null };
 
-  return <HomeScreen primaryWallet={primaryWallet} profile={profile} />;
+  // AppLockGate = xac thuc passkey lai moi lan mo app/quay lai tu nen
+  // (docs/03-planning-v2.md Nhom 5). Chi bao ve MAN HINH, khong dinh gi den
+  // vi/giao dich - Circle van tu ky gui tien phia server nhu cu.
+  return (
+    <AppLockGate>
+      <HomeScreen primaryWallet={primaryWallet} profile={profile} />
+    </AppLockGate>
+  );
 }
