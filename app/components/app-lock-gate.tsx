@@ -8,7 +8,7 @@
  * TACH BIET HOAN TOAN voi vi Circle Developer-Controlled Wallets o
  * components/send-flow.tsx: cai nay KHONG ky giao dich gi ca, Circle van tu
  * ky gui tien phia server y nguyen (toc do gui tip khong doi). Day chi la
- * mot man hinh chan dat truoc Home - giong Face ID mo lai app cua nhieu vi
+ * mot buoc chan dat TREN Home - giong Face ID mo lai app cua nhieu vi
  * khac, muc dich la chan nguoi khac cam dien thoai da mo san lien xem duoc
  * so du/lich su, KHONG phai co che uy quyen giao dich (giao dich von da
  * khong co buoc xac nhan nao, xem send-flow.tsx).
@@ -18,21 +18,18 @@
  * app tai lai. Dung the moi dam bao "MOI LAN" thay vi chi 1 lan roi nho
  * trong bao lau.
  *
- * LUOI + CHU dua theo ban "Passkey setup" trong
- * design_handoff_taptip/TapTip Design Recreation.dc.html (tieu de "Set up
- * a passkey", hang 9 = Back (1/3) + "Set up passkey" (2/3), hang 10 =
- * "Skip for now") - KHONG tu bia layout/chu rieng. Nut Back trong ban goc
- * la buoc lui cua wizard dang nhap (passkey tung LA co che dang nhap); o
- * day khong con "buoc truoc" nao de lui ve nen dung lai dung vi tri do cho
- * hanh dong gan nghia nhat: dang xuat. `TextLink` (screen.tsx) von co san
- * dung cho "Skip for now" nay.
- *
- * Sua theo phan hoi 09-03 (lan 2): BO icon + cau mo ta o man dau tien -
- * chi con tieu de + 2 nut. Va TU LAN THU 2 TRO DI (da co passkey), KHONG
- * ve man rieng nao ca - goi thang prompt Face ID/Touch ID cua trinh duyet,
- * xac thuc xong la vao Home luon. Chi khi lan xac thuc tu dong that bai
- * (nguoi dung huy, hoac loi that) moi hien 1 man toi thieu de bam thu lai -
- * khong the de nguoi dung dung truoc man trang mai khong co loi thoat.
+ * Sua theo phan hoi 09-03 (lan 3): day KHONG PHAI 1 man rieng thay the
+ * Home - Home LUON duoc render (con o phia sau), khoa la 1 POPUP chan o
+ * TREN dung khuon CenteredCard co san (Scan/History/Deposit/Withdraw deu
+ * dung khuon nay) - lam mo Home phia sau bang scrim, dong bo voi moi popup
+ * khac trong app thay vi tu dung Screen/BackAction rieng cho man nay.
+ * - Luc dang tu dong thu xac thuc (prompt Face ID/Touch ID cua trinh
+ *   duyet): Home van mo, KHONG hien popup rieng - trinh duyet da tu chan
+ *   tuong tac roi nen khong can popup cua app chan them.
+ * - That bai that (huy/loi) -> hien popup "Try again" (dung CenteredCard).
+ * - Lan dau chua co passkey -> hien popup "Set up a passkey" (cung khuon).
+ * - Dong popup (X hoac bam ra ngoai, dung nghia "Skip for now") chi bo
+ *   qua LAN NAY, khong tat han co che - visibilitychange van khoa lai.
  */
 
 import { useCallback, useEffect, useRef, useState } from "react";
@@ -44,8 +41,7 @@ import {
   type PublicKeyCredentialCreationOptionsJSON,
   type PublicKeyCredentialRequestOptionsJSON,
 } from "@simplewebauthn/browser";
-import { Screen, BackAction, PrimaryButton, TextLink } from "@/components/screen";
-import { signOutAction } from "@/app/actions";
+import { CenteredCard } from "@/components/content-popup";
 
 type GateState =
   | "checking"
@@ -55,8 +51,8 @@ type GateState =
   | "need-auth"
   | "authenticating"
   | "unlocked"
-  // Bam "Skip for now": cho vao Home LAN NAY, khong huy passkey/khong luu gi
-  // ca - visibilitychange van khoa lai binh thuong nhu da mo khoa that.
+  // Dong popup (X / bam ra ngoai): cho vao Home LAN NAY, khong huy passkey/
+  // khong luu gi ca - visibilitychange van khoa lai binh thuong.
   | "skipped";
 
 async function postJson<T>(url: string, body?: unknown): Promise<T> {
@@ -164,20 +160,21 @@ export function AppLockGate({ children }: { children: React.ReactNode }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // Da co passkey + dang o man "need-auth" thi tu mo prompt luon, khong bat
-  // nguoi dung bam them 1 nhip - trinh duyet co the chan (khong co user
-  // gesture) nhung khi do chi roi ve nut bam thu cong, khong loi gi ca.
+  // Da co passkey + dang o trang thai "need-auth" thi tu mo prompt luon,
+  // khong bat nguoi dung bam them 1 nhip - trinh duyet co the chan (khong
+  // co user gesture) nhung khi do chi roi ve popup "Try again" ben duoi,
+  // khong loi gi ca.
   useEffect(() => {
-    if (state === "need-auth" && hasCredentialRef.current) {
+    if (state === "need-auth" && hasCredentialRef.current && !error) {
       authenticate();
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [state === "need-auth"]);
 
   // "quay lai tu nen": tab/app an di roi hien lai thi khoa lai NGAY - ke ca
-  // luc dang o trang thai "skipped" (bam Skip chi bo qua LAN NAY, khong tat
-  // han co che nay). Khong dong khi dang o man cho dang ky/xac thuc do dang
-  // giua chung mot le WebAuthn, dong luc do se lam gian doan ceremony.
+  // luc dang o trang thai "skipped" (dong popup chi bo qua LAN NAY, khong
+  // tat han co che nay). Khong dong khi dang o giua chung dang ky/xac thuc
+  // vi se lam gian doan ceremony WebAuthn.
   useEffect(() => {
     const onVisibilityChange = () => {
       if (document.visibilityState !== "hidden") return;
@@ -190,63 +187,42 @@ export function AppLockGate({ children }: { children: React.ReactNode }) {
     return () => document.removeEventListener("visibilitychange", onVisibilityChange);
   }, []);
 
-  if (state === "unsupported" || state === "unlocked" || state === "skipped") {
-    return <>{children}</>;
-  }
-
-  // "checking", va "need-auth"/"authenticating" khi CHUA co loi: khong ve
-  // man hinh nao ca. Lan 2 tro di la quet passkey xong vao thang app luon -
-  // khong can them 1 man rieng, prompt Face ID/Touch ID cua he dieu hanh la
-  // du (tu dong bat o effect ben tren). Chi khi that bai (huy/loi that) moi
-  // hien UI de bam thu lai, vi khong the de nguoi dung dung truoc man trang
-  // mai khong co loi thoat.
-  if (state === "checking" || (state === "need-auth" && !error) || state === "authenticating") {
-    return null;
-  }
-
   const isRegister = state === "need-register" || state === "registering";
+  // Popup chi hien khi CAN nguoi dung bam gi do: lan dau setup, hoac xac
+  // thuc tu dong da that bai that su. Luc dang tu dong thu (khong loi) thi
+  // KHONG popup - prompt cua trinh duyet la du, Home chi mo (xem duoi).
+  const showCard = isRegister || (state === "need-auth" && !!error);
+  // Home mo trong SUOT thoi gian con khoa (ke ca luc dang tu dong thu xac
+  // thuc, chua bao loi) - dung y "man Home se bi lam mo" thay vi mot man
+  // trang tach biet.
+  const showScrim = state !== "unlocked" && state !== "skipped" && state !== "unsupported";
 
-  // Man dau tien setup - CHI tieu de + 2 nut, khong icon/khong mo ta thua
-  // (yeu cau 09-03: bo icon FaceId + cau mo ta "cau xam xi").
-  if (isRegister) {
-    return (
-      <Screen
-        title="Set up a passkey"
-        action={
-          <BackAction onBack={() => void signOutAction()} backLabel="Log out">
-            <PrimaryButton onClick={register} disabled={state === "registering"}>
-              {state === "registering" ? "Waiting..." : "Set up passkey"}
-            </PrimaryButton>
-          </BackAction>
-        }
-        foot={
-          error ? (
-            <p className="text-danger text-small font-extrabold text-center px-4">
-              {error}
-            </p>
-          ) : (
-            <TextLink onClick={() => setState("skipped")}>Skip for now</TextLink>
-          )
-        }
-      />
-    );
-  }
-
-  // Chi toi day khi lan xac thuc tu dong da that bai (huy/loi that) - can
-  // mot cach de bam thu lai, khong the tiep tuc de man trang.
   return (
-    <Screen
-      title="Welcome back"
-      action={
-        <BackAction onBack={() => void signOutAction()} backLabel="Log out">
-          <PrimaryButton onClick={authenticate}>Unlock</PrimaryButton>
-        </BackAction>
-      }
-      foot={
-        <p className="text-danger text-small font-extrabold text-center px-4">
-          {error}
-        </p>
-      }
-    />
+    <>
+      {children}
+
+      {showScrim && !showCard && (
+        <div className="absolute inset-0 -mx-5 z-40 bg-scrim" aria-hidden="true" />
+      )}
+
+      <CenteredCard
+        open={showCard}
+        onClose={() => setState("skipped")}
+        title={isRegister ? "Set up a passkey" : "Try again"}
+      >
+        <div className="flex flex-col gap-3 p-[18px]">
+          <button
+            className="h-11 rounded-full bg-primary text-primary-foreground font-bold disabled:opacity-50"
+            onClick={isRegister ? register : authenticate}
+            disabled={state === "registering"}
+          >
+            {isRegister ? (state === "registering" ? "Waiting..." : "Set up passkey") : "Unlock"}
+          </button>
+          {error && (
+            <p className="text-danger text-small font-extrabold text-center">{error}</p>
+          )}
+        </div>
+      </CenteredCard>
+    </>
   );
 }
