@@ -85,13 +85,17 @@ function HomeScreenContent({ primaryWallet }: Props) {
   return (
     // KHONG dat padding doc o day - luoi 10 hang phai neo dung dinh 0 / day 10.
     <div data-home-root className="relative flex flex-col h-full">
-      {/* ================== LUOI 10 HANG MAN HOME (Figma taptip-home 09-02) ===
-          1 : logo (trai) + icon Menu (phai)
-          2 : "Balance" + so du lon, xep doc - gon trong đung 1 hang
-          3-6 : QR to full + dia chi rut gon [copy]
-          7-8 : toi da 3 thong bao co the dismiss
-          9 : nut Option (1/3) + Tip (2/3), tam nut o giua hang 9
-          10 : dem duoi (khong noi dung)
+      {/* ================== LUOI 10 HANG MAN HOME (Figma taptip-home 09-02,
+          ty le doi lai 09-03 theo yeu cau "gon hon" - rows 7-8 gan nhu luon
+          rong (chua co nguon du lieu that nuoi announcements) va row 10 chi
+          dung khi co loi, nen rut ty le 2 hang do lai va don sang cho QR +
+          Balance thay vi de trong suong nhu cu) ===
+          1 : logo (trai) + icon Menu (phai)             flex 1
+          2 : "Balance" + so du lon, xep doc              flex 1.3
+          3-6 : QR to full + dia chi rut gon [copy]        flex 5
+          7-8 : toi da 3 thong bao co the dismiss          flex 0.7
+          9 : nut Option (1/3) + Tip (2/3)                flex 1
+          10 : loi so du (rong khi khong co loi)          flex 1
           ==================================================================== */}
 
       {/* Hang 1 */}
@@ -185,7 +189,7 @@ function HomeScreenContent({ primaryWallet }: Props) {
           bang dola chu khong nghi bang token; so USDC lui ve trong ngoac, nho
           + xam - van phai co vi app tip bang USDC. */}
       <div
-        style={{ flex: "1 1 0", minHeight: 0 }}
+        style={{ flex: "1.3 1 0", minHeight: 0 }}
         className="flex flex-col items-center justify-center gap-[0.8cqh]"
       >
         <span className="text-lead font-bold text-accent leading-none">Balance</span>
@@ -207,14 +211,18 @@ function HomeScreenContent({ primaryWallet }: Props) {
           cu: w-full + aspect-ratio suy rong truoc, khong biet truoc chieu
           cao con lai bao nhieu nen bi tran). */}
       <div
-        style={{ flex: "4 1 0", minHeight: 0 }}
+        style={{ flex: "5 1 0", minHeight: 0 }}
         className="flex flex-col items-center justify-center gap-[1.5cqh]"
       >
         <div className="w-full flex-1 min-h-0 flex items-center justify-center">
           {hasWallet ? (
+            // Vien den 2px + bo goc: truoc day QR khong co khung nao ca, noi
+            // troi tren nen trang khong ranh gioi ro - them khung dam de
+            // "tuong phan hon"/"hien dai hon" (yeu cau 09-03), dung lai dung
+            // token --border/--radius-xl co san, khong che mau/bo goc moi.
             <div
               style={{ aspectRatio: "1" }}
-              className="h-full max-w-full p-[1.5cqh] bg-background flex items-center justify-center"
+              className="h-full max-w-full p-[1.5cqh] bg-background border-2 border-border rounded-xl flex items-center justify-center"
             >
               <QRCodeSVG
                 value={encodeTapTipQr(primaryWallet.wallet_address)}
@@ -253,9 +261,10 @@ function HomeScreenContent({ primaryWallet }: Props) {
         </div>
       </div>
 
-      {/* Hang 7-8 : toi da 3 thong bao, an han neu rong (chua co nguon du lieu that) */}
+      {/* Hang 7-8 (rut xuong flex 0.7, xem ghi chu ty le luoi o dau file):
+          toi da 3 thong bao, an han neu rong (chua co nguon du lieu that) */}
       <div
-        style={{ flex: "2 1 0", minHeight: 0 }}
+        style={{ flex: "0.7 1 0", minHeight: 0 }}
         className="flex flex-col justify-center gap-[1cqh]"
       >
         {announcements.slice(0, 3).map((a) => (

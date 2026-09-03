@@ -51,7 +51,11 @@
   /* --- Thuong hieu --- */
   --primary: #ffcc00;          /* vang: nut hanh dong chinh */
   --primary-foreground: #000000;
-  --accent: #8e8e93;           /* xam: chu phu, caption, nhan "Balance" */
+  /* xam: chu phu, caption, nhan "Balance". Tang do dam 09-03 (yeu cau
+     "tuong phan hon") - #8e8e93 cu chi ~2.6:1 tren nen trang, duoi
+     nguong WCAG AA ca cho chu lon; #5c5c61 ~4.8:1, dat AA van con doc
+     ro rang la "chu phu" chu khong lan voi --foreground den tuyet doi. */
+  --accent: #5c5c61;
 
   /* --- Trang thai --- */
   --success: #34c759;
@@ -131,12 +135,14 @@
   /* Thang chu quy doi truc tiep tu ban Figma goc 390x844: px/844*100.
      27 -> 3.2cqh (tieu de), 22 -> 2.61cqh (nut/nhan "Balance"/so tien lich
      su), 17 -> 2.01cqh (noi dung), 15 -> 1.78cqh (hint/ngay thang),
-     37 -> 4.38cqh (so du lon o Home - tang +5 tu 32 theo yeu cau 09-02). */
+     37 -> 4.38cqh (so du lon o Home - tang +5 tu 32 theo yeu cau 09-02).
+     text-figure tang tiep len 44 -> 5.21cqh (09-03, yeu cau "hien dai hon"
+     - so du la con so quan trong nhat man hinh, can to/tu tin hon nua). */
   --text-title: 3.2cqh;
   --text-lead: 2.61cqh;
   --text-body: 2.01cqh;
   --text-small: 1.78cqh;
-  --text-figure: 4.38cqh;
+  --text-figure: 5.21cqh;
 }
 
 @layer base {
