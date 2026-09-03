@@ -42,7 +42,6 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import {
   browserSupportsWebAuthn,
-  platformAuthenticatorIsAvailable,
   startAuthentication,
   startRegistration,
   type PublicKeyCredentialCreationOptionsJSON,
@@ -131,16 +130,20 @@ export function AppLockGate({ children }: { children: React.ReactNode }) {
     }
   }, []);
 
-  // Kiem tra 1 lan luc mount: thiet bi co ho tro khong, user da co passkey
-  // chua. Khong co sinh trac (may ban khong Face ID/Touch ID/Windows Hello)
-  // thi BO QUA khoa nay hoan toan thay vi khoa cung nguoi dung ngoai - day
-  // chi la lop bao ve rieng tu (xem session van la lop bao ve chinh qua
-  // httpOnly cookie o lib/auth/session.ts), khong phai bat buoc tuyet doi.
+  // Kiem tra 1 lan luc mount: user da co passkey chua. CHI bo qua khoa nay
+  // khi trinh duyet KHONG CO API WebAuthn (`browserSupportsWebAuthn`, kiem
+  // tra dong bo, dang tin cay) - day la truong hop duy nhat coi nhu that su
+  // "unsupported". KHONG con dung `platformAuthenticatorIsAvailable()` hay
+  // "goi /api/applock/status that bai" lam ly do bo qua khoa nua: 2 thu do
+  // tung khien nguoi CHUA TUNG cai passkey van lot thang vao Home ma khong
+  // hien popup Set up (loi thuc te 09-03) - gio moi tinh huong con lai deu
+  // roi ve "need-register", popup Set up tu no da co Skip neu thiet bi that
+  // su khong lam duoc (xem register()).
   useEffect(() => {
     let cancelled = false;
 
     (async () => {
-      if (!browserSupportsWebAuthn() || !(await platformAuthenticatorIsAvailable())) {
+      if (!browserSupportsWebAuthn()) {
         if (!cancelled) setState("unsupported");
         return;
       }
@@ -151,15 +154,8 @@ export function AppLockGate({ children }: { children: React.ReactNode }) {
 
       if (cancelled) return;
 
-      if (!status) {
-        // Khong hoi duoc trang thai (mat mang...) - an toan hon la coi nhu
-        // chua co passkey, van cho vao thay vi khoa cung nguoi dung that.
-        setState("unsupported");
-        return;
-      }
-
-      hasCredentialRef.current = status.hasCredential;
-      setState(status.hasCredential ? "need-auth" : "need-register");
+      hasCredentialRef.current = status?.hasCredential ?? false;
+      setState(status?.hasCredential ? "need-auth" : "need-register");
     })();
 
     return () => {
@@ -206,7 +202,14 @@ export function AppLockGate({ children }: { children: React.ReactNode }) {
   const showScrim = state !== "unlocked" && state !== "skipped" && state !== "unsupported";
 
   return (
-    <>
+    // Boc trong 1 lop `relative` rieng, KHONG padding - dung y het cach
+    // data-home-root (home-screen.tsx) dang lam de popup cua no tu nhien co
+    // le 20px 2 ben. AppLockGate boc HomeScreen tu BEN NGOAI dashboard/
+    // page.tsx (ngang hang px-5 cua dashboard/layout.tsx, KHONG phai ben
+    // trong data-home-root) nen neu tha thang left-0/right-0 se lay dung
+    // MEP CUA VUNG PADDING (bo qua padding) -> popup tran full-bleed, sai
+    // le so voi Scan/History/Deposit/Withdraw (loi thuc te 09-03).
+    <div className="relative flex flex-col h-full">
       {children}
 
       {showScrim && !showCard && (
@@ -221,6 +224,9 @@ export function AppLockGate({ children }: { children: React.ReactNode }) {
         dismissible={isRegister}
         onClose={() => setState("skipped")}
         title={isRegister ? "Set up a passkey" : "Try again"}
+        // Popup ngan (tieu de + 1 nut, khong can cuon) - can giua hang 3
+        // theo quy dinh cua user, khong neo gan dinh nhu popup dai.
+        small
       >
         <div className="flex flex-col gap-3 p-[18px]">
           <button
@@ -243,6 +249,6 @@ export function AppLockGate({ children }: { children: React.ReactNode }) {
           )}
         </div>
       </CenteredCard>
-    </>
+    </div>
   );
 }

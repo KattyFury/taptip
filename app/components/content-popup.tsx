@@ -28,6 +28,7 @@ export function CenteredCard({
   children,
   maxHeightCqh = 68,
   dismissible = true,
+  small = false,
 }: {
   open: boolean;
   onClose: () => void;
@@ -42,6 +43,10 @@ export function CenteredCard({
    * co the bo qua). Mac dinh true, giu nguyen hanh vi cu cho moi popup
    * khac (Scan/History/Deposit/Withdraw). */
   dismissible?: boolean;
+  /** true: popup NGAN (khong can cho scroll nhu Scan/History) - can GIUA
+   * vao hang 3 cua luoi 10 hang (25cqh, quy dinh cua user 09-03) thay vi
+   * neo gan dinh (10.5cqh) nhu cac popup dai. */
+  small?: boolean;
 }) {
   if (!open) return null;
 
@@ -55,7 +60,11 @@ export function CenteredCard({
       <div
         role="dialog"
         aria-modal="true"
-        style={{ top: "10.5cqh", maxHeight: `${maxHeightCqh}cqh` }}
+        style={
+          small
+            ? { top: "25cqh", transform: "translateY(-50%)", maxHeight: `${maxHeightCqh}cqh` }
+            : { top: "10.5cqh", maxHeight: `${maxHeightCqh}cqh` }
+        }
         className="absolute left-0 right-0 z-50 flex flex-col rounded-card border border-border bg-background shadow-modal overflow-hidden"
       >
         <div className="relative shrink-0 flex items-center justify-center px-[18px] py-[14px]">
