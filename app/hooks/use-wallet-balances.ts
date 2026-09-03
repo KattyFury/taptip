@@ -27,6 +27,25 @@ import { useState, useEffect, useCallback, useRef } from "react";
 const BALANCE_READ_ERROR =
   "Couldn't refresh your balance. Your money is safe - try again in a moment.";
 
+/** Khoang cho giua cac lan thu lai (ms). Lan doc dau tien chay ngay, sau do
+ * moi so trong mang nay la mot lan thu nua - tong cong 3 lan trong ~4.5s.
+ *
+ * LY DO: refreshBalances() chay NGAY sau /api/tip, luc do giao dich vua len
+ * chain va RPC Arc thuong chua tra loi kip -> truoc day bao loi do ngay, dung
+ * khoanh khac nguoi dung vua tip xong nen de tuong tip that bai. Doi mot nhip
+ * roi doc lai thi hau het cac ca nay tu khoi, khong con phai bao loi gi ca. */
+const RETRY_DELAYS_MS = [1500, 3000];
+
+const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
+
+/** Phan biet loi TU KHOI DUOC (RPC chua kip tra loi, mang chop chop) voi loi
+ * thu lai bao nhieu lan cung the (het phien dang nhap, dia chi sai). Thu lai
+ * loai thu hai chi lam nguoi dung ngoi cho them 4.5s roi van nhan dung cai
+ * loi do. */
+type BalanceFetch =
+  | { ok: true; value: number }
+  | { ok: false; retryable: boolean };
+
 /**
  * knownAddress: dia chi vi da biet san tu server (primaryWallet.wallet_address),
  * khong phu thuoc pipeline WebAuthn/passkey phia client. Truoc day hook nay chi
@@ -59,12 +78,12 @@ export function useWalletBalances(knownAddress?: string) {
     balance: string;
   }
 
-  // Fetch balance from API. Tra ve null khi KHONG doc duoc - khong tra "0",
-  // vi "0" gia khien nguoi dung tuong minh het tien (day dung la cai bay im
-  // lang tung giau bug passkey suot nhieu tuan).
+  // Fetch balance from API. KHONG BAO GIO tra "0" khi doc that bai - "0" gia
+  // khien nguoi dung tuong minh het tien (day dung la cai bay im lang tung
+  // giau bug passkey suot nhieu tuan).
   const fetchBalanceFromAPI = useCallback(
-    async (address: string): Promise<number | null> => {
-      if (!address) return null;
+    async (address: string): Promise<BalanceFetch> => {
+      if (!address) return { ok: false, retryable: false };
 
       try {
         const response = await fetch("/api/wallet/balance", {
@@ -75,15 +94,22 @@ export function useWalletBalances(knownAddress?: string) {
 
         if (!response.ok) {
           console.error("Balance endpoint returned", response.status);
-          return null;
+          // 502 = route khong doc noi RPC Arc (xem app/api/wallet/balance):
+          // dung loai tu khoi duoc. 400/401 thi thu lai cung vay thoi.
+          return { ok: false, retryable: response.status >= 500 };
         }
 
         const data = (await response.json()) as BalanceResponse;
         const parsed = parseFloat(data.balance);
-        return isNaN(parsed) ? null : parsed;
+        if (isNaN(parsed)) {
+          console.error("Balance endpoint returned unparsable body:", data);
+          return { ok: false, retryable: false };
+        }
+        return { ok: true, value: parsed };
       } catch (error) {
+        // Mat mang / request bi huy - dung loai doi mot nhip la khoi.
         console.error("Error fetching balance from API:", error);
-        return null;
+        return { ok: false, retryable: true };
       }
     },
     [],
@@ -107,9 +133,15 @@ export function useWalletBalances(knownAddress?: string) {
     }));
 
     try {
-      const apiBalance = await fetchBalanceFromAPI(effectiveAddress);
+      let result = await fetchBalanceFromAPI(effectiveAddress);
 
-      if (apiBalance == null) {
+      for (const delay of RETRY_DELAYS_MS) {
+        if (result.ok || !result.retryable) break;
+        await sleep(delay);
+        result = await fetchBalanceFromAPI(effectiveAddress);
+      }
+
+      if (!result.ok) {
         // Giu nguyen so du cu, danh dau chua doc duoc de con thu lai lan sau.
         setError(BALANCE_READ_ERROR);
         setBalance((prev) => ({ ...prev, loading: false }));
@@ -120,7 +152,7 @@ export function useWalletBalances(knownAddress?: string) {
 
       setBalance((prev) => ({
         native: prev.native,
-        token: apiBalance,
+        token: result.value,
         loading: false,
       }));
 
