@@ -30,6 +30,8 @@ interface BalanceContextType {
   };
   isRefreshing: boolean;
   refreshBalances: () => Promise<void>;
+  /** Loi doc so du, da dien dat cho nguoi dung doc - Home hien o hang 10. */
+  balanceError: string | null;
 }
 
 // Create the context with a default value
@@ -53,13 +55,15 @@ interface BalanceProviderProps {
 
 export function BalanceProvider({ children, walletAddress }: BalanceProviderProps) {
   // Use the existing hook
-  const { balance, isRefreshing, refreshBalances } = useWalletBalances(walletAddress);
+  const { balance, isRefreshing, refreshBalances, error } =
+    useWalletBalances(walletAddress);
 
   // Create the value object once
   const value = {
     balance,
     isRefreshing,
     refreshBalances,
+    balanceError: error,
   };
 
   // Provide the balance context to all children

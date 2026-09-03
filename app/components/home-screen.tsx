@@ -63,7 +63,7 @@ export default function HomeScreen(props: Props) {
 type PopupKind = "tipSetting" | "history" | "deposit" | "withdraw" | null;
 
 function HomeScreenContent({ primaryWallet }: Props) {
-  const { balance } = useBalance();
+  const { balance, balanceError } = useBalance();
   const [menuOpen, setMenuOpen] = useState(false);
   const [popup, setPopup] = useState<PopupKind>(null);
   const [sendOpen, setSendOpen] = useState(false);
@@ -98,8 +98,16 @@ function HomeScreenContent({ primaryWallet }: Props) {
         style={{ flex: "1 1 0", minHeight: 0 }}
         className="relative flex items-center justify-between"
       >
+        {/* Logo ha xuong 5px NET so voi tam hang 1 (yeu cau 09-03). Phai dung
+            transform: margin/padding se lam hang 1 cao them 5px va day ca luoi
+            10 hang lech theo, transform thi khong dung den layout. */}
         {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img src="/logo-full.svg" alt="TapTip" className="h-[3.7cqh] w-auto" />
+        <img
+          src="/logo-full.svg"
+          alt="TapTip"
+          style={{ transform: "translateY(5px)" }}
+          className="h-[3.7cqh] w-auto"
+        />
         <button
           onClick={() => setMenuOpen((v) => !v)}
           aria-label="Open menu"
@@ -162,18 +170,20 @@ function HomeScreenContent({ primaryWallet }: Props) {
 
       {/* Hang 2 : Balance can giua (ngang), so du lon cach nhan "Balance"
           1 khoang tho (gap) - van dung leading-none de gon dung trong 1 hang.
-          Hien "40 USDC ≈ $40" de nguoi dung biet app tip bang USDC; phan quy
-          doi ra do de nho + xam cho khoi tran ngang khi so tien dai. */}
+          Hien "40 USDC ≈ $40": so USDC nho + xam (thong tin ky thuat, van phai
+          co vi app tip bang USDC), con so DOLA moi la con so LON - nguoi dung
+          nghi bang dola chu khong nghi bang token (yeu cau 09-03, dao lai co
+          chu so voi ban 09-02). */}
       <div
         style={{ flex: "1 1 0", minHeight: 0 }}
         className="flex flex-col items-center justify-center gap-[0.8cqh]"
       >
         <span className="text-lead font-bold text-accent leading-none">Balance</span>
         <span className="flex items-baseline gap-2 leading-none whitespace-nowrap">
-          <span className="text-figure font-bold">
+          <span className="text-lead font-bold text-accent">
             {formatBalance(balance.token)} USDC
           </span>
-          <span className="text-lead font-bold text-accent">
+          <span className="text-figure font-bold">
             ≈ ${formatBalance(balance.token)}
           </span>
         </span>
@@ -215,7 +225,9 @@ function HomeScreenContent({ primaryWallet }: Props) {
         <div className="shrink-0 flex flex-col items-center gap-[0.6cqh]">
           {/* Canh bao mang: tien gui nham mang khac la mat, phai noi ro ngay
               tren dia chi vi truoc khi nguoi ta dua QR cho nguoi khac. */}
-          <span className="text-small font-semibold text-danger text-center">
+          {/* text-body (17px @390x844) chu khong phai text-small (15px): day la
+              canh bao MAT TIEN THAT neu gui nham mang, khong phai chu thich phu. */}
+          <span className="text-body font-semibold text-danger text-center">
             Current available network: Arc Testnet
           </span>
 
@@ -282,8 +294,19 @@ function HomeScreenContent({ primaryWallet }: Props) {
         </AnchoredCard>
       </div>
 
-      {/* Hang 10 : dem duoi, khong noi dung - giu du 10 hang cua luoi. */}
-      <div style={{ flex: "1 1 0", minHeight: 0 }} />
+      {/* Hang 10 : cho bao loi so du - chu do, can giua CA ngang lan doc trong
+          dung hang 10. Khong co loi thi hang van chiem du cho nhu cu (luoi 10
+          hang khong xe dich khi loi hien ra roi tat di). */}
+      <div
+        style={{ flex: "1 1 0", minHeight: 0 }}
+        className="flex items-center justify-center"
+      >
+        {balanceError && (
+          <p className="text-body font-semibold text-danger text-center">
+            {balanceError}
+          </p>
+        )}
+      </div>
 
       <SendFlow open={sendOpen} onOpenChange={setSendOpen} />
 

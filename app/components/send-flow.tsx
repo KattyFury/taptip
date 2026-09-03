@@ -328,7 +328,9 @@ export default function SendFlow({ open, onOpenChange }: Props) {
           {step === "success" && (
             <>
               <Icon.Check className="w-[56px] h-[56px] text-success" />
-              <p className="text-[20px] font-bold">-${lastAmount}</p>
+              {/* "Tipped $3", khong phai "-$3": dau tru mot minh khong noi duoc
+                  la vua tip xong hay vua bi tru tien vi ly do nao khac. */}
+              <p className="text-[20px] font-bold">Tipped ${lastAmount}</p>
             </>
           )}
         </OverlayCard>

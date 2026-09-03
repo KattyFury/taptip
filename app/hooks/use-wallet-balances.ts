@@ -19,7 +19,13 @@
 "use client";
 
 import { useState, useEffect, useCallback, useRef } from "react";
-import { toast } from "sonner";
+
+/** Mot thong diep duy nhat cho moi kieu doc so du that bai - nguoi dung khong
+ * can biet la loi mang hay loi RPC, chi can biet TIEN VAN AN TOAN. Loi nay hay
+ * bat ngay SAU khi tip thanh cong (refreshBalances chay lien sau /api/tip),
+ * nen cau chu phai chan duoc hieu nham "tip that bai". */
+const BALANCE_READ_ERROR =
+  "Couldn't refresh your balance. Your money is safe - try again in a moment.";
 
 /**
  * knownAddress: dia chi vi da biet san tu server (primaryWallet.wallet_address),
@@ -38,6 +44,11 @@ export function useWalletBalances(knownAddress?: string) {
     token: 0,
     loading: true,
   });
+
+  // Loi doc so du hien o HANG 10 man Home (chu do, can giua) - khong con dung
+  // toast goc phai: toast tu bien mat va de bi bo lo dung luc nguoi dung dang
+  // nhin vao so du.
+  const [error, setError] = useState<string | null>(null);
 
   // Use refs to track if balances have been loaded and prevent infinite loops
   const balancesLoadedRef = useRef(false);
@@ -100,10 +111,12 @@ export function useWalletBalances(knownAddress?: string) {
 
       if (apiBalance == null) {
         // Giu nguyen so du cu, danh dau chua doc duoc de con thu lai lan sau.
-        toast.error("Could not read your balance");
+        setError(BALANCE_READ_ERROR);
         setBalance((prev) => ({ ...prev, loading: false }));
         return;
       }
+
+      setError(null);
 
       setBalance((prev) => ({
         native: prev.native,
@@ -114,7 +127,7 @@ export function useWalletBalances(knownAddress?: string) {
       balancesLoadedRef.current = true;
     } catch (error) {
       console.error("Error refreshing balances:", error);
-      toast.error("Failed to refresh balances");
+      setError(BALANCE_READ_ERROR);
 
       setBalance((prev) => ({ ...prev, loading: false }));
     } finally {
@@ -160,6 +173,7 @@ export function useWalletBalances(knownAddress?: string) {
 
   return {
     balance,
+    error,
     refreshBalances: loadBalances,
     isRefreshing: isRefreshingRef.current,
   };
