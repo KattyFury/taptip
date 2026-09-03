@@ -40,7 +40,9 @@ export function HistoryPopup({
   }, [open]);
 
   return (
-    <CenteredCard open={open} onClose={onClose} title="History">
+    // Danh sach giao dich co the dai - popup dai (quy dinh chung popup, xem
+    // content-popup.tsx), khong can giua hang 3 nhu popup ngan.
+    <CenteredCard open={open} onClose={onClose} title="History" small={false}>
       <div className="flex flex-col px-[18px] pb-[18px]">
         {rows == null && (
           <p className="py-6 text-center text-body text-accent">Loading...</p>

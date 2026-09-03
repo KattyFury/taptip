@@ -232,13 +232,14 @@ export default function SendFlow({ open, onOpenChange }: Props) {
   return (
     <>
       {/* Card "Scan to tip" giua man, Home mo phia sau qua scrim cua CenteredCard.
-          maxHeightCqh cao hon mac dinh (68) de co cho spacing thoang hon giua
-          camera/QR, "Upload..." va luoi nut chon tien + Custom. */}
+          Noi dung dai (camera/QR + "Upload..." + luoi nut chon tien + Custom)
+          - small={false}: trai hang 2 toi hang 7 (quy dinh chung popup dai,
+          xem content-popup.tsx), khong dung rieng maxHeightCqh nua. */}
       <CenteredCard
         open={open}
         onClose={() => onOpenChange(false)}
         title="Scan to tip"
-        maxHeightCqh={80}
+        small={false}
       >
         <div className="flex flex-col items-center px-[18px] pb-[18px] gap-[2.2cqh]">
           <div className="relative w-full aspect-square rounded-xl overflow-hidden bg-foreground">

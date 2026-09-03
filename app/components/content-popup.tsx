@@ -9,7 +9,19 @@ import * as Icon from "@/components/icons";
  */
 
 /**
- * CenteredCard - dung cho Scan to tip / Lich su / Nap / Rut.
+ * CenteredCard - dung cho Scan to tip / Lich su / Nap / Rut / Try again /
+ * Set up a passkey.
+ *
+ * VI TRI DOC - QUY DINH CHUNG CHO MOI POPUP (09-03), CHI 2 CHE DO, khong tu
+ * chinh tay tung popup mot nua (truoc day moi popup mot kieu top/maxHeight
+ * rieng, lech nhau - day chinh la thu bi bat loi):
+ * - `small` (mac dinh, noi dung ngan nhu Withdraw/Deposit/Try again/Set up
+ *   a passkey): can GIUA vao hang 3 cua luoi 10 hang (25cqh, transform
+ *   -50%), khong neo dinh.
+ * - `small={false}` (noi dung DAI, can nhieu cho hon - Scan to tip/History):
+ *   trai tu dinh hang 2 (20cqh) toi day hang 7 (70cqh) = cao 50cqh co dinh.
+ *   Dai hon nua thi TU cuon rieng ben trong (overflow-y-auto), khong duoc
+ *   phinh cao hon vach hang 7.
  *
  * HAI LOP CO LE KHAC NHAU, dung lan:
  * - Lop scrim (lam mo phia sau): PHU TRAN ca khung dien thoai. `home-root`
@@ -18,34 +30,29 @@ import * as Icon from "@/components/icons";
  * - Card trang: GIU le 20px 2 ben cho thoang (dung luon le san co cua
  *   layout cha, chi can left-0/right-0 - tu them le nua la thanh 40px).
  *
- * Card vien den 1px, bo goc 10px (--radius-card), neo gan dinh khung (KHONG
- * center dung 50% nhu ban cu), noi dung cuon rieng neu dai hon khung.
+ * Card vien den 1px, bo goc 10px (--radius-card).
  */
 export function CenteredCard({
   open,
   onClose,
   title,
   children,
-  maxHeightCqh = 68,
   dismissible = true,
-  small = false,
+  small = true,
 }: {
   open: boolean;
   onClose: () => void;
   title: ReactNode;
   children: ReactNode;
-  /** Chieu cao toi da cua card, don vi cqh. Tang len khi noi dung can nhieu
-   * spacing hon (vd Scan to tip co them nut Custom + input). */
-  maxHeightCqh?: number;
   /** false: an nut X, bam ra ngoai khong dong duoc - dung cho popup khoa
    * that su (vd xac thuc lai passkey sau khi da thiet lap: khong duoc bam
    * ra ngoai de "lach" qua khoa, chi con lai skip o LAN DAU thiet lap la
    * co the bo qua). Mac dinh true, giu nguyen hanh vi cu cho moi popup
    * khac (Scan/History/Deposit/Withdraw). */
   dismissible?: boolean;
-  /** true: popup NGAN (khong can cho scroll nhu Scan/History) - can GIUA
-   * vao hang 3 cua luoi 10 hang (25cqh, quy dinh cua user 09-03) thay vi
-   * neo gan dinh (10.5cqh) nhu cac popup dai. */
+  /** true (mac dinh): popup NGAN, can giua hang 3. false: popup DAI (can
+   * cho scroll nhu Scan to tip/History), trai tu hang 2 toi hang 7. Xem
+   * ghi chu vi tri o tren. */
   small?: boolean;
 }) {
   if (!open) return null;
@@ -62,8 +69,8 @@ export function CenteredCard({
         aria-modal="true"
         style={
           small
-            ? { top: "25cqh", transform: "translateY(-50%)", maxHeight: `${maxHeightCqh}cqh` }
-            : { top: "10.5cqh", maxHeight: `${maxHeightCqh}cqh` }
+            ? { top: "25cqh", transform: "translateY(-50%)", maxHeight: "50cqh" }
+            : { top: "20cqh", maxHeight: "50cqh" }
         }
         className="absolute left-0 right-0 z-50 flex flex-col rounded-card border border-border bg-background shadow-modal overflow-hidden"
       >
