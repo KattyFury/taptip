@@ -54,7 +54,15 @@ Nợ được ghi từ 09-02: `docs/03-planning-v2.md:29` (Nhóm 5 – Bảo m�
 - `components/app-lock-gate.tsx` — bọc quanh `<HomeScreen>` ở `app/dashboard/page.tsx`. Trạng thái mở khoá **chỉ là React state cục bộ, KHÔNG có cookie "đã mở khoá"** — tự khoá lại mỗi khi `visibilitychange` báo tab ẩn đi, đúng nghĩa "mỗi lần" chứ không phải "1 lần rồi nhớ".
 - Thiết bị không có sinh trắc (`platformAuthenticatorIsAvailable()` trả `false`, ví dụ desktop không Windows Hello) → **bỏ qua khoá này hoàn toàn**, không chặn cứng — lớp bảo vệ chính vẫn là session cookie httpOnly như cũ, đây chỉ là lớp riêng tư bổ sung (chặn người khác cầm điện thoại đã đăng nhập sẵn xem lén số dư), không phải cơ chế bắt buộc tuyệt đối.
 
-**Verify:** Chrome headless thật + CDP `WebAuthn.addVirtualAuthenticator` (giả lập thiết bị có Face ID, tự động chấp thuận — đi qua đúng đường dây WebAuthn/`@simplewebauthn` thật, không mock code) trên `next dev` + D1 `--local`. Cả 4 bước đều đúng: màn "Set up" khi chưa có passkey → đăng ký xong vào thẳng Home → giả lập ẩn tab → khoá lại ngay ("Welcome back") → tự thử mở khoá lại và vào lại Home. Build production sạch. **Chưa test được Face ID/Touch ID THẬT trên điện thoại** — xem mục "Bắt đầu từ đây" ở trên.
+**Sửa lại 09-03 (cuối ngày) — bản đầu tự bịa giao diện, không dùng đúng bản đã có sẵn.** Bản mockup pixel-chuẩn nằm ở `design_handoff_taptip/TapTip Design Recreation.dc.html` (khối `<!-- PASSKEY -->`), khớp với bảng ở `TapTip Design Spec.dc.html` dòng 72. Đã sửa lại đúng theo đó:
+- Tiêu đề đúng chữ trong mockup: **"Set up a passkey"** (không phải "Lock TapTip" tự đặt).
+- Hàng 9 đúng bố cục **Back (1/3, icon mũi tên `Icon.Back` — đúng path SVG có sẵn trong `icons.tsx`, không tự vẽ icon khác) + "Set up passkey" (2/3)** — dùng lại `BackAction` có sẵn trong `screen.tsx`, không tự chế `SingleAction` full-width.
+- Hàng 10 đúng **"Skip for now"** — dùng lại `TextLink`, component này vốn đã có comment ghi sẵn "(Skip, Skip for now)" chờ đúng màn này dùng tới.
+- Nút Back ở mockup gốc là bước lùi của wizard đăng nhập (thời passkey còn LÀ cơ chế đăng nhập) — kiến trúc giờ không còn "bước trước" nào để lùi về, nên gán hành động gần nghĩa nhất vào đúng vị trí/icon đó: **đăng xuất**.
+- "Skip for now" chỉ bỏ qua **lần mở này** (không lưu gì, không tắt hẳn cơ chế) — `visibilitychange` vẫn khoá lại bình thường như đã mở khoá thật, y hệt tinh thần "for now" của chữ trên nút.
+- Màn "Welcome back" (quay lại từ nền) không có sẵn trong mockup cũ (kiến trúc cũ không có màn riêng cho việc này) — dựng theo đúng khuôn Back+Action+Skip ở trên cho đồng bộ nội tệ giữa 2 trạng thái của cùng một cổng khoá, tự nhận đây là phần suy ra thêm chứ không phải chép nguyên từ spec.
+
+**Verify:** Chrome headless thật + CDP `WebAuthn.addVirtualAuthenticator` (giả lập thiết bị có Face ID, tự động chấp thuận — đi qua đúng đường dây WebAuthn/`@simplewebauthn` thật, không mock code) trên `next dev` + D1 `--local`. Cả 4 bước đều đúng: màn "Set up a passkey" khi chưa có passkey → bấm đúng nút chính (không phải nút Back) → đăng ký xong vào thẳng Home → giả lập ẩn tab → khoá lại ngay ("Welcome back") → tự thử mở khoá lại và vào lại Home. Build production sạch. **Chưa test được Face ID/Touch ID THẬT trên điện thoại** — xem mục "Bắt đầu từ đây" ở trên.
 
 ---
 

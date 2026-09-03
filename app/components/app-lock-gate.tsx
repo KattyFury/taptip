@@ -17,6 +17,15 @@
  * chi la React state cuc bo, tu mat khi tab an di (visibilitychange) hoac
  * app tai lai. Dung the moi dam bao "MOI LAN" thay vi chi 1 lan roi nho
  * trong bao lau.
+ *
+ * LUOI + CHU DUNG DUNG BAN "Passkey setup" trong
+ * design_handoff_taptip/TapTip Design Recreation.dc.html (icon FaceID +
+ * tieu de "Set up a passkey" hang 1-6, hang 9 = Back (1/3) + "Set up
+ * passkey" (2/3), hang 10 = "Skip for now") - KHONG tu bia layout/chu rieng.
+ * Nut Back trong ban goc la buoc lui cua wizard dang nhap (passkey tung LA
+ * co che dang nhap); o day khong con "buoc truoc" nao de lui ve nen dung lai
+ * dung vi tri/icon do cho hanh dong gan nghia nhat: dang xuat.
+ * `TextLink` (screen.tsx) von co san dung cho "Skip for now" nay.
  */
 
 import { useCallback, useEffect, useRef, useState } from "react";
@@ -28,8 +37,9 @@ import {
   type PublicKeyCredentialCreationOptionsJSON,
   type PublicKeyCredentialRequestOptionsJSON,
 } from "@simplewebauthn/browser";
-import { Screen, SingleAction, PrimaryButton } from "@/components/screen";
+import { Screen, BackAction, PrimaryButton, TextLink } from "@/components/screen";
 import * as Icon from "@/components/icons";
+import { signOutAction } from "@/app/actions";
 
 type GateState =
   | "checking"
@@ -38,7 +48,10 @@ type GateState =
   | "registering"
   | "need-auth"
   | "authenticating"
-  | "unlocked";
+  | "unlocked"
+  // Bam "Skip for now": cho vao Home LAN NAY, khong huy passkey/khong luu gi
+  // ca - visibilitychange van khoa lai binh thuong nhu da mo khoa that.
+  | "skipped";
 
 async function postJson<T>(url: string, body?: unknown): Promise<T> {
   const res = await fetch(url, {
@@ -155,20 +168,23 @@ export function AppLockGate({ children }: { children: React.ReactNode }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [state === "need-auth"]);
 
-  // "quay lai tu nen": tab/app an di roi hien lai thi khoa lai NGAY - chi
-  // khi da tung mo khoa that su (khong dong vao giua luc dang setup/xac
-  // thuc do), va chi khi user nay co passkey de con xac thuc lai.
+  // "quay lai tu nen": tab/app an di roi hien lai thi khoa lai NGAY - ke ca
+  // luc dang o trang thai "skipped" (bam Skip chi bo qua LAN NAY, khong tat
+  // han co che nay). Khong dong khi dang o man cho dang ky/xac thuc do dang
+  // giua chung mot le WebAuthn, dong luc do se lam gian doan ceremony.
   useEffect(() => {
     const onVisibilityChange = () => {
-      if (document.visibilityState === "hidden" && hasCredentialRef.current) {
-        setState((prev) => (prev === "unlocked" ? "need-auth" : prev));
-      }
+      if (document.visibilityState !== "hidden") return;
+      setState((prev) => {
+        if (prev !== "unlocked" && prev !== "skipped") return prev;
+        return hasCredentialRef.current ? "need-auth" : "need-register";
+      });
     };
     document.addEventListener("visibilitychange", onVisibilityChange);
     return () => document.removeEventListener("visibilitychange", onVisibilityChange);
   }, []);
 
-  if (state === "unsupported" || state === "unlocked") {
+  if (state === "unsupported" || state === "unlocked" || state === "skipped") {
     return <>{children}</>;
   }
 
@@ -181,29 +197,31 @@ export function AppLockGate({ children }: { children: React.ReactNode }) {
 
   return (
     <Screen
-      title={isRegister ? "Lock TapTip" : "Welcome back"}
+      title={isRegister ? "Set up a passkey" : "Welcome back"}
       action={
-        <SingleAction>
+        <BackAction onBack={() => void signOutAction()} backLabel="Log out">
           <PrimaryButton
             onClick={isRegister ? register : authenticate}
             disabled={busy}
           >
-            {busy ? "Waiting..." : isRegister ? "Set up" : "Unlock"}
+            {busy ? "Waiting..." : isRegister ? "Set up passkey" : "Unlock"}
           </PrimaryButton>
-        </SingleAction>
+        </BackAction>
       }
       foot={
-        error && (
+        error ? (
           <p className="text-danger text-small font-extrabold text-center px-4">
             {error}
           </p>
+        ) : (
+          <TextLink onClick={() => setState("skipped")}>Skip for now</TextLink>
         )
       }
     >
       <Icon.FaceId className="w-[14cqh] h-[14cqh] min-w-[72px] min-h-[72px] text-foreground" />
       <p className="text-body text-accent text-center">
         {isRegister
-          ? "Set up device authentication so only you can open TapTip, even if your session cookie leaks."
+          ? "Use Face ID or Touch ID to keep TapTip locked to only you."
           : "Confirm it's you before we show your balance and history."}
       </p>
     </Screen>
