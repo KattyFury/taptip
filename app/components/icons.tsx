@@ -90,25 +90,6 @@ export function Person({ className }: IconProps) {
   );
 }
 
-/** Khuon mat trong 4 goc quet - man passkey */
-export function FaceId({ className }: IconProps) {
-  return (
-    <Svg className={className}>
-      <path d="M30 10H10V30" {...SRound} />
-      <path d="M90 30L90 10L70 10" {...SRound} />
-      <path d="M70 90L90 90L90 70" {...SRound} />
-      <path d="M10 70L10 90L30 90" {...SRound} />
-      <path
-        d="M30 65C32.0139 68.3333 38.8333 75 50 75C61.1667 75 67.9861 68.3333 70 65"
-        {...SRound}
-      />
-      <path d="M35.0521 30V40" {...SRound} />
-      <path d="M50 45V55" {...SRound} />
-      <path d="M65.0098 30V40" {...SRound} />
-    </Svg>
-  );
-}
-
 /** Hai con xuc xac - nut Random o Home */
 export function Dice({ className }: IconProps) {
   return (
