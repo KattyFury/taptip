@@ -11,9 +11,47 @@
 
 ---
 
-## 👉 BẮT ĐẦU TỪ ĐÂY (09-03, cuối ngày)
+## 👉 BẮT ĐẦU TỪ ĐÂY (09-11, cuối ngày)
 
-**2 việc còn lại — chỉ user làm được, cần thiết bị thật:**
+**Đã gỡ HẲN màn khoá app bằng passkey (app-lock)** – xem phản hồi thật của
+user: *"ban đầu chỉ dùng log in là chơi"* rồi *"bỏ passkey khỏi app nha"*.
+Đúng lại tinh thần PRD gốc `docs/03-planning.md:4` – *"Lì xì và tip nhanh
+chóng cho bất kỳ ai, chỉ bằng cách họ log in bằng email."* – không còn màn
+nào chặn giữa Sign in và Home nữa, kể cả cho user đã từng bật passkey lock
+trước đây (feature xoá hẳn, không phải tắt mặc định).
+
+**Đã xoá:** component `components/app-lock-gate.tsx` +
+`components/passkey-menu-item.tsx`, 6 route `app/api/applock/*`,
+`lib/auth/applock.ts` + `lib/db/applock.ts`, icon `FaceId` không dùng nữa
+(`components/icons.tsx`), 2 package `@simplewebauthn/browser` +
+`@simplewebauthn/server`. `app/dashboard/page.tsx` giờ render thẳng
+`<HomeScreen>`, không bọc qua gate nào. Migration `0004_add_applock_credentials.sql`
+**giữ nguyên** (không xoá file migration đã chạy), bảng D1 tương ứng bỏ
+không dùng, không sao.
+
+**Đã verify:** `tsc --noEmit` sạch, `npm run build` production sạch, chụp
+ảnh thật bằng Chrome headless (Puppeteer + CDP, session giả trong D1/KV
+`--local`) xác nhận menu Home không còn mục passkey. Ảnh + spec toàn bộ 12
+màn/flow đã gửi ra `Desktop\TapTip-Screens\` (00-Spec.html + từng .png) cho
+user xem trước khi đi vẽ lại UI ở Figma.
+
+**Đã commit + push** (`bd495d3`) và **đã `npm run cf:deploy`** – production
+tại https://taptip.kattyfury1403.workers.dev đã chạy bản KHÔNG còn passkey
+lock (verify bằng `curl` trả 200). Version ID Cloudflare:
+`47f89c58-89d0-4c82-a75e-74aec1956164`.
+
+**Lưu ý cho phiên sau:** `lib/auth/passkey.ts` + `app/api/credential/route.ts`
++ cột `passkey_credential` trong bảng `users` (`lib/db/users.ts`) **CHƯA
+đụng tới** – đây là tàn dư của kiến trúc passkey CŨ (Circle Modular Wallets,
+bỏ từ 09-02), khác hoàn toàn với app-lock vừa xoá. Để nguyên vì có thể liên
+quan tới việc cứu 40 USDC kẹt ở ví passkey cũ (xem mục "Còn nợ" bên dưới) –
+chưa hỏi user có cần xoá luôn không, đừng tự ý xoá nếu chưa xác nhận.
+
+**User đang đi vẽ lại màn hình (Figma)** – phiên sau nhiều khả năng sẽ đưa
+thiết kế mới vào, đối chiếu lại với 12 ảnh chụp trong `Desktop\TapTip-Screens\`
+để biết đúng những gì đang chạy thật trước khi áp thiết kế mới.
+
+**2 việc còn lại từ trước — chỉ user làm được, cần thiết bị thật:**
 
 1. Vào https://faucet.circle.com/ → chọn **Arc Testnet** → dán địa chỉ ví mới:
    ```
@@ -21,10 +59,11 @@
    ```
    Chưa nạp thì **không test được gì** về tip, vì ví đang 0 USDC.
 2. **Test thật trên điện thoại** (chưa ai chạy toàn tuyến thật):
-   - Mở app → bấm Tip → quét QR ví bất kỳ trên Arc → tiền phải đi **ngay, không hỏi Face ID** (gửi tiền do Circle ký phía server, không đụng passkey).
-   - **Lần đầu tiên mở app** (hoặc sau khi tài khoản Circle ngừng dùng passkey cũ) sẽ hiện màn **"Lock TapTip"** — đây là tính năng MỚI 09-03, xem chi tiết bên dưới — bấm "Set up" và cho Face ID/Touch ID/Windows Hello thật. Các lần mở lại/quay lại từ nền sau đó sẽ hỏi lại passkey này (màn "Welcome back") — đây là hành vi ĐÚNG THIẾT KẾ, không phải bug.
+   - Mở app → bấm Tip → quét QR ví bất kỳ trên Arc → tiền phải đi **ngay**,
+     không còn hỏi gì thêm nữa kể cả màn passkey lock (đã gỡ hẳn 09-11).
 
-**Trạng thái:** repo sạch, đã push, production đang chạy bản mới nhất.
+**Trạng thái:** repo sạch, đã push, production đang chạy bản mới nhất (không
+còn app-lock).
 Ví mới `0xe25d59aa…76c5b0` · wallet set `214e3fa8-4f85-5782-a6f0-a3bdd992617e`
 
 **Nếu tip lỗi, xem theo thứ tự này (đã dính thật, đừng đoán lại từ đầu):**
@@ -40,7 +79,13 @@ Ví mới `0xe25d59aa…76c5b0` · wallet set `214e3fa8-4f85-5782-a6f0-a3bdd9926
 
 ---
 
-## Passkey khoá cửa app (09-03) – chi tiết kỹ thuật
+## Passkey khoá cửa app (09-03) – lịch sử, ĐÃ XOÁ HẲN 09-11
+
+**Toàn bộ tính năng mô tả trong mục này đã bị gỡ bỏ hoàn toàn ngày 09-11**
+(xem mục "BẮT ĐẦU TỪ ĐÂY" đầu file) – giữ lại đây làm lịch sử quyết định,
+KHÔNG phải trạng thái hiện tại. Đừng dựa vào mục này để hiểu code hiện giờ.
+
+Chi tiết kỹ thuật gốc (lúc còn tồn tại):
 
 Nợ được ghi từ 09-02: `docs/03-planning-v2.md:29` (Nhóm 5 – Bảo mật) chốt "Passkey xác thực lại **mỗi lần mở app hoặc quay lại từ nền**". Sau khi chuyển sang Developer-Controlled Wallets thì hoàn toàn không còn passkey ở đâu cả — giờ làm lại, nhưng **KHÁC HẲN** kiến trúc passkey cũ (Circle Modular Wallets):
 
