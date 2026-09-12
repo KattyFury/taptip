@@ -1,8 +1,9 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { CenteredCard } from "@/components/content-popup";
+import { useRouter } from "next/navigation";
 import { toast } from "sonner";
+import { Screen, BackAction, PrimaryButton } from "@/components/screen";
 
 interface TransactionRow {
   direction: "in" | "out";
@@ -21,29 +22,33 @@ function formatDate(iso: string): string {
   return date.toLocaleDateString([], { day: "2-digit", month: "2-digit", year: "2-digit" });
 }
 
-export function HistoryPopup({
-  open,
-  onClose,
-}: {
-  open: boolean;
-  onClose: () => void;
-}) {
+/**
+ * Man History rieng (khong con la popup) - dung Figma frame "history"
+ * (node 11:408): tieu de + danh sach giao dich trong khung rieng, Back +
+ * Done o hang hanh dong.
+ */
+export function HistoryScreen() {
+  const router = useRouter();
   const [rows, setRows] = useState<TransactionRow[] | null>(null);
 
   useEffect(() => {
-    if (!open) return;
-    setRows(null);
     fetch("/api/transactions")
       .then((res) => res.json() as Promise<{ transactions: TransactionRow[] }>)
       .then((data) => setRows(data.transactions))
       .catch(() => toast.error("Could not load transaction history"));
-  }, [open]);
+  }, []);
 
   return (
-    // Danh sach giao dich co the dai - popup dai (quy dinh chung popup, xem
-    // content-popup.tsx), khong can giua hang 3 nhu popup ngan.
-    <CenteredCard open={open} onClose={onClose} title="History" small={false}>
-      <div className="flex flex-col px-5 pb-5">
+    <Screen
+      title="History"
+      wideContent
+      action={
+        <BackAction onBack={() => router.push("/dashboard")}>
+          <PrimaryButton onClick={() => router.push("/dashboard")}>Done</PrimaryButton>
+        </BackAction>
+      }
+    >
+      <div className="w-full flex-1 min-h-0 overflow-y-auto border-2 border-brand rounded-[var(--radius-slant)] px-4">
         {rows == null && (
           <p className="py-6 text-center font-body text-body text-accent">Loading...</p>
         )}
@@ -73,6 +78,6 @@ export function HistoryPopup({
           </div>
         ))}
       </div>
-    </CenteredCard>
+    </Screen>
   );
 }

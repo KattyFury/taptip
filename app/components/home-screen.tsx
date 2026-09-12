@@ -1,19 +1,16 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { QRCodeSVG } from "qrcode.react";
 import * as Icon from "@/components/icons";
 import { useBalance, BalanceProvider } from "@/contexts/balanceContext";
 import SendFlow from "@/components/send-flow";
-import { CenteredCard } from "@/components/content-popup";
 import { SlantButton } from "@/components/screen";
 import { TipPresetsRow } from "@/components/tip-presets-row";
-import { HistoryPopup } from "@/components/history-popup";
 import { CopyButton } from "@/components/copy-button";
 import { encodeTapTipQr } from "@/lib/utils/qr-payment";
 import { signOutAction } from "@/app/actions";
-
-const CIRCLE_FAUCET_URL = "https://faucet.circle.com/";
 
 interface Props {
   primaryWallet: {
@@ -50,27 +47,28 @@ export default function HomeScreen(props: Props) {
   );
 }
 
-type PopupKind = "history" | "deposit" | "withdraw" | null;
-
 function HomeScreenContent({ primaryWallet }: Props) {
+  const router = useRouter();
   const { balance, balanceError } = useBalance();
   const [menuOpen, setMenuOpen] = useState(false);
-  const [popup, setPopup] = useState<PopupKind>(null);
   const [sendOpen, setSendOpen] = useState(false);
 
   const hasWallet =
     !!primaryWallet.wallet_address && primaryWallet.wallet_address !== "0x0";
 
-  const openFromMenu = (kind: PopupKind) => {
+  const goTo = (path: string) => {
     setMenuOpen(false);
-    setPopup(kind);
+    router.push(path);
   };
 
   return (
     // LUOI 10 HANG PX CO DINH - dung TUYET DOI theo toa do that trong Figma
     // "Taptip" (get_design_context node 11:207/11:424, khong doan/them gi
     // ngoai file): cai gi Figma KHONG co (canh bao mang, dia chi tren than
-    // Home) nghia la KHONG dung - dia chi vi chi hien trong Menu.
+    // Home) nghia la KHONG dung - dia chi vi chi hien trong Menu. Deposit/
+    // History/Withdraw la MAN RIENG (/dashboard/deposit,history,withdraw),
+    // khong con la popup - dung Figma ve chung thanh frame toan khung rieng
+    // co Back+Done, khong phai the noi tren Home.
     //  1 : wordmark "TapTip" (chu) + icon Menu
     //  2-5 : QR to (4 hang, dung khop khoi "Rectangle 3")
     //  6 : "Balance: $XXX" (dong tren) + "Tip amount:" (dong duoi, cung hang)
@@ -119,21 +117,21 @@ function HomeScreenContent({ primaryWallet }: Props) {
               </div>
               <button
                 className="w-full flex items-center gap-3 text-left px-4 py-3 font-display text-lead font-semibold text-foreground border-b border-brand/30"
-                onClick={() => openFromMenu("deposit")}
+                onClick={() => goTo("/dashboard/deposit")}
               >
                 <Icon.ArrowDown className="w-5 h-5 shrink-0" />
                 Deposit
               </button>
               <button
                 className="w-full flex items-center gap-3 text-left px-4 py-3 font-display text-lead font-semibold text-foreground border-b border-brand/30"
-                onClick={() => openFromMenu("withdraw")}
+                onClick={() => goTo("/dashboard/withdraw")}
               >
                 <Icon.ArrowUp className="w-5 h-5 shrink-0" />
                 Withdraw
               </button>
               <button
                 className="w-full flex items-center gap-3 text-left px-4 py-3 font-display text-lead font-semibold text-foreground border-b border-brand/30"
-                onClick={() => openFromMenu("history")}
+                onClick={() => goTo("/dashboard/history")}
               >
                 <Icon.Clock className="w-5 h-5 shrink-0" />
                 History
@@ -216,39 +214,6 @@ function HomeScreenContent({ primaryWallet }: Props) {
       </div>
 
       <SendFlow open={sendOpen} onOpenChange={setSendOpen} />
-
-      <HistoryPopup open={popup === "history"} onClose={() => setPopup(null)} />
-
-      <CenteredCard open={popup === "deposit"} onClose={() => setPopup(null)} title="Deposit">
-        <div className="flex flex-col gap-4 p-6">
-          <p className="font-body text-lead text-accent">
-            Send USDC (Arc network) to your wallet address below, or use the Circle Faucet
-          </p>
-          <div className="flex items-center gap-2 bg-surface rounded-[var(--radius-slant)] p-3">
-            <code className="font-body text-small font-mono break-all flex-1">
-              {primaryWallet.wallet_address}
-            </code>
-            <CopyButton value={primaryWallet.wallet_address} label="Copy wallet address" />
-          </div>
-          <SlantButton
-            style={{ height: "56px" }}
-            onClick={() => window.open(CIRCLE_FAUCET_URL, "_blank", "noopener,noreferrer")}
-          >
-            Open Circle Faucet
-          </SlantButton>
-        </div>
-      </CenteredCard>
-
-      <CenteredCard open={popup === "withdraw"} onClose={() => setPopup(null)} title="Withdraw">
-        <div className="flex flex-col gap-4 p-6">
-          <p className="font-body text-lead text-accent">
-            Withdrawals aren&apos;t available yet during the testnet phase.
-          </p>
-          <SlantButton style={{ height: "56px" }} onClick={() => setPopup(null)}>
-            Got it
-          </SlantButton>
-        </div>
-      </CenteredCard>
     </div>
   );
 }
