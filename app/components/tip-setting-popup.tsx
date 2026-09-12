@@ -87,8 +87,8 @@ export function TipSettingPopup({ onClose }: { onClose: () => void }) {
   };
 
   return (
-    <div className="flex flex-col px-[18px] py-[16px]">
-      <h2 className="text-body font-semibold mb-2">Tip amounts</h2>
+    <div className="flex flex-col px-5 py-4">
+      <h2 className="font-display text-lead font-bold text-brand mb-2">Tip amounts</h2>
 
       {visibleSlots.map((slot) => {
         const value = slotValue(slot);
@@ -98,7 +98,7 @@ export function TipSettingPopup({ onClose }: { onClose: () => void }) {
         return (
           <div
             key={slot}
-            className="flex items-center justify-between gap-2.5 py-[10px] border-b border-border last:border-b-0"
+            className="flex items-center justify-between gap-2.5 py-2.5 border-b border-brand/20 last:border-b-0"
           >
             {isEditing ? (
               <input
@@ -110,17 +110,17 @@ export function TipSettingPopup({ onClose }: { onClose: () => void }) {
                 onBlur={saveEdit}
                 onKeyDown={(e) => e.key === "Enter" && (e.currentTarget as HTMLInputElement).blur()}
                 placeholder="Amount"
-                className="w-[80px] text-lead font-bold outline-none border-b-2 border-primary bg-transparent"
+                className="w-20 font-display text-lead font-bold text-brand outline-none border-b-2 border-primary bg-transparent"
               />
             ) : (
               <button
                 className="flex items-center gap-2.5 text-left flex-1"
                 onClick={() => makeDefault(slot)}
               >
-                <span className={"text-body " + (isDefault ? "font-semibold" : "text-accent")}>
+                <span className={"font-body text-body " + (isDefault ? "font-semibold text-foreground" : "text-accent")}>
                   {isDefault ? "Default" : "Option"}
                 </span>
-                <span className="text-lead font-bold">${value}</span>
+                <span className="font-display text-lead font-bold text-brand">${value}</span>
               </button>
             )}
 
@@ -137,7 +137,7 @@ export function TipSettingPopup({ onClose }: { onClose: () => void }) {
 
       {canAddMore && (
         <button
-          className="text-body text-accent text-left py-[10px]"
+          className="font-body text-body text-accent text-left py-2.5"
           onClick={() => startEdit(nextEmptySlot)}
         >
           + Add more option

@@ -17,7 +17,7 @@
  */
 
 import type { Viewport } from "next";
-import { Inter } from "next/font/google";
+import { Sora, Montserrat } from "next/font/google";
 import { Toaster } from "@/components/ui/sonner";
 import "./globals.css";
 import { BalanceProvider } from "@/contexts/balanceContext";
@@ -26,12 +26,20 @@ const defaultUrl = process.env.NEXT_PUBLIC_SITE_URL
   ? process.env.NEXT_PUBLIC_SITE_URL
   : "http://localhost:3000";
 
-// Inter: toan bo chu giao dien, ke ca so - Figma dung Inter cho tat ca,
-// khong tach font rieng cho con so nhu ban cu (Nunito + Comfortaa).
-const inter = Inter({
+// Quy luat thiet ke moi (09-12, thay het ban Inter/Archivo cu): Sora cho
+// display (tieu de, so tien, nut bam), Montserrat cho noi dung (nhan, mo ta,
+// o nhap). Hai font tach rieng - KHONG dung chung 1 font cho ca app nhu ban cu.
+const sora = Sora({
+  subsets: ["latin", "latin-ext"],
+  weight: ["600", "700"],
+  variable: "--font-sora",
+  display: "swap",
+});
+
+const montserrat = Montserrat({
   subsets: ["latin", "vietnamese"],
-  weight: ["400", "500", "600", "700", "800"],
-  variable: "--font-inter",
+  weight: ["400", "500", "600"],
+  variable: "--font-montserrat",
   display: "swap",
 });
 
@@ -43,7 +51,7 @@ export const metadata = {
 
 export const viewport: Viewport = {
   interactiveWidget: "resizes-content",
-  themeColor: "#FFCC00",
+  themeColor: "#155EEF",
 };
 
 export default async function RootLayout({
@@ -54,7 +62,7 @@ export default async function RootLayout({
   return (
     <html
       lang="en"
-      className={inter.variable}
+      className={`${sora.variable} ${montserrat.variable}`}
       suppressHydrationWarning
     >
       <body className="bg-page-backdrop text-foreground font-sans min-h-dvh overflow-hidden">
@@ -64,12 +72,12 @@ export default async function RootLayout({
                 be ngang va day khung dien thoai lech sang phai. */}
             <Toaster expand />
             <div className="flex items-center justify-center min-h-dvh">
-              {/* Khung dien thoai 430x932. `tt-frame` bat container-type: size
-                  de don vi cqh cua chu/icon bam theo chieu cao khung nay.
-                  Vien den 2px + nen ngoai trang (09-03): bo shadow-modal vi
-                  bong do 30% lam vien trang quanh app xam lai - dung cai
-                  ma yeu cau nay muon bo di. */}
-              <div className="tt-frame relative w-full max-w-[430px] h-dvh max-h-[932px] flex flex-col bg-background border-2 border-border overflow-hidden">
+              {/* Khung dien thoai CO DINH 390x844 (dung khung Figma goc) -
+                  quy luat thiet ke moi 09-12 chia luoi bang PX CO DINH (10
+                  hang 70px + 16px gap doc = 844; 12 cot + 8px gap ngang),
+                  khong con luoi ty le cqh nhu ban cu (co dan theo moi kich
+                  thuoc man hinh). App danh cho mobile, khong can fluid. */}
+              <div className="tt-frame relative w-[390px] h-[844px] flex flex-col bg-background border-2 border-border overflow-hidden">
                 <main className="flex-1 flex flex-col items-center overflow-hidden">
                   <div className="flex flex-col w-full flex-1">{children}</div>
                 </main>

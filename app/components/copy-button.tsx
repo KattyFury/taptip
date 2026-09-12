@@ -22,14 +22,14 @@ export function CopyButton({ value, label }: { value: string; label: string }) {
       onClick={handleCopy}
       aria-label={label}
       className={
-        "w-[3.4cqh] h-[3.4cqh] min-w-[26px] min-h-[26px] rounded-full flex items-center justify-center shrink-0 " +
-        (copied ? "text-success" : "text-foreground")
+        "w-7 h-7 rounded-full flex items-center justify-center shrink-0 " +
+        (copied ? "text-success" : "text-brand")
       }
     >
       {copied ? (
-        <Icon.Check className="w-[1.8cqh] h-[1.8cqh] min-w-[12px] min-h-[12px]" />
+        <Icon.Check className="w-4 h-4" />
       ) : (
-        <Icon.Copy className="w-[1.8cqh] h-[1.8cqh] min-w-[12px] min-h-[12px]" />
+        <Icon.Copy className="w-4 h-4" />
       )}
     </button>
   );

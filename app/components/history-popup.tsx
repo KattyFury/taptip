@@ -43,28 +43,28 @@ export function HistoryPopup({
     // Danh sach giao dich co the dai - popup dai (quy dinh chung popup, xem
     // content-popup.tsx), khong can giua hang 3 nhu popup ngan.
     <CenteredCard open={open} onClose={onClose} title="History" small={false}>
-      <div className="flex flex-col px-[18px] pb-[18px]">
+      <div className="flex flex-col px-5 pb-5">
         {rows == null && (
-          <p className="py-6 text-center text-body text-accent">Loading...</p>
+          <p className="py-6 text-center font-body text-body text-accent">Loading...</p>
         )}
         {rows != null && rows.length === 0 && (
-          <p className="py-6 text-center text-body text-accent">No transactions yet</p>
+          <p className="py-6 text-center font-body text-body text-accent">No transactions yet</p>
         )}
         {rows?.map((row, i) => (
           <div
             key={i}
-            className="flex items-center justify-between gap-3 py-[12px] border-b border-border last:border-b-0"
+            className="flex items-center justify-between gap-3 py-3 border-b border-brand/20 last:border-b-0"
           >
             <div className="flex flex-col">
-              <span className="text-body font-semibold">
+              <span className="font-body text-body font-semibold text-foreground">
                 {row.direction === "out" ? "Sent to " : "Received from "}
                 {shortenAddress(row.counterparty)}
               </span>
-              <span className="text-small text-accent">{formatDate(row.createdAt)}</span>
+              <span className="font-body text-small text-accent">{formatDate(row.createdAt)}</span>
             </div>
             <span
               className={
-                "text-lead font-bold shrink-0 " +
+                "font-display text-lead font-bold shrink-0 " +
                 (row.direction === "out" ? "text-danger" : "text-success")
               }
             >

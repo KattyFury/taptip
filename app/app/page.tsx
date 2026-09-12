@@ -74,8 +74,9 @@ export default function Splash() {
     return () => clearTimeout(timer);
   }, [router]);
 
-  // Splash: chu ky TapTip can giua vach 2.5 (tam hang 3)
-  // (0 dem tren / 5 logo / 5 dem duoi)
+  // Splash: wordmark "TapTip" chu (khong con anh logo den/vang cu - quy luat
+  // thiet ke moi 09-12 dung chu Sora Bold xanh cho moi noi hien brand, khop
+  // Figma "slash" frame (text node, khong phai vector logo).
   if (step === "splash") {
     return (
       <div className="flex flex-col h-full px-5">
@@ -83,8 +84,7 @@ export default function Splash() {
           style={{ flex: "5 1 0", minHeight: 0 }}
           className="flex items-center justify-center"
         >
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src="/logo-full.svg" alt="TapTip" className="w-[60%] h-auto" />
+          <span className="font-display text-[40px] font-bold text-brand">TapTip</span>
         </div>
         <div style={{ flex: "5 1 0" }} />
       </div>
@@ -115,13 +115,13 @@ export default function Splash() {
           </div>
         }
       >
-        <ol className="w-fit flex flex-col gap-[1.5cqh]">
+        <ol className="w-fit flex flex-col gap-4">
           {INSTALL_STEPS[platform].map((label, index) => (
             <li key={index} className="flex items-center gap-3">
-              <span className="w-[2.8cqh] h-[2.8cqh] rounded-full bg-accent text-background shrink-0 flex items-center justify-center text-small font-extrabold">
+              <span className="w-6 h-6 rounded-full bg-brand text-background shrink-0 flex items-center justify-center font-display text-small font-bold">
                 {index + 1}
               </span>
-              <span className="text-body">{label}</span>
+              <span className="font-body text-body text-foreground">{label}</span>
             </li>
           ))}
         </ol>

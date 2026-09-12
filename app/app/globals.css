@@ -2,56 +2,55 @@
 @plugin "tailwindcss-animate";
 
 /* ===========================================================================
-   TapTip - Design tokens
-   Nguon: Figma "Taptip" (rLGoWK4AHhqov9CKHXJqqE) - ban ve lai 09-02, thay
-   the toan bo token cu (design_handoff_taptip cu da loi thoi so voi ban nay).
+   TapTip - Design tokens (v3, 09-12)
+   Nguon: Figma "Taptip" (rLGoWK4AHhqov9CKHXJqqE, ban ve lai 09-12) + bo quy
+   luat thiet ke moi user dua truc tiep trong chat. THAY THE HOAN TOAN ban
+   token cu (Inter/Archivo, vang FFCC00 + den, luoi ty le cqh) - xem lich su
+   trong git log neu can doi chieu.
 
    QUY DINH DUNG CHUNG (doc truoc khi sua bat ky component nao):
 
-   1. MAU: khong bao gio viet mau truc tiep trong component (khong dung
-      text-green-600, bg-gray-100, #fff...). Chi dung token o duoi qua class
-      Tailwind: bg-background, text-accent, bg-success-bg, ...
-      Chi con dung 4 tong + 2 tong trang thai (xem gia tri duoi) - KHONG tu
-      che them mau/font-size moi, dung dung token co san.
+   1. MAU: khong bao gio viet mau truc tiep trong component. Chi dung token
+      qua class Tailwind: bg-background, text-brand, bg-primary, text-accent...
+      2 mau thuong hieu CHINH: --primary (vang F5B800, nen moi nut CTA) +
+      --brand (xanh 155EEF, chu tren nut CTA + moi tieu de/so tien/nhan).
 
-   2. CHU: font-sans (Inter) cho MOI chu, KE CA so (Figma dung Inter Bold cho
-      so du, khong tach rieng font so nhu ban cu). Logo la file SVG tinh rieng
-      (public/logo-full.svg), khong dinh gi den font-sans.
+   2. CHU: 2 font tach rieng, KHONG dung chung 1 font nhu ban cu.
+      - font-display (Sora, weight 600/700): tieu de, nut bam, so tien, nhan
+        pill - moi cho nao dung mau --brand hoac chu tren nen --primary.
+      - font-body (Montserrat, weight 400/500/600): noi dung, mo ta, o nhap,
+        nhan hang ("Balance:", "Tip amount:"), text mau --foreground/--accent.
 
-   3. BO GOC: rounded-xl (12px) cho the/modal/o nhap/khoi CU (Screen); rounded-
-      full cho nut hanh dong va chip. rounded-card (10px, token MOI) rieng cho
-      cac card popup kieu moi (Scan/History/Deposit/Withdraw/Tip Setting) -
-      KHONG lan voi rounded-xl, Figma phan biet ro 2 muc nay.
+   3. HINH DANG DAC TRUNG: nut + o nhap deu la HINH CHU NHAT BI NGHIENG (bo
+      goc) - khong phai bo goc thuong. Dung component <SlantedSurface> trong
+      components/screen.tsx, KHONG tu ve rounded-xl/rounded-full cho nut nua.
+      Card popup (menu, modal) dung hinh CAT 1 GOC (chamfer) rieng - xem
+      --radius-card-cut.
 
-   4. DO BONG: dung 4 token co san - shadow-btn (nut/the noi), shadow-modal
+   4. LUOI: PX CO DINH (khung 390x844, khong con fluid/cqh nhu ban cu):
+      - Doc: 10 hang, moi hang 70px, cach nhau 16px (70*10 + 16*9 = 844).
+      - Ngang: 12 cot, cach nhau 8px, le an toan 25px 2 ben.
+      - Spacing (padding/gap) LUON la boi so cua 8 (8/16/24/32/40...).
+      - Font-size LUON la boi so cua 4 (12/16/20/24/28/32...).
+
+   5. DO BONG: dung 4 token co san - shadow-btn (nut/the noi), shadow-modal
       (modal), shadow-popover (toast xu ly/thanh cong), shadow-field (long
       vao trong, cho o nhap lieu).
-
-   5. LUOI: xem components/screen.tsx. Khong hardcode pixel cho chieu cao /
-      khoang cach doc - chia theo hang bang flex. Le trai/phai co dinh 20px
-      (Figma quy dinh margin an toan, khong quy doi theo cqh).
-
-   6. DON VI CHU: dung token text-title / text-lead / text-body / text-small /
-      text-figure cho MOI man (ca man toan khung lan card popup). Tinh bang
-      `cqh` = 1% chieu cao KHUNG DIEN THOAI (khong phai chieu cao cua so
-      trinh duyet), nho `.tt-frame` dat container-type: size - quy doi tu
-      ban Figma goc 390x844 bang cong thuc px/844*100. Nho vay chu co dung ty
-      le voi luoi 10 hang tren moi kich thuoc man, dung ca trong the popup
-      (khac ban cu: ban cu dung px co dinh trong modal).
    =========================================================================== */
 
 :root {
   /* --- Nen & chu --- */
-  --background: #ffffff;
+  --background: #fffdf5;
   --foreground: #000000;
-  --surface: #ededed;          /* xam nhat: nen chim, pill thong bao, o nhap phu */
-  --hint: rgba(0, 0, 0, 0.6);  /* chu goi y, nhan mo */
-  --border: #000000;           /* vien dac 1px - Figma dung border-black cho moi card/QR/input */
+  --surface: #dbdee4;          /* box dung noi dung: pill so tien, o nhap, khoi nen chim */
+  --hint: #a4afc3;              /* chu xam phu - placeholder, caption, "muted" */
+  --border: #000000;            /* vien khung ngoai dien thoai (chrome, khong phai noi dung) */
 
   /* --- Thuong hieu --- */
-  --primary: #ffcc00;          /* vang: nut hanh dong chinh */
-  --primary-foreground: #000000;
-  --accent: #8e8e93;           /* xam: chu phu, caption, nhan "Balance" */
+  --primary: #f5b800;           /* vang: NEN moi nut CTA */
+  --primary-foreground: #155eef;/* xanh: CHU tren nut CTA vang */
+  --brand: #155eef;             /* xanh: tieu de, so tien, nhan, vien nut outline */
+  --accent: #a4afc3;            /* bi danh = --hint, giu ten cu cho cac call-site chua doi */
 
   /* --- Trang thai --- */
   --success: #34c759;
@@ -63,13 +62,21 @@
   --warning-bg: #fef9c3;
   --warning-fg: #854d0e;
 
-  /* --- Nen ngoai khung dien thoai (chi thay tren desktop) ---
-     Trang, khong con xam: app cung nen trang nen nen xam bao quanh trong
-     roi rac; ranh gioi gio do VIEN DEN 2px cua khung dam nhiem (09-03). */
-  --page-backdrop: #ffffff;
+  /* --- Nen ngoai khung dien thoai (chi thay tren desktop) --- */
+  --page-backdrop: #fffdf5;
 
   /* Lop lam toi phia sau modal */
   --scrim: rgba(0, 0, 0, 0.55);
+
+  /* --- Luoi PX co dinh (khung Figma goc 390x844) --- */
+  --grid-row-h: 70px;
+  --grid-row-gap: 16px;
+  --grid-col-gap: 8px;
+  --grid-margin: 25px;
+
+  /* --- Hinh dang dac trung: nut/o nhap nghieng --- */
+  --skew-angle: -16deg;         /* skewX: dinh tren lech PHAI so voi day, dung goc do tu Figma (atan(20.5/70)) */
+  --radius-slant: 8px;          /* bo goc cho nut/o nhap nghieng */
 }
 
 @theme inline {
@@ -81,6 +88,7 @@
 
   --color-primary: var(--primary);
   --color-primary-foreground: var(--primary-foreground);
+  --color-brand: var(--brand);
   --color-accent: var(--accent);
 
   --color-success: var(--success);
@@ -95,8 +103,7 @@
   --color-page-backdrop: var(--page-backdrop);
   --color-scrim: var(--scrim);
 
-  /* Bi danh cho primitive shadcn con dung ten cu - de khong phai sua
-     tung call-site va de moi thu van tro ve dung 1 dinh nghia o tren */
+  /* Bi danh cho primitive shadcn con dung ten cu */
   --color-card: var(--background);
   --color-card-foreground: var(--foreground);
   --color-popover: var(--background);
@@ -109,34 +116,33 @@
   --color-input: var(--border);
   --color-destructive: var(--danger);
   --color-destructive-foreground: #ffffff;
-  --color-ring: var(--primary);
+  --color-ring: var(--brand);
 
-  /* Bo goc: chi 12px va pill. rounded-md/lg/xl deu 12px co y. */
+  /* Bo goc: giu rounded-xl/card cho cac khoi CHUA chuyen sang SlantedSurface */
   --radius-sm: 8px;
   --radius-md: 12px;
   --radius-lg: 12px;
   --radius-xl: 12px;
-  --radius-card: 10px; /* rieng cho card popup kieu Figma moi (Scan/History/Deposit/Withdraw/Tip Setting) */
+  --radius-card: 10px;
 
   /* Do bong */
-  --shadow-btn: 0 3px 8px rgba(0, 0, 0, 0.2);
+  --shadow-btn: 0 4px 8px rgba(0, 0, 0, 0.2);
   --shadow-modal: 0 20px 40px rgba(0, 0, 0, 0.3);
   --shadow-popover: 0 12px 30px rgba(0, 0, 0, 0.4);
-  --shadow-field: inset 0 2px 5px rgba(0, 0, 0, 0.15);
+  --shadow-field: inset 0 2px 5px rgba(0, 0, 0, 0.1);
 
-  /* Chu: Inter moi noi, ke ca so - Figma khong tach font rieng cho con so */
-  --font-sans: var(--font-inter), sans-serif;
-  --font-num: var(--font-inter), sans-serif;
+  /* 2 font tach rieng - xem quy dinh muc 2 o tren */
+  --font-display: var(--font-sora), sans-serif;
+  --font-body: var(--font-montserrat), sans-serif;
+  --font-sans: var(--font-body); /* mac dinh body cho the co ban */
 
-  /* Thang chu quy doi truc tiep tu ban Figma goc 390x844: px/844*100.
-     27 -> 3.2cqh (tieu de), 22 -> 2.61cqh (nut/nhan "Balance"/so tien lich
-     su), 17 -> 2.01cqh (noi dung), 15 -> 1.78cqh (hint/ngay thang),
-     37 -> 4.38cqh (so du lon o Home - tang +5 tu 32 theo yeu cau 09-02). */
-  --text-title: 3.2cqh;
-  --text-lead: 2.61cqh;
-  --text-body: 2.01cqh;
-  --text-small: 1.78cqh;
-  --text-figure: 4.38cqh;
+  /* Thang chu - LUON boi so cua 4, quy chieu truc tiep tu Figma (px that,
+     khong con quy doi cqh vi khung gio co dinh 390x844). */
+  --text-figure: 32px; /* so du lon o Home */
+  --text-title: 24px;  /* tieu de man, nut CTA, so tien preset */
+  --text-lead: 20px;   /* nhan hang, noi dung o nhap, dong trong menu */
+  --text-body: 20px;   /* = text-lead, Figma khong tach rieng 2 muc nay */
+  --text-small: 16px;  /* hint/chu thich phu */
 }
 
 @layer base {
@@ -147,24 +153,19 @@
   body {
     background: var(--page-backdrop);
     color: var(--foreground);
-    font-family: var(--font-sans);
+    font-family: var(--font-body);
   }
 
   h1,
   h2,
   h3 {
-    font-weight: 800;
+    font-family: var(--font-display);
+    font-weight: 700;
   }
 }
 
-/* Khung dien thoai. container-type: size bien chieu cao khung thanh goc quy
-   chieu cho don vi cqh -> chu va icon co dung ty le voi luoi 10 hang du cua
-   so trinh duyet cao bao nhieu. An toan vi kich thuoc khung khong phu thuoc
-   noi dung (w-full max-w-[430px] / h-dvh max-h-[932px]). */
-.tt-frame {
-  container-type: size;
-  container-name: screen;
-}
+/* Khung dien thoai - CO DINH 390x844 (xem app/layout.tsx), khong con
+   container-type:size/cqh nhu ban cu vi luoi gio la px tuyet doi. */
 
 /* Khung quet QR: html5-qrcode tu chen <video> voi kich thuoc theo ty le
    camera -> buoc video phu kin khung vuong, tranh dai den letterbox */
@@ -201,4 +202,10 @@
 
 .tt-caret {
   animation: tt-caret 1s steps(1) infinite;
+}
+
+/* Hinh dang "cat goc" dac trung cho card popup (menu, modal) - lay ty le tu
+   Figma (Rectangle 15/16): vat cheo goc duoi-phai, 3 goc con lai vuong. */
+.tt-card-cut {
+  clip-path: polygon(0 0, 100% 0, 100% 70%, 88% 100%, 0 100%);
 }

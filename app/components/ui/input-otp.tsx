@@ -64,10 +64,10 @@ const InputOTPSlot = React.forwardRef<
       ref={ref}
       className={cn(
         "relative flex items-center justify-center",
-        "w-[6cqh] h-[6cqh] min-w-[48px] min-h-[48px]",
-        "rounded-xl bg-surface shadow-field",
-        "font-num text-lead",
-        isActive && "ring-2 ring-inset ring-primary",
+        "w-12 h-12",
+        "rounded-[var(--radius-slant)] bg-surface shadow-field",
+        "font-display text-lead font-bold text-brand",
+        isActive && "ring-2 ring-inset ring-brand",
         className
       )}
       {...props}
@@ -75,7 +75,7 @@ const InputOTPSlot = React.forwardRef<
       {char}
       {hasFakeCaret && (
         <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
-          <div className="tt-caret h-[2cqh] w-px bg-foreground" />
+          <div className="tt-caret h-5 w-px bg-brand" />
         </div>
       )}
     </div>
@@ -91,7 +91,7 @@ const InputOTPSeparator = React.forwardRef<
   <div
     ref={ref}
     role="separator"
-    className={cn("text-foreground text-lead leading-none", className)}
+    className={cn("text-brand text-lead leading-none", className)}
     {...props}
   >
     &bull;

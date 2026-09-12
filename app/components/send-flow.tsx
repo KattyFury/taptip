@@ -241,8 +241,8 @@ export default function SendFlow({ open, onOpenChange }: Props) {
         title="Scan to tip"
         small={false}
       >
-        <div className="flex flex-col items-center px-[18px] pb-[18px] gap-[2.2cqh]">
-          <div className="relative w-full aspect-square rounded-xl overflow-hidden bg-foreground">
+        <div className="flex flex-col items-center px-5 pb-5 gap-4">
+          <div className="relative w-full aspect-square rounded-[var(--radius-slant)] overflow-hidden bg-foreground border-2 border-brand">
             <div id={QR_REGION_ID} className="w-full h-full" />
             <div
               aria-hidden
@@ -252,16 +252,16 @@ export default function SendFlow({ open, onOpenChange }: Props) {
 
           <button
             onClick={() => fileInputRef.current?.click()}
-            className="text-body font-semibold text-center"
+            className="font-body text-body font-semibold text-brand text-center"
           >
             Upload a QR image instead
           </button>
 
           {scanError && (
-            <p className="text-small font-semibold text-danger text-center">{scanError}</p>
+            <p className="font-body text-small font-semibold text-danger text-center">{scanError}</p>
           )}
 
-          <div className="w-full grid grid-cols-2 gap-2.5">
+          <div className="w-full grid grid-cols-2 gap-3">
             {([1, 2, 3, 4] as const).map((slot) => {
               const value = slotAmount(slot);
               if (value == null) return null;
@@ -271,26 +271,26 @@ export default function SendFlow({ open, onOpenChange }: Props) {
                   key={slot}
                   onClick={() => selectSlot(slot)}
                   className={
-                    "w-full h-[6.68cqh] min-h-[38px] rounded-full text-lead font-bold " +
+                    `w-full h-11 [transform:skewX(var(--skew-angle))] rounded-[var(--radius-slant)] font-display text-lead font-bold ` +
                     (isSelected
                       ? "bg-primary text-primary-foreground"
-                      : "bg-surface text-foreground")
+                      : "bg-surface text-brand")
                   }
                 >
-                  ${value}
+                  <span className="inline-block [transform:skewX(calc(-1*var(--skew-angle)))]">${value}</span>
                 </button>
               );
             })}
             <button
               onClick={selectCustom}
               className={
-                "w-full h-[6.68cqh] min-h-[38px] rounded-full text-lead font-bold " +
+                `w-full h-11 [transform:skewX(var(--skew-angle))] rounded-[var(--radius-slant)] font-display text-lead font-bold ` +
                 (selectedSlot === "custom"
                   ? "bg-primary text-primary-foreground"
-                  : "bg-surface text-foreground")
+                  : "bg-surface text-brand")
               }
             >
-              Custom
+              <span className="inline-block [transform:skewX(calc(-1*var(--skew-angle)))]">Custom</span>
             </button>
           </div>
 
@@ -304,7 +304,7 @@ export default function SendFlow({ open, onOpenChange }: Props) {
               value={customAmount}
               onChange={(e) => setCustomAmount(e.target.value)}
               placeholder="Enter an amount"
-              className="w-full h-[6cqh] min-h-[44px] rounded-full border border-border bg-background px-4 text-body text-center outline-none focus:ring-2 focus:ring-primary"
+              className="w-full h-11 rounded-[var(--radius-slant)] bg-surface px-4 font-body text-body text-center text-foreground outline-none focus:ring-2 focus:ring-brand"
             />
           )}
         </div>
@@ -322,16 +322,16 @@ export default function SendFlow({ open, onOpenChange }: Props) {
         <OverlayCard>
           {step === "sending" && (
             <>
-              <Icon.Loading className="w-[56px] h-[56px] text-accent animate-spin" />
-              <p className="text-[20px] font-bold">Processing...</p>
+              <Icon.Loading className="w-14 h-14 text-brand animate-spin" />
+              <p className="font-display text-title font-bold text-brand">Processing...</p>
             </>
           )}
           {step === "success" && (
             <>
-              <Icon.Check className="w-[56px] h-[56px] text-success" />
+              <Icon.Check className="w-14 h-14 text-success" />
               {/* "Tipped $3", khong phai "-$3": dau tru mot minh khong noi duoc
                   la vua tip xong hay vua bi tru tien vi ly do nao khac. */}
-              <p className="text-[20px] font-bold">Tipped ${lastAmount}</p>
+              <p className="font-display text-title font-bold text-brand">Tipped ${lastAmount}</p>
             </>
           )}
         </OverlayCard>

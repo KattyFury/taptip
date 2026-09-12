@@ -60,7 +60,7 @@ export function CenteredCard({
   return (
     <>
       <div
-        className="absolute inset-0 -mx-5 z-40 bg-scrim"
+        className="absolute inset-0 z-40 bg-scrim"
         onClick={dismissible ? onClose : undefined}
         aria-hidden="true"
       />
@@ -69,20 +69,20 @@ export function CenteredCard({
         aria-modal="true"
         style={
           small
-            ? { top: "25cqh", transform: "translateY(-50%)", maxHeight: "50cqh" }
-            : { top: "20cqh", maxHeight: "50cqh" }
+            ? { top: "207px", transform: "translateY(-50%)", maxHeight: "586px" }
+            : { top: "86px", maxHeight: "586px" }
         }
-        className="absolute left-0 right-0 z-50 flex flex-col rounded-card border border-border bg-background shadow-modal overflow-hidden"
+        className="absolute left-[25px] right-[25px] z-50 flex flex-col tt-card-cut border-2 border-brand bg-background shadow-modal overflow-hidden"
       >
-        <div className="relative shrink-0 flex items-center justify-center px-[18px] py-[14px]">
-          <h2 className="text-title font-semibold text-center">{title}</h2>
+        <div className="relative shrink-0 flex items-center justify-center px-6 py-4">
+          <h2 className="font-display text-title font-bold text-brand text-center">{title}</h2>
           {dismissible && (
             <button
               onClick={onClose}
               aria-label="Đóng"
-              className="absolute right-[14px] top-1/2 -translate-y-1/2 text-danger w-6 h-6 flex items-center justify-center"
+              className="absolute right-4 top-1/2 -translate-y-1/2 text-danger w-6 h-6 flex items-center justify-center"
             >
-              <Icon.X className="w-3.5 h-3.5" />
+              <Icon.X className="w-4 h-4" />
             </button>
           )}
         </div>
@@ -123,7 +123,7 @@ export function AnchoredCard({
         role="dialog"
         aria-modal="true"
         className={
-          "absolute z-50 rounded-card border border-border bg-background shadow-modal overflow-hidden " +
+          "absolute z-50 tt-card-cut border-2 border-brand bg-background shadow-modal overflow-hidden " +
           className
         }
       >

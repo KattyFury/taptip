@@ -1,52 +1,38 @@
 /**
  * Khung man hinh dung chung cho MOI man toan khung cua TapTip.
  *
- * ======================= LUOI 10 HANG (dinh nghia duy nhat) =================
- * Chieu doc chia 10 hang bang nhau, dinh = 0, day = 10:
+ * ======================= LUOI 10 HANG PX CO DINH (09-12) ====================
+ * Khung dien thoai co dinh 390x844 (app/layout.tsx). Chia doc = CSS Grid
+ * 10 hang 70px, cach nhau 16px (70*10 + 16*9 = 844px = dung chieu cao khung):
  *
- *   0.0 -> 1.0    dem tren                     flex "1 1 0"
- *   1.0 -> 2.5    icon + tieu de (bam dinh)    flex "1.5 1 0"
- *   2.5 -> 8.0    vung noi dung (flex "5.5 1 0")
- *   8.0 -> 9.0    hang nut hanh dong           flex "1 1 0"
- *   9.0 -> 10.0   hang phu (link Skip / loi)   flex "1 1 0"
+ *   Hang 1        : logo + icon Menu (chi dung o Home, cac man khac de trong)
+ *   Hang 2        : tieu de man
+ *   Hang 3 -> 7   : vung noi dung (5 hang)
+ *   Hang 8        : hang nut hanh dong
+ *   Hang 9        : hang phu (link Skip / thong bao loi)
+ *   Hang 10       : dem day
  *
- * Icon va tieu de bat dau dung tai vach 1.0. Vung noi dung co dem 0.5 hang
- * (3.2cqh spacer + 1.8cqh gap co san = 5cqh) truoc children, nen noi dung
- * that su bat dau dung tai vach 3.0 - ca hai khoi deu `justify-start`, KHONG
- * can giua.
- *
- * ======================= 3 LUAT KY THUAT BAT BUOC ===========================
- * 1. Neo theo ty le, khong hardcode pixel. Chu/icon dung `cqh` (1cqh = 1%
- *    chieu cao khung dien thoai, xem `.tt-frame` trong globals.css).
- * 2. Chia hang bang style={{ flex: "N 1 0" }}, KHONG dung class flex-[N]:
- *    Tailwind v4 trong repo nay khong build class do ra CSS. So 0 cuoi
- *    (flexBasis) bat buoc - neu chi dat flexGrow thi trinh duyet chia phan
- *    DU sau khi tru noi dung, hang co noi dung to se an sang phan hang khac.
- * 3. Khong dat padding tren phan tu hang. Padding la kich thuoc toi thieu
- *    khong co duoc -> cong them ngoai phan chia ty le, lech ca luoi. Muon
- *    khoang tho thi cho con cao theo % (nut h-[66.6%] + hang items-center).
- *
- * Hang chua nhieu nut can minWidth: 0 tren ca hang lan tung nut: mac dinh
- * flex item co min-width:auto khien hang khong co ngang duoc va tran le.
+ * Doi tu he flex ty le cqh (ban cu) sang CSS Grid px tuyet doi - dung quy
+ * luat thiet ke moi: "chieu cao chia 10 hang 70px, cach nhau 16px", khong
+ * con fluid theo kich thuoc man hinh (app chi chay trong khung 390x844).
  * ============================================================================
  */
 
 import type { ReactNode } from "react";
+import * as Icon from "@/components/icons";
 
 interface ScreenProps {
   /** Tieu de man. Nhan ReactNode de man OTP ghep them dong email mau xanh */
   title?: ReactNode;
-  /** Noi dung chinh, bat dau tu vach 3.0 */
+  /** Noi dung chinh, hang 3 -> 7 */
   children?: ReactNode;
-  /** Hang 8-9: nut hanh dong. Dung <SingleAction> hoac <BackAction> */
+  /** Hang 8: nut hanh dong. Dung <SingleAction> hoac <BackAction> */
   action?: ReactNode;
-  /** Hang 9-10: link phu (Skip) hoac dong bao loi */
+  /** Hang 9: link phu (Skip) hoac dong bao loi */
   foot?: ReactNode;
-  /** true: bo dem 0.5 hang truoc noi dung, cho content bam thang vach 2.5
-   * thay vi vach 3.0 (dung cho man can noi dung bam cao hon mac dinh). */
+  /** true: noi dung bam len hang 3 sat tieu de (bo khoang dem tren) */
   tightContent?: boolean;
-  /** true: bo tran 320px cua vung noi dung, cho no rong het khung (chi con
-   * le 20px cua layout cha). Dung cho o nhap email - email dai bi cat ngan. */
+  /** true: bo tran 340px cua vung noi dung, cho no rong het le an toan 25px */
   wideContent?: boolean;
 }
 
@@ -59,48 +45,46 @@ export function Screen({
   wideContent = false,
 }: ScreenProps) {
   return (
-    <div data-screen-root className="flex flex-col w-full h-full">
-      {/* 0.0 -> 1.0 */}
-      <div style={{ flex: "1 1 0" }} />
+    <div
+      data-screen-root
+      className="grid w-full h-full px-[25px]"
+      style={{
+        gridTemplateRows: "repeat(10, var(--grid-row-h))",
+        rowGap: "var(--grid-row-gap)",
+      }}
+    >
+      {/* Hang 1 trong - man toan khung khong dung logo/menu (rieng Home) */}
+      <div />
 
-      {/* 1.0 -> 2.5 : tieu de, bam dinh vach 1.0. Ban ve Figma 09-02 bo han
-          icon lon dau man - tieu de len thang hang 2. */}
-      <div
-        style={{ flex: "1.5 1 0", minHeight: 0 }}
-        className="flex flex-col items-center justify-start gap-[1.2cqh] w-full max-w-[320px] mx-auto"
-      >
+      {/* Hang 2 : tieu de */}
+      <div className="flex flex-col items-center justify-center w-full max-w-[340px] mx-auto">
         {title && (
-          <h1 className="text-title font-semibold text-center leading-tight">
+          <h1 className="font-display text-title font-bold text-brand text-center leading-tight">
             {title}
           </h1>
         )}
       </div>
 
-      {/* 2.5 -> 8.0 : noi dung, bam dinh vach 3.0 (dem 0.5 hang truoc noi dung) */}
+      {/* Hang 3 -> 7 : noi dung */}
       <div
-        style={{ flex: "5.5 1 0", minHeight: 0 }}
+        style={{ gridRow: "3 / 8" }}
         className={
-          "flex flex-col items-center justify-start gap-[1.8cqh] w-full mx-auto " +
-          (wideContent ? "" : "max-w-[320px]")
+          "flex flex-col items-center gap-6 w-full mx-auto " +
+          (tightContent ? "justify-start" : "justify-start pt-2") +
+          " " +
+          (wideContent ? "" : "max-w-[340px]")
         }
       >
-        {!tightContent && <div style={{ flexShrink: 0, height: "3.2cqh" }} />}
         {children}
       </div>
 
-      {/* 8.0 -> 9.0 : hang nut hanh dong */}
-      <div
-        style={{ flex: "1 1 0", minHeight: 0, minWidth: 0 }}
-        className="flex items-center gap-2"
-      >
+      {/* Hang 8 : nut hanh dong */}
+      <div style={{ gridRow: "9" }} className="flex items-center gap-2 min-w-0">
         {action}
       </div>
 
-      {/* 9.0 -> 10.0 : hang phu */}
-      <div
-        style={{ flex: "1 1 0", minHeight: 0 }}
-        className="flex items-center justify-center"
-      >
+      {/* Hang 9 : hang phu */}
+      <div style={{ gridRow: "10" }} className="flex items-center justify-center">
         {foot}
       </div>
     </div>
@@ -109,7 +93,38 @@ export function Screen({
 
 /* ========================= Cac manh dung chung ============================ */
 
-/** Nut chinh mau vang. Cao 66.6% hang theo ban thiet ke. */
+/** Hinh dang dac trung TapTip: chu nhat nghieng (skewX) bo goc. Dung lam nen
+ * cho MOI nut + o nhap - goc nghieng lay tu Figma (atan(20.5/70) ~ 16.3deg).
+ * Ky thuat: skew CA button, roi counter-skew 1 lop con ben trong de chu/icon
+ * dung thang. KHONG dung rounded-full/rounded-xl thuong cho nut nua. */
+export const SLANT_SHAPE = "[transform:skewX(var(--skew-angle))] rounded-[var(--radius-slant)]";
+export const SLANT_CONTENT = "[transform:skewX(calc(-1*var(--skew-angle)))]";
+
+/** Nut nghieng dung tu do (khong bat buoc chiem het 1 hang cua <Screen>) -
+ * dung cho nut ben trong popup/card (Deposit, Withdraw, Tip Setting...). */
+export function SlantButton({
+  children,
+  className = "",
+  variant = "solid",
+  ...props
+}: React.ButtonHTMLAttributes<HTMLButtonElement> & { variant?: "solid" | "outline" }) {
+  const base =
+    variant === "solid"
+      ? "bg-primary text-primary-foreground"
+      : "bg-background border-2 border-brand text-brand";
+  return (
+    <button
+      className={`shadow-btn disabled:opacity-50 disabled:pointer-events-none ${base} ${SLANT_SHAPE} ${className}`}
+      {...props}
+    >
+      <span className={`flex items-center justify-center gap-2 w-full h-full font-display font-bold ${SLANT_CONTENT}`}>
+        {children}
+      </span>
+    </button>
+  );
+}
+
+/** Nut chinh: nen vang (--primary) + chu xanh (--primary-foreground), Sora Bold. */
 export function PrimaryButton({
   children,
   className = "",
@@ -118,21 +133,20 @@ export function PrimaryButton({
   return (
     <button
       className={
-        "h-[66.6%] rounded-full bg-primary text-primary-foreground shadow-btn " +
-        "flex items-center justify-center gap-2 text-lead font-bold " +
-        "disabled:opacity-50 disabled:pointer-events-none " +
-        className
+        `h-full w-full bg-primary shadow-btn disabled:opacity-50 disabled:pointer-events-none ${SLANT_SHAPE} ${className}`
       }
       {...props}
     >
-      {children}
+      <span
+        className={`flex items-center justify-center gap-2 w-full h-full font-display text-title font-bold text-primary-foreground ${SLANT_CONTENT}`}
+      >
+        {children}
+      </span>
     </button>
   );
 }
 
-/** Nut vang chi co icon - dung cho nut Quay lai o hang hanh dong. Cung mau
- * pill vang voi PrimaryButton (Figma khong con phan biet nut phu/chinh bang
- * mau, chi bang do rong va noi dung). */
+/** Nut vien xanh, nen trong suot - dung cho nut phu (Quay lai). */
 export function IconButton({
   children,
   className = "",
@@ -141,24 +155,23 @@ export function IconButton({
   return (
     <button
       className={
-        "h-[66.6%] rounded-full bg-primary text-primary-foreground shadow-btn " +
-        "flex items-center justify-center " +
-        "disabled:opacity-50 disabled:pointer-events-none " +
-        className
+        `h-full w-full bg-background border-2 border-brand disabled:opacity-50 disabled:pointer-events-none ${SLANT_SHAPE} ${className}`
       }
       {...props}
     >
-      {children}
+      <span className={`flex items-center justify-center w-full h-full text-brand ${SLANT_CONTENT}`}>
+        {children}
+      </span>
     </button>
   );
 }
 
-/** Hang hanh dong chi 1 nut: rong 66.6% khung, can giua. */
+/** Hang hanh dong chi 1 nut: rong 2/3 khung, can giua. */
 export function SingleAction({ children }: { children: ReactNode }) {
-  return <div className="w-2/3 mx-auto h-full flex items-center justify-center [&>button]:w-full">{children}</div>;
+  return <div className="w-2/3 mx-auto h-full flex items-center justify-center [&>button]:h-full">{children}</div>;
 }
 
-/** Hang hanh dong: nut Quay lai (1 phan) + nut chinh (2 phan). */
+/** Hang hanh dong: nut Quay lai (1 phan) + nut chinh (2 phan), cach nhau 16px. */
 export function BackAction({
   onBack,
   backLabel = "Go back",
@@ -170,21 +183,19 @@ export function BackAction({
 }) {
   return (
     <>
-      <IconButton
-        style={{ flex: "1 1 0", minWidth: 0 }}
-        onClick={onBack}
-        aria-label={backLabel}
-      >
-        <BackIcon />
-      </IconButton>
-      <div style={{ flex: "2 1 0", minWidth: 0 }} className="h-full flex items-center [&>button]:w-full">
+      <div style={{ flex: "1 1 0", minWidth: 0 }} className="h-full">
+        <IconButton onClick={onBack} aria-label={backLabel}>
+          <Icon.Back className="w-6 h-6" />
+        </IconButton>
+      </div>
+      <div style={{ flex: "2 1 0", minWidth: 0 }} className="h-full [&>button]:h-full">
         {children}
       </div>
     </>
   );
 }
 
-/** Link chu mau xanh o hang 9-10 (Skip, Skip for now). */
+/** Link chu mau xanh o hang phu (Skip, Skip for now). */
 export function TextLink({
   children,
   className = "",
@@ -192,7 +203,7 @@ export function TextLink({
 }: React.ButtonHTMLAttributes<HTMLButtonElement>) {
   return (
     <button
-      className={"text-accent text-body font-semibold text-center " + className}
+      className={`font-body text-lead font-medium text-brand text-center ${className}`}
       {...props}
     >
       {children}
@@ -200,42 +211,20 @@ export function TextLink({
   );
 }
 
-/** O nhap lieu vien den, nen trong - khop Figma 09-02 (bo nen xam/bong cu). */
+/** O nhap lieu: nen xam-xanh (--surface), nghieng cung kieu voi nut. */
 export function Field({
   className = "",
   ...props
 }: React.InputHTMLAttributes<HTMLInputElement>) {
   return (
-    <input
-      className={
-        "w-full h-[6cqh] min-h-[48px] rounded-full border border-border bg-background " +
-        "px-4 text-body text-left text-foreground placeholder:text-accent " +
-        "outline-none focus:ring-2 focus:ring-primary " +
-        className
-      }
-      {...props}
-    />
-  );
-}
-
-// Icon Back dung noi bo cho BackAction (tranh vong import voi icons.tsx).
-// Tam giac dac quay trai, khop ban ve Figma 09-02 (back.svg).
-function BackIcon() {
-  return (
-    <svg
-      viewBox="0 0 100 100"
-      fill="none"
-      aria-hidden="true"
-      className="w-[2.6cqh] h-[2.6cqh] text-primary-foreground"
-    >
-      <path
-        d="M80 83L80 23L20 53L80 83Z"
-        fill="currentColor"
-        stroke="currentColor"
-        strokeWidth={10}
-        strokeLinecap="round"
-        strokeLinejoin="round"
+    <div className={`h-[52px] w-full ${SLANT_SHAPE} bg-surface`}>
+      <input
+        className={
+          `w-full h-full px-5 font-body text-lead text-left text-foreground placeholder:text-accent ` +
+          `outline-none focus:ring-2 focus:ring-brand bg-transparent ${SLANT_CONTENT} ${className}`
+        }
+        {...props}
       />
-    </svg>
+    </div>
   );
 }
