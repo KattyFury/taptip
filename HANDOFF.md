@@ -11,7 +11,32 @@
 
 ---
 
-## 👉 BẮT ĐẦU TỪ ĐÂY (09-11, cuối ngày)
+## 👉 BẮT ĐẦU TỪ ĐÂY (09-12)
+
+**Redesign toàn bộ giao diện theo bộ quy luật thiết kế MỚI — thay hoàn toàn hệ thống cũ (Inter/Archivo, vàng FFCC00+đen, lưới tỷ lệ cqh).** User tự vẽ lại Figma (`Taptip`, file `rLGoWK4AHhqov9CKHXJqqE`) rồi đưa bộ luật bằng lời:
+
+- Font: **Sora** (display/tiêu đề/nút/số tiền) + **Montserrat** (nội dung).
+- Màu: **xanh #155EEF** (brand, chữ) + **vàng #F5B800** (nền nút CTA, chữ xanh trên đó) — nền `#FFFDF5`, box nội dung `#DBDEE4`, chữ xám `#A4AFC3`.
+- **Hình dạng đặc trưng: MỌI nút/ô nhập là hình chữ nhật NGHIÊNG** (skewX ~16.3° lấy đúng góc từ file SVG Figma, có counter-skew nội dung bên trong để chữ thẳng) — implement ở `components/screen.tsx` (`SLANT_SHAPE`/`SLANT_CONTENT`/`SlantButton`). Card popup (menu, modal) dùng hình **cắt 1 góc** (chamfer, class `.tt-card-cut` trong `globals.css`) khớp đúng Figma "Rectangle 15/16".
+- **Icon: chuyển hẳn sang Tabler Icons** (`@tabler/icons-react`, MIT free) — bỏ hết icon tự vẽ tay 09-02. `components/icons.tsx` giữ nguyên tên export cũ (Menu/Copy/Check/ArrowDown...) nên không phải sửa từng call-site.
+- **Lưới: PX CỐ ĐỊNH** (khung điện thoại khoá cứng `390x844` ở `app/layout.tsx`, KHÔNG còn fluid/cqh) — dọc 10 hàng 70px cách nhau 16px (70×10+16×9=844 khớp tuyệt đối chiều cao khung), ngang lề an toàn 25px. Đã bỏ `container-type:size` khỏi `.tt-frame` vì không còn đơn vị `cqh` nào trong code.
+
+**Quy trình đã làm (đúng thứ tự, đọc kỹ trước khi đụng lại):** load skill `figma-design-to-code` → `get_metadata` lấy toàn bộ frame trong file → `get_design_context` thật trên 3 frame đại diện (Home có menu, Home không menu, Sign-in) để lấy đúng mã màu/font/toạ độ, KHÔNG đoán từ ảnh → tải trực tiếp 2 file SVG gốc (`button-shape.svg`, `menu-card-shape.svg`) để đo chính xác góc nghiêng + tỷ lệ vết cắt góc bằng toán (không áng chừng bằng mắt) → dựng token/component nền tảng trước (`globals.css`, `layout.tsx`, `screen.tsx`, `icons.tsx`) → áp lên từng màn → verify bằng Chrome headless thật (Puppeteer + CDP, session giả D1/KV `--local`, kỹ thuật giống các đợt trước) sau MỖI lần sửa lớn, không đợi xong hết mới xem ảnh.
+
+**Bug tự phát hiện khi verify ảnh, đã sửa:** `app/dashboard/layout.tsx` từng có `px-5` (20px) bọc ngoài, cộng dồn với `px-[25px]` MỚI tự quản của Home/Screen → lề bị nhân đôi (45px). Đã bỏ hẳn padding ở layout, để mỗi màn tự lo lề riêng — kéo theo phải sửa luôn `content-popup.tsx`: bỏ hack `-mx-5` cũ (dùng để "thoát" padding của layout cha, giờ không còn đúng nữa), đổi card popup từ `left-0 right-0` (sát mép khung) sang `left-[25px] right-[25px]` (đúng lề nội dung, khớp Figma — Figma không làm card tràn sát mép). `data-home-root` phải thêm lại `relative` (bị rớt khi viết lại) để làm containing block đúng cho popup.
+
+**Đã áp dụng đầy đủ:** Splash (logo chữ Sora Bold xanh, KHÔNG còn ảnh logo đen/vàng cũ), Add to Home Screen, Sign-in, Create wallet (qua `Screen`/`SlantButton` dùng chung nên tự động khớp), Home (wordmark chữ, QR viền xanh, nút nghiêng, menu cắt góc), Tip Setting popup, History popup, Send flow (Scan to tip + lưới chọn số tiền nghiêng), Deposit/Withdraw popup, OTP input.
+
+**Đã verify:** `tsc --noEmit` sạch, `npm run build` production sạch, chụp ảnh thật 10 màn qua Chrome headless — đã gửi Desktop `TapTip-Screens-v3/`. Đã commit + push (`1382ccf`). **CHƯA `cf:deploy`** — thay đổi hình ảnh quá lớn so với production hiện tại, đợi user duyệt ảnh trước khi tự ý đẩy lên site thật (khác với các lần sửa nhỏ trước, lần này không tự động deploy).
+
+**Còn nợ (chưa tuyệt đối 100% khớp Figma):**
+1. Figma frame Home gốc thật ra có bố cục **KHÁC hẳn** interaction hiện tại — thay vì popup Tip Setting riêng, Figma vẽ 3 preset tiền nằm NGAY trên Home kèm cơ chế "unlock rồi slide để sửa, + để thêm giá trị" (stepper tăng/giảm ngay tại chỗ). Đã CHỦ ĐỘNG KHÔNG build lại interaction này — frame đó còn nguyên 1 dòng ghi chú debug "If bug happen: make it red, this size, and understandable", tức là bản wireframe thô, chưa chốt hẳn. Mới áp token (màu/font/hình dạng) lên đúng cấu trúc tương tác CŨ đã chạy thật/verify kỹ. Cần hỏi lại user: có muốn build luôn cơ chế slide-to-edit mới, hay giữ Tip Setting popup như hiện tại?
+2. Frame "deposit"/"history"/"Tiping..." riêng trong Figma (khác cấu trúc popup hiện tại) chưa đối chiếu pixel-by-pixel — mới đảm bảo đúng token, chưa chắc đúng 100% bố cục từng dòng.
+3. `docs/08-design-spec-hien-trang.md` và `TapTip Design Spec.dc.html` giờ ĐÃ LỖI THỜI (mô tả hệ thống Inter/vàng-đen cũ) — chưa viết lại, đừng lấy nhầm làm nguồn sự thật.
+
+---
+
+## 👉 Lịch sử (09-11, cuối ngày)
 
 **Đã gỡ HẲN màn khoá app bằng passkey (app-lock)** – xem phản hồi thật của
 user: *"ban đầu chỉ dùng log in là chơi"* rồi *"bỏ passkey khỏi app nha"*.
