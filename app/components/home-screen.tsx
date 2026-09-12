@@ -5,9 +5,9 @@ import { QRCodeSVG } from "qrcode.react";
 import * as Icon from "@/components/icons";
 import { useBalance, BalanceProvider } from "@/contexts/balanceContext";
 import SendFlow from "@/components/send-flow";
-import { CenteredCard, AnchoredCard } from "@/components/content-popup";
+import { CenteredCard } from "@/components/content-popup";
 import { SlantButton } from "@/components/screen";
-import { TipSettingPopup } from "@/components/tip-setting-popup";
+import { TipPresetsRow } from "@/components/tip-presets-row";
 import { HistoryPopup } from "@/components/history-popup";
 import { CopyButton } from "@/components/copy-button";
 import { encodeTapTipQr } from "@/lib/utils/qr-payment";
@@ -24,13 +24,6 @@ interface Props {
     name: string;
     daily_tip_limit: number | null;
   };
-}
-
-/** Toi da 3 thong bao dismiss-duoc o hang 8. Chua co nguon du lieu that
- * nao nuoi tinh nang nay - de mang rong, chi dung khuon san cho sau nay. */
-interface Announcement {
-  id: string;
-  text: string;
 }
 
 /** Lam tron XUONG 2 chu so thap phan - khong bao gio hien nhieu hon so that co. */
@@ -57,14 +50,13 @@ export default function HomeScreen(props: Props) {
   );
 }
 
-type PopupKind = "tipSetting" | "history" | "deposit" | "withdraw" | null;
+type PopupKind = "history" | "deposit" | "withdraw" | null;
 
 function HomeScreenContent({ primaryWallet }: Props) {
   const { balance, balanceError } = useBalance();
   const [menuOpen, setMenuOpen] = useState(false);
   const [popup, setPopup] = useState<PopupKind>(null);
   const [sendOpen, setSendOpen] = useState(false);
-  const [announcements, setAnnouncements] = useState<Announcement[]>([]);
 
   const hasWallet =
     !!primaryWallet.wallet_address && primaryWallet.wallet_address !== "0x0";
@@ -74,19 +66,21 @@ function HomeScreenContent({ primaryWallet }: Props) {
     setPopup(kind);
   };
 
-  const dismissAnnouncement = (id: string) => {
-    setAnnouncements((list) => list.filter((a) => a.id !== id));
-  };
-
   return (
-    // LUOI 10 HANG PX CO DINH (Figma "Taptip" 09-12, khung 390x844):
-    //  1 : wordmark "TapTip" (chu, khong con anh logo) + icon Menu
-    //  2-5 : QR to (4 hang, dung khop khoi QR trong Figma)
-    //  6 : "Balance: $XXX"
-    //  7 : canh bao mang + dia chi rut gon [copy]
-    //  8 : toi da 3 thong bao co the dismiss
-    //  9 : nut Option (1/3) + Tap to Tip (2/3), deu hinh nghieng
-    //  10 : cho bao loi so du
+    // LUOI 10 HANG PX CO DINH - dung TUYET DOI theo toa do that trong Figma
+    // "Taptip" (get_design_context node 11:207/11:424, khong doan/them gi
+    // ngoai file): cai gi Figma KHONG co (canh bao mang, dia chi tren than
+    // Home) nghia la KHONG dung - dia chi vi chi hien trong Menu.
+    //  1 : wordmark "TapTip" (chu) + icon Menu
+    //  2-5 : QR to (4 hang, dung khop khoi "Rectangle 3")
+    //  6 : "Balance: $XXX" (dong tren) + "Tip amount:" (dong duoi, cung hang)
+    //  7 : preset tien tip (khoa/+ + toi da 5 nut, keo doc de chinh gia) -
+    //      thay han popup Tip Setting + nut "Option" cu.
+    //  8 : "Unlock then slide to edit, + to add value" (hint, dung chu
+    //      Figma nguyen van)
+    //  9 : Tap to Tip, full-width, hinh nghieng dac trung
+    //  10 : cho bao loi so du (dung chu Figma "make it red, this size" - day
+    //      la o day DE CHO thong bao loi, khong phai ghi chu bo di)
     <div
       data-home-root
       className="relative grid w-full h-full px-[25px]"
@@ -179,75 +173,37 @@ function HomeScreenContent({ primaryWallet }: Props) {
         )}
       </div>
 
-      {/* Hang 6 : Balance - 1 dong, nhan den + so tien xanh Sora Bold (khop
-          bo cuc Figma "Balance: $XXX" nam ngang, khong xep doc nhu ban cu). */}
-      <div className="flex items-center gap-2">
-        <span className="font-body text-lead text-foreground">Balance:</span>
-        <span className="font-display text-figure font-bold text-brand leading-none">
-          ${formatBalance(balance.token)}
-        </span>
-        <span className="font-body text-small text-accent">
-          ({formatBalance(balance.token)} USDC)
-        </span>
-      </div>
-
-      {/* Hang 7 : canh bao mang + dia chi rut gon */}
+      {/* Hang 6 : dung 2 dong nhu Figma - "Balance: $XXX" tren, "Tip amount:"
+          duoi, cung 1 hang (node 11:213/11:214 + 11:218). */}
       <div className="flex flex-col justify-center gap-1">
-        <span className="font-body text-small font-semibold text-danger">
-          Current available network: Arc Testnet
-        </span>
         <div className="flex items-center gap-2">
-          <span className="font-body text-small font-semibold text-accent">
-            Account Number: {shortenAddress(primaryWallet.wallet_address)}
+          <span className="font-body text-lead text-foreground">Balance:</span>
+          <span className="font-display text-figure font-bold text-brand leading-none">
+            ${formatBalance(balance.token)}
           </span>
-          <CopyButton value={primaryWallet.wallet_address} label="Copy wallet address" />
         </div>
+        <span className="font-body text-lead text-foreground">Tip amount:</span>
       </div>
 
-      {/* Hang 8 : toi da 3 thong bao, an han neu rong */}
-      <div className="flex flex-col justify-center gap-2">
-        {announcements.slice(0, 3).map((a) => (
-          <div
-            key={a.id}
-            className="flex items-center justify-between gap-3 bg-surface rounded-[var(--radius-slant)] pl-4 pr-3 py-2"
-          >
-            <span className="font-body text-small text-foreground truncate">{a.text}</span>
-            <button
-              onClick={() => dismissAnnouncement(a.id)}
-              aria-label="Dismiss"
-              className="text-danger shrink-0 w-4 h-4 flex items-center justify-center"
-            >
-              <Icon.X className="w-3 h-3" />
-            </button>
-          </div>
-        ))}
+      {/* Hang 7 : preset tien tip - khoa/+ ben trai, cac nut $ ben phai */}
+      <TipPresetsRow />
+
+      {/* Hang 8 : hint nguyen van Figma (node 11:219) */}
+      <div className="flex items-center">
+        <span className="font-body text-small text-accent">
+          Unlock then slide to edit, + to add value
+        </span>
       </div>
 
-      {/* Hang 9 : nut Option (1/3) + Tap to Tip (2/3), hinh nghieng dac trung.
-          `relative` de neo AnchoredCard (Tip Setting) ngay phia tren nut Option. */}
-      <div className="relative flex items-center gap-3 min-w-0">
+      {/* Hang 9 : Tap to Tip, full-width, hinh nghieng dac trung */}
+      <div className="flex items-center min-w-0">
         <SlantButton
-          style={{ flex: "1 1 0", minWidth: 0, height: "70px" }}
-          onClick={() => setPopup((p) => (p === "tipSetting" ? null : "tipSetting"))}
-          aria-label="Tip options"
-        >
-          <Icon.Option className="w-5 h-5" />
-        </SlantButton>
-        <SlantButton
-          style={{ flex: "2 1 0", minWidth: 0, height: "70px" }}
+          style={{ width: "100%", height: "70px" }}
           className="text-title"
           onClick={() => setSendOpen(true)}
         >
           Tap to Tip
         </SlantButton>
-
-        <AnchoredCard
-          open={popup === "tipSetting"}
-          onClose={() => setPopup(null)}
-          className="bottom-full left-0 mb-2 w-[62%] min-w-[220px]"
-        >
-          <TipSettingPopup onClose={() => setPopup(null)} />
-        </AnchoredCard>
       </div>
 
       {/* Hang 10 : cho bao loi so du */}
@@ -266,7 +222,7 @@ function HomeScreenContent({ primaryWallet }: Props) {
       <CenteredCard open={popup === "deposit"} onClose={() => setPopup(null)} title="Deposit">
         <div className="flex flex-col gap-4 p-6">
           <p className="font-body text-lead text-accent">
-            Send USDC (Arc network) to your wallet address below, or use the Circle Faucet for testnet funds.
+            Send USDC (Arc network) to your wallet address below, or use the Circle Faucet
           </p>
           <div className="flex items-center gap-2 bg-surface rounded-[var(--radius-slant)] p-3">
             <code className="font-body text-small font-mono break-all flex-1">

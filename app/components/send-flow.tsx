@@ -17,6 +17,7 @@ interface TipSettings {
   slot2: number;
   slot3: number;
   slot4: number | null;
+  slot5: number | null;
   default_slot: number;
 }
 
@@ -262,7 +263,7 @@ export default function SendFlow({ open, onOpenChange }: Props) {
           )}
 
           <div className="w-full grid grid-cols-2 gap-3">
-            {([1, 2, 3, 4] as const).map((slot) => {
+            {([1, 2, 3, 4, 5] as const).map((slot) => {
               const value = slotAmount(slot);
               if (value == null) return null;
               const isSelected = selectedSlot === slot;

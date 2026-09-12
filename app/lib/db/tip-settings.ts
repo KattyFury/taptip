@@ -6,6 +6,7 @@ export interface TipSettings {
   slot2: number;
   slot3: number;
   slot4: number | null;
+  slot5: number | null;
   default_slot: number;
 }
 
@@ -18,10 +19,10 @@ export async function getTipSettings(userId: string): Promise<TipSettings | null
   return row ?? null;
 }
 
-const SLOT_COLUMNS = ["slot1", "slot2", "slot3", "slot4"] as const;
+const SLOT_COLUMNS = ["slot1", "slot2", "slot3", "slot4", "slot5"] as const;
 
 export async function updateTipSlot(userId: string, slot: number, value: number) {
-  if (slot < 1 || slot > 4) throw new Error("slot must be 1-4");
+  if (slot < 1 || slot > 5) throw new Error("slot must be 1-5");
   const db = await getDb();
   const column = SLOT_COLUMNS[slot - 1];
   await db
@@ -31,7 +32,7 @@ export async function updateTipSlot(userId: string, slot: number, value: number)
 }
 
 export async function setDefaultSlot(userId: string, slot: number) {
-  if (slot < 1 || slot > 4) throw new Error("slot must be 1-4");
+  if (slot < 1 || slot > 5) throw new Error("slot must be 1-5");
   const current = await getTipSettings(userId);
   const column = SLOT_COLUMNS[slot - 1];
   if (!current || current[column] == null) {

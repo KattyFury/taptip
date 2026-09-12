@@ -24,7 +24,7 @@ export async function PATCH(req: NextRequest) {
     setDefault?: boolean;
   };
 
-  if (!slot || slot < 1 || slot > 4) {
+  if (!slot || slot < 1 || slot > 5) {
     return NextResponse.json({ error: "Invalid slot" }, { status: 400 });
   }
 

@@ -34,6 +34,10 @@ import {
   IconClock,
   IconLogout2,
   IconAlertTriangle,
+  IconLock,
+  IconLockOpen,
+  IconChevronUp,
+  IconChevronDown,
   type IconProps as TablerIconProps,
 } from "@tabler/icons-react";
 
@@ -71,3 +75,7 @@ export const ArrowUp = wrap(IconArrowUp);
 export const Clock = wrap(IconClock);
 export const Logout = wrap(IconLogout2);
 export const Warning = wrap(IconAlertTriangle);
+export const Lock = wrap(IconLock);
+export const LockOpen = wrap(IconLockOpen);
+export const ChevronUp = wrap(IconChevronUp);
+export const ChevronDown = wrap(IconChevronDown);
