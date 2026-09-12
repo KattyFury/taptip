@@ -48,7 +48,7 @@ export function HistoryScreen() {
         </BackAction>
       }
     >
-      <div className="w-full flex-1 min-h-0 overflow-y-auto border-2 border-brand rounded-[var(--radius-slant)] px-4">
+      <div className="w-full flex-1 min-h-0 overflow-y-auto tt-card-cut bg-surface px-4">
         {rows == null && (
           <p className="py-6 text-center font-body text-body text-accent">Loading...</p>
         )}

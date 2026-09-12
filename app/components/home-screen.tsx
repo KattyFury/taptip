@@ -156,7 +156,10 @@ function HomeScreenContent({ primaryWallet }: Props) {
           QR phai vuong that de quet duoc. */}
       <div style={{ gridRow: "2 / 6" }} className="flex items-center justify-center">
         {hasWallet ? (
-          <div className="h-full aspect-square max-w-full p-4 bg-background border-2 border-brand rounded-[var(--radius-slant)] flex items-center justify-center">
+          // Sharp corners, KHONG bo goc/nghieng - dung Figma "Rectangle 3"
+          // (bg-black phang, khong rounded) - QR phai vuong nguyen de quet
+          // duoc, day la ngoai le co chu dich duy nhat trong he thong.
+          <div className="h-full aspect-square max-w-full p-4 bg-background border-2 border-brand flex items-center justify-center">
             <QRCodeSVG
               value={encodeTapTipQr(primaryWallet.wallet_address)}
               size={260}
@@ -165,7 +168,7 @@ function HomeScreenContent({ primaryWallet }: Props) {
             />
           </div>
         ) : (
-          <div className="h-full aspect-square max-w-full flex items-center justify-center border-2 border-brand rounded-[var(--radius-slant)] font-body text-lead text-accent text-center px-4">
+          <div className="h-full aspect-square max-w-full flex items-center justify-center border-2 border-brand font-body text-lead text-accent text-center px-4">
             Setting up your wallet...
           </div>
         )}

@@ -204,8 +204,11 @@
   animation: tt-caret 1s steps(1) infinite;
 }
 
-/* Hinh dang "cat goc" dac trung cho card popup (menu, modal) - lay ty le tu
-   Figma (Rectangle 15/16): vat cheo goc duoi-phai, 3 goc con lai vuong. */
+/* Hinh dang "cat goc" dac trung cho card/box lon (menu, History...) - vat
+   cheo goc duoi-phai, 3 goc con lai vuong. Do doc theo PX CO DINH (khong
+   phai %) - do truc tiep tu 2 file SVG goc Figma (menu card + History
+   Rectangle 16): ca 2 box khac kich thuoc nhau nhung cung vat ~68px doc /
+   ~32px ngang -> xac nhan day la 1 "notch" co dinh, khong ty le theo box. */
 .tt-card-cut {
-  clip-path: polygon(0 0, 100% 0, 100% 70%, 88% 100%, 0 100%);
+  clip-path: polygon(0 0, 100% 0, 100% calc(100% - 68px), calc(100% - 32px) 100%, 0 100%);
 }

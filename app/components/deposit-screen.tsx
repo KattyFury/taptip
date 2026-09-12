@@ -23,13 +23,25 @@ export function DepositScreen({ walletAddress }: { walletAddress: string }) {
         </BackAction>
       }
     >
-      <p className="font-body text-lead text-accent text-center">
+      {/* Doan mo ta: den, can TRAI (khong phai xam/can giua) - dung mau/can
+          le nguyen ban Figma node 11:395. */}
+      <p className="font-body text-lead text-foreground text-left w-full">
         Send USDC (Arc network) to your wallet address below, or use the Circle Faucet
       </p>
-      <div className="w-full flex items-center gap-2 bg-surface rounded-[var(--radius-slant)] p-3">
-        <code className="font-body text-small font-mono break-all flex-1">{walletAddress}</code>
-        <CopyButton value={walletAddress} label="Copy wallet address" />
+
+      {/* O dia chi: hop VIEN xanh nen trong (cung kieu nut outline voi Back),
+          KHONG phai o nen xam nhu input - dung Figma node 11:387/11:403. */}
+      <div
+        className="w-full h-[52px] [transform:skewX(var(--skew-angle))] rounded-[var(--radius-slant)] bg-background border-2 border-brand shrink-0"
+      >
+        <div className="flex items-center gap-2 w-full h-full px-4 [transform:skewX(calc(-1*var(--skew-angle)))]">
+          <span className="font-display text-lead font-semibold text-brand truncate flex-1">
+            {walletAddress}
+          </span>
+          <CopyButton value={walletAddress} label="Copy wallet address" />
+        </div>
       </div>
+
       <SlantButton
         style={{ height: "56px", width: "100%" }}
         onClick={() => window.open(CIRCLE_FAUCET_URL, "_blank", "noopener,noreferrer")}
