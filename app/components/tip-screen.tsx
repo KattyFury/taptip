@@ -39,7 +39,6 @@ export function TipScreen() {
   const [lastAmount, setLastAmount] = useState<number | null>(null);
 
   const scannerRef = useRef<Html5Qrcode | null>(null);
-  const fileInputRef = useRef<HTMLInputElement>(null);
   const selectedSlotRef = useRef<number | null>(null);
 
   const balanceNum = isNaN(balance.token) ? 0 : balance.token;
@@ -105,7 +104,10 @@ export function TipScreen() {
             const size = Math.max(50, Math.floor(Math.min(w, h) * 0.7));
             return { width: size, height: size };
           },
-          aspectRatio: 1,
+          // Khung camera khong con vuong tuyet doi (340x328 theo Figma) -
+          // xin video dung ti le do thay vi 1:1 de video lap day khong bi
+          // crop/letterbox lech.
+          aspectRatio: 340 / 328,
         },
         (decodedText) => handleScanResultRef.current(decodedText),
         () => {
@@ -114,7 +116,7 @@ export function TipScreen() {
       );
     } catch (err) {
       console.warn("Could not start camera:", err);
-      setScanError("Could not open camera. Try uploading a QR image instead.");
+      setScanError("Could not open camera.");
     }
   };
 
@@ -135,23 +137,6 @@ export function TipScreen() {
         });
     } catch {
       // scanner chua kip chay xong luc bi yeu cau dung - bo qua an toan
-    }
-  };
-
-  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-
-    setScanError(null);
-    const scanner = new Html5Qrcode(QR_REGION_ID);
-    try {
-      const decodedText = await scanner.scanFile(file, false);
-      handleScanResult(decodedText);
-    } catch (err) {
-      console.error("Could not decode QR from image:", err);
-      setScanError("Could not read a QR code in this image.");
-    } finally {
-      e.target.value = "";
     }
   };
 
@@ -224,59 +209,49 @@ export function TipScreen() {
           </BackAction>
         }
       >
-        {/* Khung camera - CAT GOC (tt-card-cut), rong FULL nhu Figma (khong
-            tu gioi han max-w-[300px] - do la tu bia them, khien le trong
-            man to hon 25px quy dinh, phan hoi that 09-13). */}
-        <div className="relative w-full aspect-square tt-card-cut overflow-hidden bg-foreground">
-          <div id={QR_REGION_ID} className="w-full h-full" />
+        {/* Do lai TUYET DOI tu get_metadata node 11:458 (px that, khong doan
+            qua % suy dien): camera y=172 h=327.8 (KHONG phai vuong - ti le
+            340x328, gan vuong nhung khong dung 1:1), roi CHI 16px (dung 1
+            row-gap) toi hang preset y=516. Ca 2 nam gon trong 1 khoi gap-4
+            rieng (16px) - KHONG dung gap-6 mac dinh cua Screen (24px, sai
+            khoang cach that trong Figma). Da bo het: khung vang huong dan
+            quet (Figma khong ve), nut "Upload a QR image instead" (Figma
+            khong co), gioi han max-w gia tao truoc do. */}
+        <div className="w-full flex flex-col gap-4">
           <div
-            aria-hidden
-            className="pointer-events-none absolute left-[15%] top-[15%] w-[70%] h-[70%] border-[3px] border-primary rounded-sm"
-          />
-        </div>
+            className="relative w-full tt-card-cut overflow-hidden bg-foreground"
+            style={{ height: "328px" }}
+          >
+            <div id={QR_REGION_ID} className="w-full h-full" />
+          </div>
 
-        <button
-          onClick={() => fileInputRef.current?.click()}
-          className="font-body text-body font-semibold text-brand text-center"
-        >
-          Upload a QR image instead
-        </button>
+          {/* Preset $ - nghieng + VIEN xanh (khac han preset phang tren
+              Home): chua chon = nen trong, da chon = nen vang. Dung 3 cot 1
+              hang nhu Figma (khong phai luoi 2 cot). */}
+          <div className="w-full grid grid-cols-3 gap-2">
+            {([1, 2, 3, 4, 5] as const).map((slot) => {
+              const value = slotAmount(slot);
+              if (value == null) return null;
+              const isSelected = selectedSlot === slot;
+              return (
+                <button
+                  key={slot}
+                  onClick={() => selectSlot(slot)}
+                  className={
+                    `w-full h-[70px] [transform:skewX(var(--skew-angle))] rounded-[var(--radius-slant)] border-2 border-brand font-display text-lead font-bold ` +
+                    (isSelected ? "bg-primary text-primary-foreground" : "bg-background text-brand")
+                  }
+                >
+                  <span className="inline-block [transform:skewX(calc(-1*var(--skew-angle)))]">${value}</span>
+                </button>
+              );
+            })}
+          </div>
+        </div>
 
         {scanError && (
           <p className="font-body text-small font-semibold text-danger text-center">{scanError}</p>
         )}
-
-        {/* Preset $ - nghieng + VIEN xanh (khac han preset phang tren Home):
-            chua chon = nen trong, da chon = nen vang. Dung Figma node 11:458
-            - CHI 3 nut $, KHONG co "Custom" (Figma khong ve, bo han theo
-            phan hoi that 09-13). */}
-        <div className="w-full grid grid-cols-2 gap-3">
-          {([1, 2, 3, 4, 5] as const).map((slot) => {
-            const value = slotAmount(slot);
-            if (value == null) return null;
-            const isSelected = selectedSlot === slot;
-            return (
-              <button
-                key={slot}
-                onClick={() => selectSlot(slot)}
-                className={
-                  `w-full h-11 [transform:skewX(var(--skew-angle))] rounded-[var(--radius-slant)] border-2 border-brand font-display text-lead font-bold ` +
-                  (isSelected ? "bg-primary text-primary-foreground" : "bg-background text-brand")
-                }
-              >
-                <span className="inline-block [transform:skewX(calc(-1*var(--skew-angle)))]">${value}</span>
-              </button>
-            );
-          })}
-        </div>
-
-        <input
-          ref={fileInputRef}
-          type="file"
-          accept="image/*"
-          className="hidden"
-          onChange={handleFileUpload}
-        />
       </Screen>
 
       {isOverlayStep && (
