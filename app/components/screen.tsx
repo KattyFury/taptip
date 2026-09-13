@@ -211,7 +211,11 @@ export function TextLink({
   );
 }
 
-/** O nhap lieu: nen xam-xanh (--surface), nghieng cung kieu voi nut. */
+/** O nhap lieu: nen xam-xanh (--surface), nghieng cung kieu voi nut. Figma
+ * khong ve trang thai focus rieng nao (khong vien/ring gi them luc bam vao)
+ * nen KHONG tu bia them focus:ring - bam nay tung gay bug that (09-13):
+ * ring ve tren input da bi counter-skew nen hien thanh 1 hinh chu nhat
+ * thang lech han khoi khung nghieng ben ngoai, nhin nhu loi. */
 export function Field({
   className = "",
   ...props
@@ -221,7 +225,7 @@ export function Field({
       <input
         className={
           `w-full h-full px-5 font-body text-lead text-left text-foreground placeholder:text-accent ` +
-          `outline-none focus:ring-2 focus:ring-brand bg-transparent ${SLANT_CONTENT} ${className}`
+          `outline-none bg-transparent ${SLANT_CONTENT} ${className}`
         }
         {...props}
       />

@@ -188,6 +188,17 @@
   display: none !important;
 }
 
+/* Trinh duyet (Chrome/Safari) tu to nen vang nhat cho o nhap duoc autofill/
+   goi y - khong phai thiet ke, chan lai bang trick inset box-shadow (cach
+   duy nhat ghi de duoc mau nay, doi background thuong khong an thua). */
+input:-webkit-autofill,
+input:-webkit-autofill:hover,
+input:-webkit-autofill:focus {
+  -webkit-box-shadow: 0 0 0 1000px var(--surface) inset;
+  -webkit-text-fill-color: var(--foreground);
+  transition: background-color 9999s ease-in-out 0s;
+}
+
 /* Con tro nhay trong o OTP dang cho nhap */
 @keyframes tt-caret {
   0%,
