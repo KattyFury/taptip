@@ -1,9 +1,10 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { useRouter } from "next/navigation";
 import { Html5Qrcode } from "html5-qrcode";
 import * as Icon from "@/components/icons";
-import { CenteredCard } from "@/components/content-popup";
+import { Screen, BackAction, PrimaryButton } from "@/components/screen";
 import { useBalance } from "@/contexts/balanceContext";
 import { toast } from "sonner";
 import { decodeTapTipQr } from "@/lib/utils/qr-payment";
@@ -21,13 +22,15 @@ interface TipSettings {
   default_slot: number;
 }
 
-interface Props {
-  open: boolean;
-  onOpenChange: (open: boolean) => void;
-}
-
-export default function SendFlow({ open, onOpenChange }: Props) {
-
+/**
+ * Man "Tipping..." rieng (khong con la popup) - dung dung Figma frame
+ * (node 11:458, lop trong file dat nham ten "history" nhung noi dung/tieu
+ * de la man tip: camera quet QR cat goc + 3 preset $, Back+Done). Nut preset
+ * o day KIEU KHAC han preset tren Home: nghieng + VIEN xanh (khong phai nen
+ * xam phang) - chon roi thi nen vang, khong chon thi nen trong.
+ */
+export function TipScreen() {
+  const router = useRouter();
   const { balance, refreshBalances } = useBalance();
   const [step, setStep] = useState<Step>("scan");
   const [settings, setSettings] = useState<TipSettings | null>(null);
@@ -43,28 +46,20 @@ export default function SendFlow({ open, onOpenChange }: Props) {
   const balanceNum = isNaN(balance.token) ? 0 : balance.token;
 
   useEffect(() => {
-    if (!open) {
-      setStep("scan");
-      setScanError(null);
-      stopScanner();
-      return;
-    }
-
     fetch("/api/tip-settings")
       .then((res) => res.json() as Promise<{ settings: TipSettings }>)
       .then((data) => {
         setSettings(data.settings);
-        // Man tinh giu nguyen muc vua chon lan quet truoc - chi dat lai ve
-        // mac dinh neu chua tung chon gi trong phien nay.
         if (selectedSlotRef.current == null) {
           selectSlot(data.settings.default_slot);
         }
       })
       .catch(() => toast.error("Could not load tip amounts"));
-  }, [open]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   useEffect(() => {
-    if (open && step === "scan") {
+    if (step === "scan") {
       startScanner();
     } else {
       stopScanner();
@@ -72,7 +67,8 @@ export default function SendFlow({ open, onOpenChange }: Props) {
     return () => {
       stopScanner();
     };
-  }, [open, step]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [step]);
 
   const slotAmount = (slot: number | null): number | null => {
     if (!settings || slot == null) return null;
@@ -117,7 +113,9 @@ export default function SendFlow({ open, onOpenChange }: Props) {
         {
           fps: 10,
           qrbox: (w: number, h: number) => {
-            const size = Math.floor(Math.min(w, h) * 0.7);
+            // html5-qrcode tu nem loi neu duoi 50px (vd camera gia/do phan
+            // giai la nho trong moi truong test) - dat san 1 san chan.
+            const size = Math.max(50, Math.floor(Math.min(w, h) * 0.7));
             return { width: size, height: size };
           },
           aspectRatio: 1,
@@ -135,14 +133,21 @@ export default function SendFlow({ open, onOpenChange }: Props) {
 
   const stopScanner = () => {
     const scanner = scannerRef.current;
-    if (scanner) {
+    scannerRef.current = null;
+    if (!scanner) return;
+    try {
+      // html5-qrcode co the nem loi DONG BO (khong phai Promise reject) neu
+      // goi stop() luc scanner con dang giua chung khoi dong (vd React 18
+      // Strict Mode dev mount-cleanup-mount kep) - .catch() thoi khong bat
+      // duoc, phai boc ca try/catch ben ngoai.
       scanner
         .stop()
         .then(() => scanner.clear())
         .catch(() => {
           // scanner may already be stopped
         });
-      scannerRef.current = null;
+    } catch {
+      // scanner chua kip chay xong luc bi yeu cau dung - bo qua an toan
     }
   };
 
@@ -176,7 +181,6 @@ export default function SendFlow({ open, onOpenChange }: Props) {
 
     const decoded = decodeTapTipQr(decodedText);
     if (!decoded.ok) {
-      // Log nguyen van de con lan ra QR nao khong doc duoc, thay vi doan mo.
       console.warn("Rejected QR:", decodedText);
       setScanError(
         decoded.reason === "wrong-network"
@@ -189,8 +193,6 @@ export default function SendFlow({ open, onOpenChange }: Props) {
     stopScanner();
     setStep("sending");
 
-    // Circle giu khoa va ky phia server -> khong co buoc xac nhan nao o day,
-    // quet xong la tien di. Lich su cung duoc route ghi luon.
     const response = await fetch("/api/tip", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -213,16 +215,10 @@ export default function SendFlow({ open, onOpenChange }: Props) {
     });
 
     setTimeout(() => {
-      setStep("scan");
+      router.push("/dashboard");
     }, 2000);
   };
 
-  // Camera dang ky callback quet MOT LAN luc scanner.start(), nen callback do
-  // "dong bang" moi state tai thoi diem ay - luc do `settings` con dang fetch
-  // nen chua chon slot nao, `selectedAmount` = null. UI render lai thay $1
-  // sang len nhung callback cu van cam null -> quet xong bao "Choose an amount
-  // first" du man hinh dang hien $1 (va khong bao gio hoi passkey vi chua
-  // toi buoc ky). Tro nay luon tro toi ban moi nhat cua handleScanResult.
   const handleScanResultRef = useRef(handleScanResult);
   useEffect(() => {
     handleScanResultRef.current = handleScanResult;
@@ -232,83 +228,80 @@ export default function SendFlow({ open, onOpenChange }: Props) {
 
   return (
     <>
-      {/* Card "Scan to tip" giua man, Home mo phia sau qua scrim cua CenteredCard.
-          Noi dung dai (camera/QR + "Upload..." + luoi nut chon tien + Custom)
-          - small={false}: trai hang 2 toi hang 7 (quy dinh chung popup dai,
-          xem content-popup.tsx), khong dung rieng maxHeightCqh nua. */}
-      <CenteredCard
-        open={open}
-        onClose={() => onOpenChange(false)}
-        title="Scan to tip"
-        small={false}
+      <Screen
+        title="Tipping..."
+        tightContent
+        action={
+          <BackAction onBack={() => router.push("/dashboard")}>
+            <PrimaryButton onClick={() => router.push("/dashboard")}>Done</PrimaryButton>
+          </BackAction>
+        }
       >
-        <div className="flex flex-col items-center px-5 pb-5 gap-4">
-          <div className="relative w-full aspect-square rounded-[var(--radius-slant)] overflow-hidden bg-foreground border-2 border-brand">
-            <div id={QR_REGION_ID} className="w-full h-full" />
-            <div
-              aria-hidden
-              className="pointer-events-none absolute left-[15%] top-[15%] w-[70%] h-[70%] border-[3px] border-primary rounded-sm"
-            />
-          </div>
-
-          <button
-            onClick={() => fileInputRef.current?.click()}
-            className="font-body text-body font-semibold text-brand text-center"
-          >
-            Upload a QR image instead
-          </button>
-
-          {scanError && (
-            <p className="font-body text-small font-semibold text-danger text-center">{scanError}</p>
-          )}
-
-          <div className="w-full grid grid-cols-2 gap-3">
-            {([1, 2, 3, 4, 5] as const).map((slot) => {
-              const value = slotAmount(slot);
-              if (value == null) return null;
-              const isSelected = selectedSlot === slot;
-              return (
-                <button
-                  key={slot}
-                  onClick={() => selectSlot(slot)}
-                  className={
-                    `w-full h-11 [transform:skewX(var(--skew-angle))] rounded-[var(--radius-slant)] font-display text-lead font-bold ` +
-                    (isSelected
-                      ? "bg-primary text-primary-foreground"
-                      : "bg-surface text-brand")
-                  }
-                >
-                  <span className="inline-block [transform:skewX(calc(-1*var(--skew-angle)))]">${value}</span>
-                </button>
-              );
-            })}
-            <button
-              onClick={selectCustom}
-              className={
-                `w-full h-11 [transform:skewX(var(--skew-angle))] rounded-[var(--radius-slant)] font-display text-lead font-bold ` +
-                (selectedSlot === "custom"
-                  ? "bg-primary text-primary-foreground"
-                  : "bg-surface text-brand")
-              }
-            >
-              <span className="inline-block [transform:skewX(calc(-1*var(--skew-angle)))]">Custom</span>
-            </button>
-          </div>
-
-          {selectedSlot === "custom" && (
-            <input
-              autoFocus
-              type="number"
-              inputMode="decimal"
-              min={0}
-              step="0.01"
-              value={customAmount}
-              onChange={(e) => setCustomAmount(e.target.value)}
-              placeholder="Enter an amount"
-              className="w-full h-11 rounded-[var(--radius-slant)] bg-surface px-4 font-body text-body text-center text-foreground outline-none focus:ring-2 focus:ring-brand"
-            />
-          )}
+        {/* Khung camera - CAT GOC (tt-card-cut) giong Home/History, khong con
+            bo-goc-thuong+vien nhu ban popup cu. */}
+        <div className="relative w-full max-w-[300px] aspect-square mx-auto tt-card-cut overflow-hidden bg-foreground">
+          <div id={QR_REGION_ID} className="w-full h-full" />
+          <div
+            aria-hidden
+            className="pointer-events-none absolute left-[15%] top-[15%] w-[70%] h-[70%] border-[3px] border-primary rounded-sm"
+          />
         </div>
+
+        <button
+          onClick={() => fileInputRef.current?.click()}
+          className="font-body text-body font-semibold text-brand text-center"
+        >
+          Upload a QR image instead
+        </button>
+
+        {scanError && (
+          <p className="font-body text-small font-semibold text-danger text-center">{scanError}</p>
+        )}
+
+        {/* Preset $ - nghieng + VIEN xanh (khac han preset phang tren Home):
+            chua chon = nen trong, da chon = nen vang. Dung Figma node 11:458. */}
+        <div className="w-full grid grid-cols-2 gap-3">
+          {([1, 2, 3, 4, 5] as const).map((slot) => {
+            const value = slotAmount(slot);
+            if (value == null) return null;
+            const isSelected = selectedSlot === slot;
+            return (
+              <button
+                key={slot}
+                onClick={() => selectSlot(slot)}
+                className={
+                  `w-full h-11 [transform:skewX(var(--skew-angle))] rounded-[var(--radius-slant)] border-2 border-brand font-display text-lead font-bold ` +
+                  (isSelected ? "bg-primary text-primary-foreground" : "bg-background text-brand")
+                }
+              >
+                <span className="inline-block [transform:skewX(calc(-1*var(--skew-angle)))]">${value}</span>
+              </button>
+            );
+          })}
+          <button
+            onClick={selectCustom}
+            className={
+              `w-full h-11 [transform:skewX(var(--skew-angle))] rounded-[var(--radius-slant)] border-2 border-brand font-display text-lead font-bold ` +
+              (selectedSlot === "custom" ? "bg-primary text-primary-foreground" : "bg-background text-brand")
+            }
+          >
+            <span className="inline-block [transform:skewX(calc(-1*var(--skew-angle)))]">Custom</span>
+          </button>
+        </div>
+
+        {selectedSlot === "custom" && (
+          <input
+            autoFocus
+            type="number"
+            inputMode="decimal"
+            min={0}
+            step="0.01"
+            value={customAmount}
+            onChange={(e) => setCustomAmount(e.target.value)}
+            placeholder="Enter an amount"
+            className="w-full h-11 rounded-[var(--radius-slant)] bg-surface px-4 font-body text-body text-center text-foreground outline-none"
+          />
+        )}
 
         <input
           ref={fileInputRef}
@@ -317,7 +310,7 @@ export default function SendFlow({ open, onOpenChange }: Props) {
           className="hidden"
           onChange={handleFileUpload}
         />
-      </CenteredCard>
+      </Screen>
 
       {isOverlayStep && (
         <OverlayCard>
@@ -330,8 +323,6 @@ export default function SendFlow({ open, onOpenChange }: Props) {
           {step === "success" && (
             <>
               <Icon.Check className="w-14 h-14 text-success" />
-              {/* "Tipped $3", khong phai "-$3": dau tru mot minh khong noi duoc
-                  la vua tip xong hay vua bi tru tien vi ly do nao khac. */}
               <p className="font-display text-title font-bold text-brand">Tipped ${lastAmount}</p>
             </>
           )}

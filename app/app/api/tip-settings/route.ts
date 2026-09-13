@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getSession } from "@/lib/auth/session";
-import { getTipSettings, updateTipSlot, setDefaultSlot } from "@/lib/db/tip-settings";
+import { getTipSettings, updateTipSlot, setDefaultSlot, clearTipSlot } from "@/lib/db/tip-settings";
 
 export async function GET() {
   const userId = await getSession();
@@ -18,10 +18,11 @@ export async function PATCH(req: NextRequest) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const { slot, value, setDefault } = (await req.json()) as {
+  const { slot, value, setDefault, clear } = (await req.json()) as {
     slot?: number;
     value?: number;
     setDefault?: boolean;
+    clear?: boolean;
   };
 
   if (!slot || slot < 1 || slot > 5) {
@@ -29,7 +30,9 @@ export async function PATCH(req: NextRequest) {
   }
 
   try {
-    if (typeof value === "number") {
+    if (clear) {
+      await clearTipSlot(userId, slot);
+    } else if (typeof value === "number") {
       if (isNaN(value) || value <= 0) {
         return NextResponse.json({ error: "Invalid amount" }, { status: 400 });
       }

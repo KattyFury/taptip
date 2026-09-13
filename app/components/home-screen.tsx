@@ -5,7 +5,6 @@ import { useRouter } from "next/navigation";
 import { QRCodeSVG } from "qrcode.react";
 import * as Icon from "@/components/icons";
 import { useBalance, BalanceProvider } from "@/contexts/balanceContext";
-import SendFlow from "@/components/send-flow";
 import { SlantButton } from "@/components/screen";
 import { TipPresetsRow } from "@/components/tip-presets-row";
 import { CopyButton } from "@/components/copy-button";
@@ -51,7 +50,6 @@ function HomeScreenContent({ primaryWallet }: Props) {
   const router = useRouter();
   const { balance, balanceError } = useBalance();
   const [menuOpen, setMenuOpen] = useState(false);
-  const [sendOpen, setSendOpen] = useState(false);
 
   const hasWallet =
     !!primaryWallet.wallet_address && primaryWallet.wallet_address !== "0x0";
@@ -201,7 +199,7 @@ function HomeScreenContent({ primaryWallet }: Props) {
         <SlantButton
           style={{ width: "100%", height: "70px" }}
           className="text-title"
-          onClick={() => setSendOpen(true)}
+          onClick={() => router.push("/dashboard/tip")}
         >
           Tap to Tip
         </SlantButton>
@@ -215,8 +213,6 @@ function HomeScreenContent({ primaryWallet }: Props) {
           </p>
         )}
       </div>
-
-      <SendFlow open={sendOpen} onOpenChange={setSendOpen} />
     </div>
   );
 }

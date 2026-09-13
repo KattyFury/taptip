@@ -44,3 +44,18 @@ export async function setDefaultSlot(userId: string, slot: number) {
     .bind(slot, userId)
     .run();
 }
+
+/** Xoa 1 nut da them (chi cho slot 4/5 - 3 nut mac dinh $2/$10/$20 khong
+ * xoa duoc). Neu dang la default thi tra ve slot1 cho chac chan luon co
+ * mac dinh hop le. */
+export async function clearTipSlot(userId: string, slot: number) {
+  if (slot < 4 || slot > 5) throw new Error("Chi xoa duoc nut da them (4-5)");
+  const db = await getDb();
+  const column = SLOT_COLUMNS[slot - 1];
+  await db
+    .prepare(
+      `UPDATE tip_settings SET ${column} = NULL, default_slot = CASE WHEN default_slot = ? THEN 1 ELSE default_slot END WHERE user_id = ?`,
+    )
+    .bind(slot, userId)
+    .run();
+}

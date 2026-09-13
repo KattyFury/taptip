@@ -211,20 +211,29 @@ export function TextLink({
   );
 }
 
-/** O nhap lieu: nen xam-xanh (--surface), nghieng cung kieu voi nut. Figma
- * khong ve trang thai focus rieng nao (khong vien/ring gi them luc bam vao)
- * nen KHONG tu bia them focus:ring - bam nay tung gay bug that (09-13):
- * ring ve tren input da bi counter-skew nen hien thanh 1 hinh chu nhat
- * thang lech han khoi khung nghieng ben ngoai, nhin nhu loi. */
+/** O nhap lieu: nen xam-xanh (--surface), nghieng cung kieu voi nut.
+ *
+ * QUY TAC BAT BUOC khi dung SLANT_SHAPE/SLANT_CONTENT (dung 2 lan sai that
+ * 09-13, ghi lai de khong lap): phan tu mang SLANT_CONTENT (counter-skew)
+ * sau khi cong don voi SLANT_SHAPE cua cha se hien THANG (dung y), NHUNG
+ * hinh CHU NHAT rieng cua no (bounding box) khong con trung khop voi hinh
+ * BINH HANH nhin thay - 2 goc doi dien (vd tren-trai/duoi-phai) se LOI ra
+ * ngoai net nghieng, nhin nhu 2 hinh chong nhau. KHONG BAO GIO dat nen/vien/
+ * shadow rieng len chinh phan tu mang SLANT_CONTENT (tung sai 2 lan: focus
+ * ring, roi mau nen autofill trinh duyet). Neu bat buoc phai co (nhu
+ * autofill khong the dat noi khac), phai INSET no vao trong bang padding
+ * cua CHA de o vuong con lai chac chan nam gon trong hinh binh hanh, KHONG
+ * duoc phep to het canh - do la ly do co px-4 ben ngoai + px-1 ben trong
+ * duoi day (tong khoang cach chu-den-canh giu nguyen 20px nhu truoc). */
 export function Field({
   className = "",
   ...props
 }: React.InputHTMLAttributes<HTMLInputElement>) {
   return (
-    <div className={`h-[52px] w-full ${SLANT_SHAPE} bg-surface`}>
+    <div className={`h-[52px] w-full px-4 ${SLANT_SHAPE} bg-surface`}>
       <input
         className={
-          `w-full h-full px-5 font-body text-lead text-left text-foreground placeholder:text-accent ` +
+          `w-full h-full px-1 font-body text-lead text-left text-foreground placeholder:text-accent ` +
           `outline-none bg-transparent ${SLANT_CONTENT} ${className}`
         }
         {...props}

@@ -15,8 +15,12 @@ interface TipSettings {
 
 const SLOTS = [1, 2, 3, 4, 5] as const;
 const MAX_SLOTS = 5;
-/** 8px keo = doi $1 - danh cho thao tac "slide len xuong de chinh so tien". */
-const PX_PER_DOLLAR = 8;
+/** 3 nut mac dinh $2/$10/$20 khong xoa duoc - chi nut TU THEM (4-5) moi co
+ * dau X. */
+const DEFAULT_SLOT_COUNT = 3;
+/** 18px keo = doi $1 - tang tu 8 len 18 vi 8 qua nhay (mot chut run tay la
+ * doi so ngay, dung phan hoi that 09-13: "keo con nhay nhay bay ba"). */
+const PX_PER_DOLLAR = 18;
 
 /**
  * Hang preset tien tip ngay tren Home (thay the popup "Tip Setting" rieng +
@@ -86,9 +90,25 @@ export function TipPresetsRow() {
     persist(nextEmptySlot, (lastValue as number) + 10);
   };
 
+  const clearSlot = (slot: number) => {
+    fetch("/api/tip-settings", {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ slot, clear: true }),
+    })
+      .then((res) => res.json() as Promise<{ settings: TipSettings }>)
+      .then((data) => setSettings(data.settings))
+      .catch(() => toast.error("Could not remove, try again"));
+  };
+
+  // Da tung "nhay nhay bay ba" (phan hoi that 09-13) vi moi lan pointermove
+  // deu setState + trinh duyet co the vua keo vua cuon trang cung luc. Sua:
+  // preventDefault + capture bang chinh currentTarget (khong phai e.target -
+  // co the la span/svg con ben trong) de dam bao nhan du moi su kien keo.
   const onPointerDown = (slot: number, value: number) => (e: React.PointerEvent) => {
     if (!unlocked) return;
-    (e.target as Element).setPointerCapture(e.pointerId);
+    e.preventDefault();
+    e.currentTarget.setPointerCapture(e.pointerId);
     dragStartRef.current = { y: e.clientY, value };
     setDragSlot(slot);
     setDragValue(value);
@@ -96,19 +116,21 @@ export function TipPresetsRow() {
 
   const onPointerMove = (e: React.PointerEvent) => {
     if (dragSlot == null || !dragStartRef.current) return;
+    e.preventDefault();
     const deltaY = dragStartRef.current.y - e.clientY;
     const deltaDollars = Math.round(deltaY / PX_PER_DOLLAR);
     const next = Math.max(1, dragStartRef.current.value + deltaDollars);
-    setDragValue(next);
+    setDragValue((prev) => (prev === next ? prev : next));
   };
 
-  const onPointerUp = () => {
+  const onPointerUp = (e: React.PointerEvent) => {
     if (dragSlot != null && dragValue != null) {
       const original = dragStartRef.current?.value;
       if (dragValue !== original) {
         persist(dragSlot, dragValue);
       }
     }
+    e.currentTarget.releasePointerCapture(e.pointerId);
     dragStartRef.current = null;
     setDragSlot(null);
     setDragValue(null);
@@ -144,24 +166,42 @@ export function TipPresetsRow() {
           const isDefault = settings.default_slot === slot;
           const isDragging = dragSlot === slot;
           const displayValue = isDragging && dragValue != null ? dragValue : slotValue(slot);
+          // Chi nut TU THEM (4-5) moi xoa duoc - 3 nut mac dinh $2/$10/$20
+          // khong co dau X (yeu cau that 09-13).
+          const removable = slot > DEFAULT_SLOT_COUNT;
           return (
-            <button
-              key={slot}
-              onClick={() => makeDefault(slot)}
-              onPointerDown={onPointerDown(slot, slotValue(slot) ?? 0)}
-              onPointerMove={onPointerMove}
-              onPointerUp={onPointerUp}
-              style={{ touchAction: unlocked ? "none" : "auto" }}
-              className={
-                "h-full rounded-[var(--radius-slant)] flex flex-col items-center justify-center gap-0.5 font-display font-bold " +
-                (isDefault ? "bg-primary text-primary-foreground" : "bg-surface text-brand") +
-                (unlocked ? " ring-2 ring-brand/40" : "")
-              }
-            >
-              {unlocked && <Icon.ChevronUp className="w-3 h-3 opacity-60" />}
-              <span className="text-title leading-none">${displayValue}</span>
-              {unlocked && <Icon.ChevronDown className="w-3 h-3 opacity-60" />}
-            </button>
+            <div key={slot} className="relative h-full select-none">
+              <button
+                onClick={() => {
+                  // Che do mo khoa la de KEO chinh gia, khong phai de chon
+                  // mac dinh - tranh vua keo vua vo tinh doi mac dinh.
+                  if (!unlocked) makeDefault(slot);
+                }}
+                onPointerDown={onPointerDown(slot, slotValue(slot) ?? 0)}
+                onPointerMove={onPointerMove}
+                onPointerUp={onPointerUp}
+                style={{ touchAction: unlocked ? "none" : "auto" }}
+                className={
+                  "w-full h-full rounded-[var(--radius-slant)] flex flex-col items-center justify-center gap-0.5 font-display font-bold " +
+                  (isDefault ? "bg-primary text-primary-foreground" : "bg-surface text-brand") +
+                  (unlocked ? " ring-2 ring-brand/40" : "")
+                }
+              >
+                {unlocked && <Icon.ChevronUp className="w-3 h-3 opacity-60" />}
+                <span className="text-title leading-none">${displayValue}</span>
+                {unlocked && <Icon.ChevronDown className="w-3 h-3 opacity-60" />}
+              </button>
+
+              {unlocked && removable && (
+                <button
+                  onClick={() => clearSlot(slot)}
+                  aria-label="Remove this tip amount"
+                  className="absolute -top-1.5 -right-1.5 w-5 h-5 rounded-full bg-danger text-background flex items-center justify-center shadow-btn"
+                >
+                  <Icon.X className="w-3 h-3" />
+                </button>
+              )}
+            </div>
           );
         })}
       </div>
