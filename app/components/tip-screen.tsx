@@ -34,14 +34,13 @@ export function TipScreen() {
   const { balance, refreshBalances } = useBalance();
   const [step, setStep] = useState<Step>("scan");
   const [settings, setSettings] = useState<TipSettings | null>(null);
-  const [selectedSlot, setSelectedSlot] = useState<number | "custom" | null>(null);
-  const [customAmount, setCustomAmount] = useState("");
+  const [selectedSlot, setSelectedSlot] = useState<number | null>(null);
   const [scanError, setScanError] = useState<string | null>(null);
   const [lastAmount, setLastAmount] = useState<number | null>(null);
 
   const scannerRef = useRef<Html5Qrcode | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const selectedSlotRef = useRef<number | "custom" | null>(null);
+  const selectedSlotRef = useRef<number | null>(null);
 
   const balanceNum = isNaN(balance.token) ? 0 : balance.token;
 
@@ -81,19 +80,7 @@ export function TipScreen() {
     setScanError(null);
   };
 
-  const selectCustom = () => {
-    selectedSlotRef.current = "custom";
-    setSelectedSlot("custom");
-    setScanError(null);
-  };
-
-  const customAmountNum = parseFloat(customAmount);
-  const selectedAmount =
-    selectedSlot === "custom"
-      ? (customAmount.trim() !== "" && !isNaN(customAmountNum) && customAmountNum > 0
-          ? customAmountNum
-          : null)
-      : slotAmount(selectedSlot);
+  const selectedAmount = slotAmount(selectedSlot);
 
   const startScanner = async () => {
     setScanError(null);
@@ -237,9 +224,10 @@ export function TipScreen() {
           </BackAction>
         }
       >
-        {/* Khung camera - CAT GOC (tt-card-cut) giong Home/History, khong con
-            bo-goc-thuong+vien nhu ban popup cu. */}
-        <div className="relative w-full max-w-[300px] aspect-square mx-auto tt-card-cut overflow-hidden bg-foreground">
+        {/* Khung camera - CAT GOC (tt-card-cut), rong FULL nhu Figma (khong
+            tu gioi han max-w-[300px] - do la tu bia them, khien le trong
+            man to hon 25px quy dinh, phan hoi that 09-13). */}
+        <div className="relative w-full aspect-square tt-card-cut overflow-hidden bg-foreground">
           <div id={QR_REGION_ID} className="w-full h-full" />
           <div
             aria-hidden
@@ -259,7 +247,9 @@ export function TipScreen() {
         )}
 
         {/* Preset $ - nghieng + VIEN xanh (khac han preset phang tren Home):
-            chua chon = nen trong, da chon = nen vang. Dung Figma node 11:458. */}
+            chua chon = nen trong, da chon = nen vang. Dung Figma node 11:458
+            - CHI 3 nut $, KHONG co "Custom" (Figma khong ve, bo han theo
+            phan hoi that 09-13). */}
         <div className="w-full grid grid-cols-2 gap-3">
           {([1, 2, 3, 4, 5] as const).map((slot) => {
             const value = slotAmount(slot);
@@ -278,30 +268,7 @@ export function TipScreen() {
               </button>
             );
           })}
-          <button
-            onClick={selectCustom}
-            className={
-              `w-full h-11 [transform:skewX(var(--skew-angle))] rounded-[var(--radius-slant)] border-2 border-brand font-display text-lead font-bold ` +
-              (selectedSlot === "custom" ? "bg-primary text-primary-foreground" : "bg-background text-brand")
-            }
-          >
-            <span className="inline-block [transform:skewX(calc(-1*var(--skew-angle)))]">Custom</span>
-          </button>
         </div>
-
-        {selectedSlot === "custom" && (
-          <input
-            autoFocus
-            type="number"
-            inputMode="decimal"
-            min={0}
-            step="0.01"
-            value={customAmount}
-            onChange={(e) => setCustomAmount(e.target.value)}
-            placeholder="Enter an amount"
-            className="w-full h-11 rounded-[var(--radius-slant)] bg-surface px-4 font-body text-body text-center text-foreground outline-none"
-          />
-        )}
 
         <input
           ref={fileInputRef}

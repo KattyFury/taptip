@@ -101,49 +101,58 @@ function HomeScreenContent({ primaryWallet }: Props) {
                 onClick={() => setMenuOpen(false)}
                 aria-hidden="true"
               />
-              {/* Card cat goc dac trung (tt-card-cut), khop kieu Figma
-                  "Rectangle 15" (menu popup neo tu icon Menu). */}
-              <div className="absolute right-0 top-full z-50 mt-2 w-max tt-card-cut border-2 border-brand bg-background shadow-modal overflow-hidden">
-              <div className="w-full flex items-center justify-between gap-3 px-4 py-3 border-b border-brand/30">
-                <div className="flex flex-col min-w-0">
-                  <span className="font-body text-small text-accent">Account Number</span>
-                  <span className="font-display text-lead font-bold text-brand truncate">
-                    {shortenAddress(primaryWallet.wallet_address)}
-                  </span>
+              {/* Card cat goc dac trung + VIEN XANH quanh het duong cat (ke
+                  ca canh cheo) - clip-path khong tu ve duoc net vien tren
+                  canh vua cat cua no (CSS border bi cat mat theo, de lo mau
+                  nen phia sau, bug that 09-13), nen phai gia lap vien bang
+                  2 LOP tt-card-cut long nhau: lop ngoai mau xanh (chinh la
+                  "vien"), lop trong nen kem inset 2px de lo dung 2px xanh
+                  quanh moi canh. Noi dung that nam tren lop nen, tu m-[2px]
+                  de khop dung do inset cua lop nen ben duoi. */}
+              <div className="absolute right-0 top-full z-50 mt-2 w-max tt-card-cut bg-brand shadow-modal">
+                <div className="absolute inset-[2px] tt-card-cut bg-background" aria-hidden="true" />
+                <div className="relative m-[2px] overflow-hidden">
+                  <div className="w-full flex items-center justify-between gap-3 px-4 py-3 border-b border-brand/30">
+                    <div className="flex flex-col min-w-0">
+                      <span className="font-body text-small text-accent">Account Number</span>
+                      <span className="font-display text-lead font-bold text-brand truncate">
+                        {shortenAddress(primaryWallet.wallet_address)}
+                      </span>
+                    </div>
+                    <CopyButton value={primaryWallet.wallet_address} label="Copy wallet address" />
+                  </div>
+                  <button
+                    className="w-full flex items-center gap-3 text-left px-4 py-3 font-display text-lead font-semibold text-foreground border-b border-brand/30"
+                    onClick={() => goTo("/dashboard/deposit")}
+                  >
+                    <Icon.ArrowDown className="w-5 h-5 shrink-0" />
+                    Deposit
+                  </button>
+                  <button
+                    className="w-full flex items-center gap-3 text-left px-4 py-3 font-display text-lead font-semibold text-foreground border-b border-brand/30"
+                    onClick={() => goTo("/dashboard/withdraw")}
+                  >
+                    <Icon.ArrowUp className="w-5 h-5 shrink-0" />
+                    Withdraw
+                  </button>
+                  <button
+                    className="w-full flex items-center gap-3 text-left px-4 py-3 font-display text-lead font-semibold text-foreground border-b border-brand/30"
+                    onClick={() => goTo("/dashboard/history")}
+                  >
+                    <Icon.Clock className="w-5 h-5 shrink-0" />
+                    History
+                  </button>
+                  <form action={signOutAction}>
+                    <button
+                      type="submit"
+                      className="w-full flex items-center gap-3 text-left px-4 py-3 font-display text-lead font-semibold text-danger"
+                    >
+                      <Icon.Logout className="w-5 h-5 shrink-0 text-danger" />
+                      Log out
+                    </button>
+                  </form>
                 </div>
-                <CopyButton value={primaryWallet.wallet_address} label="Copy wallet address" />
               </div>
-              <button
-                className="w-full flex items-center gap-3 text-left px-4 py-3 font-display text-lead font-semibold text-foreground border-b border-brand/30"
-                onClick={() => goTo("/dashboard/deposit")}
-              >
-                <Icon.ArrowDown className="w-5 h-5 shrink-0" />
-                Deposit
-              </button>
-              <button
-                className="w-full flex items-center gap-3 text-left px-4 py-3 font-display text-lead font-semibold text-foreground border-b border-brand/30"
-                onClick={() => goTo("/dashboard/withdraw")}
-              >
-                <Icon.ArrowUp className="w-5 h-5 shrink-0" />
-                Withdraw
-              </button>
-              <button
-                className="w-full flex items-center gap-3 text-left px-4 py-3 font-display text-lead font-semibold text-foreground border-b border-brand/30"
-                onClick={() => goTo("/dashboard/history")}
-              >
-                <Icon.Clock className="w-5 h-5 shrink-0" />
-                History
-              </button>
-              <form action={signOutAction}>
-                <button
-                  type="submit"
-                  className="w-full flex items-center gap-3 text-left px-4 py-3 font-display text-lead font-semibold text-danger"
-                >
-                  <Icon.Logout className="w-5 h-5 shrink-0 text-danger" />
-                  Log out
-                </button>
-              </form>
-            </div>
           </>
         )}
         </div>
