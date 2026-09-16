@@ -211,8 +211,10 @@ export function TipScreen() {
         }
       >
         <div className="w-full flex flex-col items-center gap-4">
-          {/* Rectangle 16 dung Figma Frame 1:122 (w=340, h=414, bg-black, cut corner duoi-phai) */}
-          <div className="w-full max-w-[340px] h-[350px] sm:h-[414px] shrink-0">
+          {/* Rectangle 17 dung Figma frame "9 Tipping" (node 30:93): cao dung
+              9 hang luoi + 8 khoang gap (v4 09-16: 9*48.8+8*8=503.2, truoc
+              chi 5 hang = 414px - vung noi dung rong hon han o luoi 15 hang) */}
+          <div className="w-full max-w-[340px] h-[calc(9*var(--grid-row-h)+8*var(--grid-row-gap))] shrink-0">
             <CutCornerCard className="relative w-full h-full overflow-hidden bg-black flex items-center justify-center">
               <div id={QR_REGION_ID} className="w-full h-full" />
               {scanError && (
@@ -234,7 +236,7 @@ export function TipScreen() {
               - Rectangle 28 ($2): vang chu xanh vien xanh
               - Rectangle 32 ($10), 33 ($20): trang chu xanh vien xanh
               - px-2.5 giup goc nghieng -16deg khong bi tran/cat mep phai */}
-          <div className="w-full max-w-[340px] px-2.5 flex items-center justify-between gap-3 h-[64px] sm:h-[70px] shrink-0">
+          <div className="w-full max-w-[340px] px-2.5 flex items-center justify-between gap-3 h-[var(--grid-row-h)] shrink-0">
             {([1, 2, 3] as const).map((slot) => {
               const value = slotAmount(slot);
               if (value == null) return null;

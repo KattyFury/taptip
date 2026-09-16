@@ -1,20 +1,21 @@
 /**
  * Khung man hinh dung chung cho MOI man toan khung cua TapTip.
  *
- * ======================= LUOI 10 HANG PX CO DINH (09-12) ====================
- * Khung dien thoai co dinh 390x844 (app/layout.tsx). Chia doc = CSS Grid
- * 10 hang 70px, cach nhau 16px (70*10 + 16*9 = 844px = dung chieu cao khung):
+ * ======================= LUOI 15 HANG (v2, 09-16) ===========================
+ * Khung dien thoai co dinh 390x844 (app/layout.tsx). Chia doc = 15 hang
+ * ~48.8px, cach nhau 8px (48.8*15 + 8*14 = 844px = dung chieu cao khung).
+ * Doi tu luoi 10 hang/70px/gap16 (ban cu) theo ban ve lai moi tu Figma:
  *
  *   Hang 1        : logo + icon Menu (chi dung o Home, cac man khac de trong)
  *   Hang 2        : tieu de man
- *   Hang 3 -> 7   : vung noi dung (5 hang)
- *   Hang 8        : hang nut hanh dong
- *   Hang 9        : hang phu (link Skip / thong bao loi)
- *   Hang 10       : dem day
+ *   Hang 3 -> 13  : vung noi dung (11 hang - truoc chi co 5, gio rong hon
+ *                   han cho man nhieu thanh phan nhu Tap to tip/Tipping)
+ *   Hang 14       : hang nut hanh dong
+ *   Hang 15       : hang phu (link Skip / thong bao loi) - la hang CUOI,
+ *                   sat day khung, khong con hang dem rieng nhu ban cu.
  *
- * Doi tu he flex ty le cqh (ban cu) sang CSS Grid px tuyet doi - dung quy
- * luat thiet ke moi: "chieu cao chia 10 hang 70px, cach nhau 16px", khong
- * con fluid theo kich thuoc man hinh (app chi chay trong khung 390x844).
+ * Chieu cao 1 hang lay tu token --grid-row-h (globals.css), fluid theo dvh
+ * chu khong con hardcode px - dung chung 1 nguon voi phan CSS con lai.
  * ============================================================================
  */
 
@@ -70,12 +71,14 @@ export function Screen({
         {children}
       </div>
 
-      {/* Day : nut hanh dong + hang phu - DONG BO 100% VI TRI VA CHIEU CAO TREN MOI VIEW */}
+      {/* Day : nut hanh dong (hang 14) + hang phu (hang 15, sat day khung) -
+          DONG BO 100% VI TRI VA CHIEU CAO TREN MOI VIEW, ca 2 deu cao dung
+          1 hang luoi (--grid-row-h) dung theo Figma (nut + link deu 49px). */}
       <div className="w-full max-w-[340px] mx-auto shrink-0 flex flex-col items-center">
-        <div className="w-full h-[64px] sm:h-[70px] flex items-center">
+        <div className="w-full h-[var(--grid-row-h)] flex items-center">
           {action}
         </div>
-        <div className="w-full h-[28px] flex items-center justify-center mt-1">
+        <div className="w-full h-[var(--grid-row-h)] flex items-center justify-center mt-[var(--grid-row-gap)]">
           {foot}
         </div>
       </div>

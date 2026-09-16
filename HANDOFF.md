@@ -11,7 +11,20 @@
 
 ---
 
-## 👉 BẮT ĐẦU TỪ ĐÂY (09-16)
+## 👉 BẮT ĐẦU TỪ ĐÂY (09-16, sau)
+
+**Đổi lưới dọc từ 10 hàng sang 15 hàng, gap 8px (khớp Figma vẽ lại) — cột ngang 12 cột/gap 8px/lề 25px giữ nguyên, không đổi.** User đưa spec bằng lời ("rộng 12 cột cách 8px, cao 15 hàng cách 8px") + link Figma `node-id=0-1` (cả trang, ~9 frame). Xác nhận đúng số liệu bằng cách đọc `get_design_context` từng frame: các mốc `top: calc(N%+...)` trong code Figma xuất ra đều là bội số của 1/15 (6.67%, 13.33%, 20%... khớp 15 hàng) thay vì 1/10 như bản cũ — không phải đoán, đo trực tiếp từ 9 frame (`1`→`9`) đều khớp cùng 1 khuôn: hàng 1 pad/menu, hàng 2 tiêu đề, hàng 3→13 nội dung (11 hàng, **tăng gần gấp đôi** so với 5 hàng cũ — lý do chính khiến khung camera/QR ở màn Tip giờ cao hơn hẳn), hàng 14 nút hành động, hàng 15 hàng phụ (Skip/lỗi) — hàng 15 nằm SÁT ĐÁY khung, không còn hàng đệm riêng như lưới 10 hàng cũ.
+- Sửa token gốc `--grid-row-h`/`--grid-row-gap` (`globals.css`) — chiều cao 1 hàng mới ≈48.8px (`(844-8*14)/15`), row-gap phẳng 8px (trước `clamp(8px,1.8dvh,16px)`, giờ đồng bộ với col-gap).
+- `components/screen.tsx` (dùng chung Sign in/Create wallet/Deposit/History/Withdraw/Tip): hàng nút hành động + hàng phụ đổi từ hardcode `64/70px` và `28px` sang `h-[var(--grid-row-h)]` — tự ăn theo token, không lặp số.
+- `home-screen.tsx`: nút "Tap to tip" cao đúng 1 hàng lưới mới (`var(--grid-row-h)`, trước hardcode 70px).
+- `tip-screen.tsx`: khung camera đổi sang `calc(9*var(--grid-row-h)+8*var(--grid-row-gap))` (đo đúng 9 hàng theo Figma frame "9 Tipping", ra ~503px — trước chỉ 414px vì khi đó nội dung có 5 hàng); hàng 3 nút preset $2/$10/$20 cũng đổi sang `h-[var(--grid-row-h)]`.
+- **Không đụng** `tip-presets-row.tsx` (khối preset kéo-chỉnh số tiền trên Home) — chiều cao 70px của nó là kích thước thiết kế riêng (Figma pill cao 106px, đã thu gọn từ trước), không phải 1 "hàng lưới", đổi theo lưới mới sẽ làm vỡ layout icon khoá/+ bên trong.
+- **Đã verify:** `tsc --noEmit` sạch. Chụp ảnh Chrome headless màn Sign in ở đúng khung 390×844 (khung desktop có viền) — tiêu đề/ô nhập/nút Back+Send OTP đúng tỉ lệ mới, khớp ảnh tham chiếu Figma. **Chưa** verify bằng ảnh thật các màn cần đăng nhập (Home/Tip/Deposit/History) — cần session giả qua `wrangler kv key put --local` (xem kỹ thuật ở mục 09-01 bên dưới), phiên này chưa dựng lại.
+- **Phát hiện phụ (KHÔNG sửa, ngoài phạm vi yêu cầu):** ở chế độ full-bleed mobile thật (`<640px`, `app/layout.tsx` dòng ~78 dùng `w-full h-full` thay vì khung `390px` cố định), nội dung bị lệch/tràn mép phải khi chụp thử ở window-size 430×900 — bug này có TRƯỚC phiên này (không phải do đổi lưới gây ra, đổi lưới chỉ đổi chiều cao hàng/gap chứ không đụng logic full-bleed), cần soát riêng nếu user muốn sửa.
+
+---
+
+## 👉 Lịch sử (09-16, đầu phiên)
 
 **Thay bộ logo/icon thật (user tự vẽ, đưa thẳng 2 file SVG qua chat) — KHÔNG phải redesign, chỉ swap asset.**
 - `taptipfull.svg` (wordmark "TapTip" xanh `#155EEF`, dùng ở màn Splash + Home) → ghi đè `app/public/logo-full.svg` (file cũ trong repo thực ra là tàn dư thiết kế Inter/vàng-đen cũ, không route nào dùng tới).

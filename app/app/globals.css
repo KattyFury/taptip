@@ -27,9 +27,11 @@
       Card popup (menu, modal) dung hinh CAT 1 GOC (chamfer) rieng - xem
       --radius-card-cut.
 
-   4. LUOI: PX CO DINH (khung 390x844, khong con fluid/cqh nhu ban cu):
-      - Doc: 10 hang, moi hang 70px, cach nhau 16px (70*10 + 16*9 = 844).
-      - Ngang: 12 cot, cach nhau 8px, le an toan 25px 2 ben.
+   4. LUOI (v4, 09-16 - doi tu 10 hang sang 15 hang theo Figma ve lai):
+      - Doc: 15 hang, cach nhau 8px, moi hang ~48.8px ((844-8*14)/15=48.8,
+        844 = 15*48.8 + 14*8). Vung noi dung gio la 11/15 hang (truoc 5/10)
+        - nhieu cho hon han cho man nhieu thanh phan (Tap to tip, Tipping).
+      - Ngang: 12 cot, cach nhau 8px, le an toan 25px 2 ben (KHONG doi).
       - Spacing (padding/gap) LUON la boi so cua 8 (8/16/24/32/40...).
       - Font-size LUON la boi so cua 4 (12/16/20/24/28/32...).
 
@@ -69,8 +71,10 @@
   --scrim: rgba(0, 0, 0, 0.55);
 
   /* --- Luoi responsive theo viewport (mobile-first 100dvh) --- */
-  --grid-row-h: clamp(52px, 8.2dvh, 70px);
-  --grid-row-gap: clamp(8px, 1.8dvh, 16px);
+  /* v4 09-16: 15 hang (truoc 10), row-gap phang 8px dong bo voi col-gap
+     (truoc 16px/clamp rieng) - xem quy dinh muc 4 o tren. */
+  --grid-row-h: clamp(36px, 5.8dvh, 48.8px);
+  --grid-row-gap: 8px;
   --grid-col-gap: 8px;
   --grid-margin: clamp(16px, 5.5vw, 25px);
 

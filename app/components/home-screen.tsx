@@ -202,8 +202,9 @@ function HomeScreenContent({ primaryWallet }: Props) {
         </span>
       </div>
 
-      {/* Button Tap to tip : Slant button 340x70, mau vang #F5B800, chu xanh Sora 700 24px */}
-      <div className="w-full max-w-[340px] h-[64px] sm:h-[70px] shrink-0 flex items-center">
+      {/* Button Tap to tip : Slant button cao dung 1 hang luoi (--grid-row-h,
+          v4 09-16: ~48.8px, truoc 70px), mau vang #F5B800, chu xanh Sora 700 24px */}
+      <div className="w-full max-w-[340px] h-[var(--grid-row-h)] shrink-0 flex items-center">
         <SlantButton
           className="text-title w-full h-full font-display font-bold shadow-btn"
           onClick={() => router.push("/dashboard/tip")}

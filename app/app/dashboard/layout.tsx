@@ -33,7 +33,7 @@ export default async function Layout({ children }: Props) {
 
   return (
     // KHONG con padding ngang o day (09-12): moi man con (Home/Screen) tu
-    // quan ly le an toan 25px rieng qua luoi 10 hang cua chinh no - dat them
+    // quan ly le an toan 25px rieng qua luoi 15 hang cua chinh no - dat them
     // padding o day se thanh CONG DON 2 lop le, sai luoi.
     <div className="relative flex flex-col h-full">
       {children}
