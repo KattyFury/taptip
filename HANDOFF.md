@@ -11,7 +11,20 @@
 
 ---
 
-## 👉 BẮT ĐẦU TỪ ĐÂY (09-13, cuối phiên)
+## 👉 BẮT ĐẦU TỪ ĐÂY (09-16)
+
+**Thay bộ logo/icon thật (user tự vẽ, đưa thẳng 2 file SVG qua chat) — KHÔNG phải redesign, chỉ swap asset.**
+- `taptipfull.svg` (wordmark "TapTip" xanh `#155EEF`, dùng ở màn Splash + Home) → ghi đè `app/public/logo-full.svg` (file cũ trong repo thực ra là tàn dư thiết kế Inter/vàng-đen cũ, không route nào dùng tới).
+- `taptipicon.svg` (nền vàng `#F5B800`, chữ "T" xanh `#155EEF`, dùng làm app icon/apple icon/favicon) → lưu thêm bản nguồn `app/public/icon-mark.svg`, generate PNG/ICO từ đó bằng `sharp` (đã có sẵn trong `node_modules` qua `next`, không cần cài thêm gì): `app/app/favicon.ico` (32×32, tự dựng container ICO bọc PNG), `app/app/apple-icon.png` + `app/public/apple-touch-icon.png` (180×180), `app/public/icon-192x192.png`, `app/public/icon-512x512.png`.
+- **Đổi luôn cách `TapTipLogo` render**: trước giờ `components/ui/taptip-logo.tsx` KHÔNG dùng file SVG nào cả — chỉ là `<span>` chữ "TapTip" bằng CSS (font Sora, `text-brand`). Giờ đổi hẳn sang render `<img src="/logo-full.svg">`, tính `width` theo tỉ lệ khung gốc (512×156) nhân với chiều cao cũ theo từng size (sm/md/lg). Vẫn giữ nguyên khối ellipse vàng phía sau chữ "pT" ở size `lg`/`md` khi `withEllipse` (dùng cho màn Splash `app/page.tsx`) — vị trí ellipse giữ y nguyên tỉ lệ % cũ (chưa đối chiếu lại pixel Figma cho khớp ảnh mới, xem "Còn nợ" bên dưới).
+- **Đã verify:** `tsc --noEmit` sạch, `npm run build` production sạch (route `/apple-icon.png` lên đúng danh sách static). **Chưa** chụp ảnh trình duyệt thật (Puppeteer/CDP) để soi logo hiển thị đúng vị trí/tỉ lệ — chỉ mới xem PNG icon export ra bằng mắt (đúng màu, không méo).
+
+**Bài học phiên này — Cloudflare login toàn máy đã hỏng, không phải lỗi riêng project:**
+`wrangler whoami` báo "Not logged in... could not be refreshed" ở MỌI project trên máy (không riêng taptip) — refresh token OAuth lưu ở `~/.wrangler/config/default.toml` (dùng chung toàn máy, không phải theo project) bị Cloudflare từ chối thẳng (`Failed to fetch auth token: 400 Bad Request` khi debug bằng `WRANGLER_LOG=debug`), không phải do sandbox chặn mạng. Đã mượn tạm `CF_API_TOKEN` từ `2_Projects/ezwallet/.env.txt` để test — chạy được (`wrangler whoami` nhận đúng account `kattyfury1403@gmail.com`, scope đủ Workers/D1/KV) nên dùng luôn để deploy, nhưng đây là token của project khác, không nên coi là giải pháp lâu dài. **Còn nợ:** chưa `wrangler login` lại cho đàng hoàng (cần user tự làm, cần mở trình duyệt) — khi nào làm thì sẽ fix chung cho mọi project trên máy, không chỉ taptip.
+
+---
+
+## 👉 Lịch sử (09-13, cuối phiên)
 
 **Redesign toàn bộ giao diện theo bộ quy luật thiết kế MỚI + build lại tương tác Tip amount — thay hoàn toàn hệ thống cũ (Inter/Archivo, vàng FFCC00+đen, lưới tỷ lệ cqh, popup Tip Setting/Deposit/History/Scan-to-tip).** User tự vẽ lại Figma (`Taptip`, file `rLGoWK4AHhqov9CKHXJqqE`), đưa bộ luật bằng lời, rồi đích thân duyệt TỪNG VÒNG ảnh chụp và bắt lỗi lệch Figma thật — phiên này trải qua nhiều vòng sửa liên tiếp vì lúc đầu vẫn còn tự bịa thêm chi tiết, đọc kỹ mục "bài học đau" bên dưới trước khi động vào bất kỳ màn nào.
 
