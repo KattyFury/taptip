@@ -70,11 +70,11 @@ export default function Splash() {
     return () => clearTimeout(timer);
   }, [router]);
 
-  // Splash: dung logo TapTip kem Ellipse vang duoi chan chu pT (Figma 1:10)
+  // Splash: dung logo TapTip (Figma 1:10)
   if (step === "splash") {
     return (
       <div className="flex flex-col items-center justify-center h-full px-5">
-        <TapTipLogo size="lg" withEllipse={true} />
+        <TapTipLogo size="lg" />
       </div>
     );
   }
