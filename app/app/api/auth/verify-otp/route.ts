@@ -4,30 +4,38 @@ import { createSession } from "@/lib/auth/session";
 import { getUserByEmail, createUser } from "@/lib/db/users";
 
 export async function POST(request: NextRequest) {
-  const { email, code } = (await request.json()) as {
-    email?: string;
-    code?: string;
-  };
+  try {
+    const { email, code } = (await request.json()) as {
+      email?: string;
+      code?: string;
+    };
 
-  if (!email || !code) {
-    return NextResponse.json({ error: "Missing email or code" }, { status: 400 });
+    if (!email || !code) {
+      return NextResponse.json({ error: "Missing email or code" }, { status: 400 });
+    }
+
+    const valid = await verifyOtp(email, code);
+    if (!valid) {
+      return NextResponse.json({ error: "Invalid code" }, { status: 401 });
+    }
+
+    let user = await getUserByEmail(email);
+    const isNewUser = !user;
+    if (!user) {
+      user = await createUser(email);
+    }
+
+    await createSession(user.id);
+
+    return NextResponse.json({
+      ok: true,
+      needsOnboarding: isNewUser || !user.wallet_address,
+    });
+  } catch (err: any) {
+    console.error("[verify-otp] Server error:", err);
+    return NextResponse.json(
+      { error: err?.message || "Internal server error" },
+      { status: 500 }
+    );
   }
-
-  const valid = await verifyOtp(email, code);
-  if (!valid) {
-    return NextResponse.json({ error: "Invalid code" }, { status: 401 });
-  }
-
-  let user = await getUserByEmail(email);
-  const isNewUser = !user;
-  if (!user) {
-    user = await createUser(email);
-  }
-
-  await createSession(user.id);
-
-  return NextResponse.json({
-    ok: true,
-    needsOnboarding: isNewUser || !user.wallet_address,
-  });
 }

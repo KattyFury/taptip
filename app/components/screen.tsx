@@ -47,45 +47,37 @@ export function Screen({
   return (
     <div
       data-screen-root
-      className="grid w-full h-full px-[25px]"
-      style={{
-        gridTemplateRows: "repeat(10, var(--grid-row-h))",
-        rowGap: "var(--grid-row-gap)",
-      }}
+      className="flex flex-col justify-between w-full h-full min-h-0 px-[var(--grid-margin)] pt-3 pb-3 sm:pt-4 sm:pb-4"
     >
-      {/* Hang 1 trong - man toan khung khong dung logo/menu (rieng Home) */}
-      <div />
-
-      {/* Hang 2 : tieu de */}
-      <div className="flex flex-col items-center justify-center w-full max-w-[340px] mx-auto">
-        {title && (
+      {/* Top : tieu de (chi render khi co title) */}
+      {title ? (
+        <div className="flex flex-col items-center justify-center w-full max-w-[340px] mx-auto shrink-0 min-h-[48px] py-1">
           <h1 className="font-display text-title font-bold text-brand text-center leading-tight">
             {title}
           </h1>
-        )}
-      </div>
+        </div>
+      ) : null}
 
-      {/* Hang 3 -> 7 : noi dung */}
+      {/* Giua : vung noi dung cuon neu man nho / ban phim bat len */}
       <div
-        style={{ gridRow: "3 / 8" }}
         className={
-          "flex flex-col items-center gap-6 w-full mx-auto " +
-          (tightContent ? "justify-start" : "justify-start pt-2") +
+          "flex-1 flex flex-col items-center gap-4 w-full mx-auto min-h-0 overflow-y-auto py-2 " +
+          (tightContent ? "justify-start pt-2" : "justify-center") +
           " " +
-          (wideContent ? "" : "max-w-[340px]")
+          (wideContent ? "w-full" : "max-w-[340px]")
         }
       >
         {children}
       </div>
 
-      {/* Hang 8 : nut hanh dong */}
-      <div style={{ gridRow: "9" }} className="flex items-center gap-2 min-w-0">
-        {action}
-      </div>
-
-      {/* Hang 9 : hang phu */}
-      <div style={{ gridRow: "10" }} className="flex items-center justify-center">
-        {foot}
+      {/* Day : nut hanh dong + hang phu - DONG BO 100% VI TRI VA CHIEU CAO TREN MOI VIEW */}
+      <div className="w-full max-w-[340px] mx-auto shrink-0 flex flex-col items-center">
+        <div className="w-full h-[64px] sm:h-[70px] flex items-center">
+          {action}
+        </div>
+        <div className="w-full h-[28px] flex items-center justify-center mt-1">
+          {foot}
+        </div>
       </div>
     </div>
   );
@@ -168,10 +160,13 @@ export function IconButton({
 
 /** Hang hanh dong chi 1 nut: rong 2/3 khung, can giua. */
 export function SingleAction({ children }: { children: ReactNode }) {
-  return <div className="w-2/3 mx-auto h-full flex items-center justify-center [&>button]:h-full">{children}</div>;
+  return <div className="w-full h-full flex items-center justify-center [&>button]:h-full">{children}</div>;
 }
 
-/** Hang hanh dong: nut Quay lai (1 phan) + nut chinh (2 phan), cach nhau 16px. */
+import { BackButton } from "@/components/ui/back-button";
+
+/** Hang hanh dong: nut Quay lai (1 phan) + nut chinh (2 phan), cach nhau 16px.
+ * Dung nut Back nghieng kem Polygon 1 tam giac dac mau xanh dung Figma. */
 export function BackAction({
   onBack,
   backLabel = "Go back",
@@ -182,16 +177,14 @@ export function BackAction({
   children: ReactNode;
 }) {
   return (
-    <>
+    <div className="flex items-center gap-3 sm:gap-4 w-full h-full">
       <div style={{ flex: "1 1 0", minWidth: 0 }} className="h-full">
-        <IconButton onClick={onBack} aria-label={backLabel}>
-          <Icon.Back className="w-6 h-6" />
-        </IconButton>
+        <BackButton onBack={onBack} ariaLabel={backLabel} />
       </div>
       <div style={{ flex: "2 1 0", minWidth: 0 }} className="h-full [&>button]:h-full">
         {children}
       </div>
-    </>
+    </div>
   );
 }
 

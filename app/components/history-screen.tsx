@@ -3,7 +3,8 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
-import { Screen, BackAction, PrimaryButton } from "@/components/screen";
+import { Screen, BackAction } from "@/components/screen";
+import { CutCornerCard, SlantButton } from "@/components/ui";
 
 interface TransactionRow {
   direction: "in" | "out";
@@ -44,11 +45,11 @@ export function HistoryScreen() {
       wideContent
       action={
         <BackAction onBack={() => router.push("/dashboard")}>
-          <PrimaryButton onClick={() => router.push("/dashboard")}>Done</PrimaryButton>
+          <SlantButton onClick={() => router.push("/dashboard")}>Done</SlantButton>
         </BackAction>
       }
     >
-      <div className="w-full flex-1 min-h-0 overflow-y-auto tt-card-cut bg-surface px-4">
+      <CutCornerCard className="w-full flex-1 min-h-0 overflow-y-auto bg-surface px-4">
         {rows == null && (
           <p className="py-6 text-center font-body text-body text-accent">Loading...</p>
         )}
@@ -77,7 +78,7 @@ export function HistoryScreen() {
             </span>
           </div>
         ))}
-      </div>
+      </CutCornerCard>
     </Screen>
   );
 }

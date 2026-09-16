@@ -1,7 +1,8 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { Screen, BackAction, PrimaryButton, SlantButton } from "@/components/screen";
+import { Screen, BackAction } from "@/components/screen";
+import { SlantButton } from "@/components/ui";
 import { CopyButton } from "@/components/copy-button";
 
 const CIRCLE_FAUCET_URL = "https://faucet.circle.com/";
@@ -17,37 +18,36 @@ export function DepositScreen({ walletAddress }: { walletAddress: string }) {
   return (
     <Screen
       title="Deposit"
+      tightContent
       action={
         <BackAction onBack={() => router.push("/dashboard")}>
-          <PrimaryButton onClick={() => router.push("/dashboard")}>Done</PrimaryButton>
+          <SlantButton onClick={() => router.push("/dashboard")}>Done</SlantButton>
         </BackAction>
       }
     >
-      {/* Doan mo ta: den, can TRAI (khong phai xam/can giua) - dung mau/can
-          le nguyen ban Figma node 11:395. */}
-      <p className="font-body text-lead text-foreground text-left w-full">
+      <p className="font-body text-[20px] leading-[24px] text-foreground text-left w-full">
         Send USDC (Arc network) to your wallet address below, or use the Circle Faucet
       </p>
 
-      {/* O dia chi: hop VIEN xanh nen trong (cung kieu nut outline voi Back),
-          KHONG phai o nen xam nhu input - dung Figma node 11:387/11:403. */}
+      {/* O dia chi vi: hop nghieng vien xanh */}
       <div
-        className="w-full h-[52px] [transform:skewX(var(--skew-angle))] rounded-[var(--radius-slant)] bg-background border-2 border-brand shrink-0"
+        className="w-full h-[53px] [transform:skewX(var(--skew-angle))] rounded-[var(--radius-slant)] bg-background border-2 border-brand shrink-0"
       >
         <div className="flex items-center gap-2 w-full h-full px-4 [transform:skewX(calc(-1*var(--skew-angle)))]">
-          <span className="font-display text-lead font-semibold text-brand truncate flex-1">
+          <span className="font-display text-[20px] font-semibold text-brand truncate flex-1">
             {walletAddress}
           </span>
           <CopyButton value={walletAddress} label="Copy wallet address" />
         </div>
       </div>
 
-      <SlantButton
-        style={{ height: "56px", width: "100%" }}
-        onClick={() => window.open(CIRCLE_FAUCET_URL, "_blank", "noopener,noreferrer")}
-      >
-        Open Circle Faucet
-      </SlantButton>
+      <div className="w-full h-[53px]">
+        <SlantButton
+          onClick={() => window.open(CIRCLE_FAUCET_URL, "_blank", "noopener,noreferrer")}
+        >
+          Open Circle Faucet
+        </SlantButton>
+      </div>
     </Screen>
   );
 }

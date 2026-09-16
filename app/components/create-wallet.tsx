@@ -20,7 +20,7 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { Screen, SingleAction, PrimaryButton } from "@/components/screen";
+import { Screen, PrimaryButton } from "@/components/screen";
 
 /**
  * Tao vi cho user.
@@ -57,14 +57,12 @@ export function CreateWallet() {
 
     return (
         <Screen
-            title="You're all set"
+            title="You’re all set"
             tightContent
             action={
-                <SingleAction>
-                    <PrimaryButton onClick={createWallet} disabled={isCreating}>
-                        {isCreating ? 'Creating...' : 'Create my wallet'}
-                    </PrimaryButton>
-                </SingleAction>
+                <PrimaryButton onClick={createWallet} disabled={isCreating}>
+                    {isCreating ? 'Creating...' : 'Create wallet'}
+                </PrimaryButton>
             }
             foot={
                 error ? (
@@ -74,9 +72,9 @@ export function CreateWallet() {
                 ) : null
             }
         >
-            <p className="text-body text-accent text-center">
-                We&apos;ll set up your USDC wallet on Arc. Nothing to install, no
-                seed phrase to write down — tipping works the moment it&apos;s ready.
+            <p className="font-body font-medium text-[20px] leading-[24.38px] text-foreground text-left w-full max-w-[324px]">
+                We’ll set up your USDC wallet on Arc. Nothing to install, no
+                seed phrase to writedown.
             </p>
         </Screen>
     );

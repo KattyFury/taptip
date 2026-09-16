@@ -20,37 +20,33 @@
 
 import { useEffect, useState, type ReactNode } from "react";
 import { useRouter } from "next/navigation";
-import { Screen, SingleAction, PrimaryButton, TextLink } from "@/components/screen";
+import { Screen, TextLink } from "@/components/screen";
+import { TapTipLogo, SlantButton } from "@/components/ui";
 
 const SPLASH_DURATION_MS = 1600;
 
-// Tung dong co the co doan in dam - dung <strong> thay vi string thuong.
+// Tung dong co doan in dam theo dung Figma Frame 1:13
 const INSTALL_STEPS: Record<"ios" | "android", ReactNode[]> = {
   ios: [
-    <>Open <strong className="font-extrabold">TapTip in Safari</strong></>,
-    <>Tap <strong className="font-extrabold">Option</strong> in Safari</>,
-    <>Tap <strong className="font-extrabold">Share</strong></>,
-    <>Tap <strong className="font-extrabold">Add to Home Screen</strong></>,
-    <>Tap <strong className="font-extrabold">Add</strong> – you&apos;re done!</>,
+    <>Open <strong className="font-bold text-foreground">TapTip in Safari</strong></>,
+    <>Tap <strong className="font-bold text-foreground">Option</strong></>,
+    <>Tap <strong className="font-bold text-foreground">Share</strong></>,
+    <>Tap <strong className="font-bold text-foreground">Add to Home Screen</strong></>,
+    <>Tap <strong className="font-bold text-foreground">Add</strong> – you&apos;re done!</>,
   ],
   android: [
-    <>Open <strong className="font-extrabold">TapTip in Chrome</strong></>,
-    <>Tap <strong className="font-extrabold">⋮</strong> in the top-right corner</>,
-    <>Tap <strong className="font-extrabold">Add to Home screen</strong></>,
-    <>Tap <strong className="font-extrabold">Add</strong> — you&apos;re done!</>,
+    <>Open <strong className="font-bold text-foreground">TapTip in Chrome</strong></>,
+    <>Tap <strong className="font-bold text-foreground">⋮</strong> in the top-right corner</>,
+    <>Tap <strong className="font-bold text-foreground">Add to Home screen</strong></>,
+    <>Tap <strong className="font-bold text-foreground">Add</strong> — you&apos;re done!</>,
   ],
 };
 
-// Doan Android ("android") - moi thu con lai (iOS/iPadOS/desktop Safari...)
-// mac dinh ve iOS, vi phan lon nguoi test/dung app hien tai la iPhone.
 function detectPlatform(): "ios" | "android" {
   if (typeof navigator === "undefined") return "ios";
   return /android/i.test(navigator.userAgent) ? "android" : "ios";
 }
 
-// Da them vao Home Screen roi thi trinh duyet chay o "display-mode: standalone"
-// (Android/desktop) hoac navigator.standalone (iOS Safari) - khong can hien
-// lai huong dan "Add to Home Screen" nua, bo qua thang toi /sign-in.
 function isInstalledStandalone(): boolean {
   if (typeof window === "undefined") return false;
   const iosStandalone = (window.navigator as unknown as { standalone?: boolean }).standalone === true;
@@ -74,57 +70,39 @@ export default function Splash() {
     return () => clearTimeout(timer);
   }, [router]);
 
-  // Splash: wordmark "TapTip" chu (khong con anh logo den/vang cu - quy luat
-  // thiet ke moi 09-12 dung chu Sora Bold xanh cho moi noi hien brand, khop
-  // Figma "slash" frame (text node, khong phai vector logo).
+  // Splash: dung logo TapTip kem Ellipse vang duoi chan chu pT (Figma 1:10)
   if (step === "splash") {
     return (
-      <div className="flex flex-col h-full px-5">
-        <div
-          style={{ flex: "5 1 0", minHeight: 0 }}
-          className="flex items-center justify-center"
-        >
-          <span className="font-display text-[40px] font-bold text-brand">TapTip</span>
-        </div>
-        <div style={{ flex: "5 1 0" }} />
+      <div className="flex flex-col items-center justify-center h-full px-5">
+        <TapTipLogo size="lg" withEllipse={true} />
       </div>
     );
   }
 
   return (
-    <div className="h-full px-5">
+    <div className="h-full w-full">
       <Screen
-        title={
-          <>
-            Add TapTip to your
-            <br />
-            Home Screen
-          </>
-        }
+        title="Add Taptip to your Home Screen"
         tightContent
         action={
-          <SingleAction>
-            <PrimaryButton onClick={() => router.push("/sign-in")}>
-              Continue
-            </PrimaryButton>
-          </SingleAction>
+          <SlantButton onClick={() => router.push("/sign-in")}>
+            Continue
+          </SlantButton>
         }
         foot={
-          <div style={{ transform: "translateY(-2.5cqh)" }}>
-            <TextLink onClick={() => router.push("/sign-in")}>Skip</TextLink>
-          </div>
+          <TextLink onClick={() => router.push("/sign-in")}>Skip</TextLink>
         }
       >
-        <ol className="w-fit flex flex-col gap-4">
+        <div className="w-full max-w-[324px] flex flex-col gap-4 pt-2">
           {INSTALL_STEPS[platform].map((label, index) => (
-            <li key={index} className="flex items-center gap-3">
-              <span className="w-6 h-6 rounded-full bg-brand text-background shrink-0 flex items-center justify-center font-display text-small font-bold">
-                {index + 1}
+            <div key={index} className="flex items-baseline gap-2 font-body text-[20px] leading-[24px]">
+              <span className="font-display font-bold text-brand shrink-0">
+                {index + 1}.
               </span>
-              <span className="font-body text-body text-foreground">{label}</span>
-            </li>
+              <span className="text-foreground">{label}</span>
+            </div>
           ))}
-        </ol>
+        </div>
       </Screen>
     </div>
   );

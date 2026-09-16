@@ -50,9 +50,8 @@ export default function Layout({
 
   return (
     <GlobalContextProvider>
-      {/* Chi padding ngang. KHONG dat margin/padding doc o day - luoi 10 hang
-          phai chia tron chieu cao khung, them 1px doc la lech het cac vach. */}
-      <div className="flex flex-col flex-1 w-full px-5">{children}</div>
+      {/* Loai bo px-5 vi Screen da co px-[var(--grid-margin)], tranh bi bop hep ngang tren mobile */}
+      <div className="flex flex-col flex-1 w-full h-full min-h-0">{children}</div>
     </GlobalContextProvider>
   );
 }

@@ -50,8 +50,13 @@ export const metadata = {
 };
 
 export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 1,
+  userScalable: false,
+  viewportFit: "cover",
   interactiveWidget: "resizes-content",
-  themeColor: "#155EEF",
+  themeColor: "#FFFDF5",
 };
 
 export default async function RootLayout({
@@ -65,27 +70,18 @@ export default async function RootLayout({
       className={`${sora.variable} ${montserrat.variable}`}
       suppressHydrationWarning
     >
-      <body className="bg-page-backdrop text-foreground font-sans min-h-dvh overflow-hidden">
-          <BalanceProvider>
-            {/* Toaster PHAI nam ngoai container can giua: sonner render mot
-                <section> tham gia layout, de trong flex la no an mat mot phan
-                be ngang va day khung dien thoai lech sang phai. */}
-            <Toaster expand />
-            <div className="flex items-center justify-center min-h-dvh">
-              {/* Tren dien thoai that: full-bleed, KHONG khung/vien - day la
-                  web app mo thang tren man hinh that cua user, khong phai
-                  anh mockup. Vien den 2px + khung 390x844 co dinh CHI hien
-                  tren man rong (sm: tro len, vd xem thu tren laptop) de
-                  gia lap dang "trong khung dien thoai" cho de nhin - bug
-                  that (09-13): dang de vien nay chay ca tren dien thoai
-                  that lam app bi "thu nho lai trong 1 khung" that su. */}
-              <div className="tt-frame relative w-full h-dvh sm:w-[390px] sm:h-[844px] flex flex-col bg-background border-0 sm:border-2 border-border overflow-hidden">
-                <main className="flex-1 flex flex-col items-center overflow-hidden">
-                  <div className="flex flex-col w-full flex-1">{children}</div>
-                </main>
-              </div>
+      <body className="bg-page-backdrop text-foreground font-sans min-h-dvh h-dvh overflow-hidden">
+        <BalanceProvider>
+          <Toaster expand />
+          <div className="flex items-center justify-center min-h-dvh h-dvh w-full">
+            {/* Mobile-first: 100% full-height dvh tren dien thoai, khung demo can giua tren desktop */}
+            <div className="tt-frame relative w-full h-full sm:h-[844px] sm:max-h-[min(844px,calc(100dvh-24px))] sm:w-[390px] flex flex-col bg-background border-0 sm:border-2 border-border sm:rounded-[24px] sm:shadow-2xl overflow-hidden">
+              <main className="flex-1 flex flex-col items-center overflow-hidden w-full h-full pt-[env(safe-area-inset-top,0px)] pb-[env(safe-area-inset-bottom,0px)] pl-[env(safe-area-inset-left,0px)] pr-[env(safe-area-inset-right,0px)]">
+                <div className="flex flex-col w-full h-full flex-1 overflow-hidden">{children}</div>
+              </main>
             </div>
-          </BalanceProvider>
+          </div>
+        </BalanceProvider>
       </body>
     </html>
   );

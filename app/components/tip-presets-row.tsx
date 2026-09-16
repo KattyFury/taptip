@@ -136,16 +136,23 @@ export function TipPresetsRow() {
     setDragValue(null);
   };
 
+  const adjustValue = (slot: number, delta: number) => {
+    const current = slotValue(slot) ?? 0;
+    const next = Math.max(1, current + delta);
+    persist(slot, next);
+  };
+
   return (
-    <div className="flex items-center gap-3 h-full">
-      {/* Icon khoa + "+" xep doc, ben trai - dung Tabler thay 2 o vuong den/
-          xam placeholder trong Figma. */}
-      <div className="flex flex-col justify-between h-full py-0.5 shrink-0">
+    <div className="flex items-center gap-2.5 h-[70px] w-full max-w-[340px]">
+      {/* Icon khoa (o den tren) + "+" (o xam duoi) xep doc, dung Figma:
+          - Rectangle 21: x=25, y=516, w=33, h=33, mau den (#000000)
+          - Rectangle 25: x=25, y=553, w=33, h=33, mau xam (#A4AFC3) */}
+      <div className="flex flex-col justify-between h-[70px] w-[33px] shrink-0">
         <button
           onClick={() => setUnlocked((v) => !v)}
           aria-label={unlocked ? "Lock tip amounts" : "Unlock to edit tip amounts"}
-          className={`w-8 h-8 rounded-[6px] flex items-center justify-center ${
-            unlocked ? "bg-brand text-background" : "bg-surface text-brand"
+          className={`w-[33px] h-[33px] rounded-[6px] flex items-center justify-center transition-colors ${
+            unlocked ? "bg-brand text-white" : "bg-black text-white"
           }`}
         >
           {unlocked ? <Icon.LockOpen className="w-4 h-4" /> : <Icon.Lock className="w-4 h-4" />}
@@ -154,27 +161,27 @@ export function TipPresetsRow() {
           onClick={addSlot}
           disabled={!canAddMore}
           aria-label="Add another tip amount"
-          className="w-8 h-8 rounded-[6px] bg-surface text-brand flex items-center justify-center disabled:opacity-30"
+          className="w-[33px] h-[33px] rounded-[6px] bg-[#A4AFC3] text-white flex items-center justify-center disabled:opacity-40 hover:bg-[#8e9bb3] transition-colors"
         >
-          <Icon.Add className="w-4 h-4" />
+          <Icon.Add className="w-4 h-4 stroke-[2.5]" />
         </button>
       </div>
 
-      {/* Cac nut preset - keo doc de chinh so tien khi da mo khoa. */}
-      <div className="flex-1 grid gap-2 h-full" style={{ gridTemplateColumns: `repeat(${visibleSlots.length}, 1fr)` }}>
+      {/* Cac nut preset - Figma Frame 1:25:
+          - Rectangle 22, 23, 24: w=94, h=70, rounded-[8px], mau nen #DBDEE4
+          - Chu xanh Sora 700 24px: $2, $10, $20
+          - Moi pill deu co Polygon 2 (tam giac tren) va Polygon 3 (tam giac duoi) mau xanh #6697F5 */}
+      <div className="flex-1 grid gap-2 h-[70px]" style={{ gridTemplateColumns: `repeat(${visibleSlots.length}, minmax(0, 1fr))` }}>
         {visibleSlots.map((slot) => {
           const isDefault = settings.default_slot === slot;
           const isDragging = dragSlot === slot;
           const displayValue = isDragging && dragValue != null ? dragValue : slotValue(slot);
-          // Chi nut TU THEM (4-5) moi xoa duoc - 3 nut mac dinh $2/$10/$20
-          // khong co dau X (yeu cau that 09-13).
           const removable = slot > DEFAULT_SLOT_COUNT;
+
           return (
-            <div key={slot} className="relative h-full select-none">
-              <button
+            <div key={slot} className="relative h-[70px] select-none">
+              <div
                 onClick={() => {
-                  // Che do mo khoa la de KEO chinh gia, khong phai de chon
-                  // mac dinh - tranh vua keo vua vo tinh doi mac dinh.
                   if (!unlocked) makeDefault(slot);
                 }}
                 onPointerDown={onPointerDown(slot, slotValue(slot) ?? 0)}
@@ -182,21 +189,52 @@ export function TipPresetsRow() {
                 onPointerUp={onPointerUp}
                 style={{ touchAction: unlocked ? "none" : "auto" }}
                 className={
-                  "w-full h-full rounded-[var(--radius-slant)] flex flex-col items-center justify-center gap-0.5 font-display font-bold " +
-                  (isDefault ? "bg-primary text-primary-foreground" : "bg-surface text-brand") +
-                  (unlocked ? " ring-2 ring-brand/40" : "")
+                  "w-full h-full rounded-[8px] bg-surface flex items-center justify-center relative cursor-pointer transition-all " +
+                  (isDefault ? "ring-2 ring-brand" : "") +
+                  (unlocked ? " ring-2 ring-brand/50" : "")
                 }
               >
-                {unlocked && <Icon.ChevronUp className="w-3 h-3 opacity-60" />}
-                <span className="text-title leading-none">${displayValue}</span>
-                {unlocked && <Icon.ChevronDown className="w-3 h-3 opacity-60" />}
-              </button>
+                {/* So tien: Sora 700 24px text-brand */}
+                <span className="font-display text-[24px] font-bold text-brand leading-none">
+                  ${displayValue}
+                </span>
+
+                {/* Tam giac tren: Polygon 2 x=144.7 y=1489 w=12.4 h=12.4 mau xanh #6697F5 */}
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    adjustValue(slot, 1);
+                  }}
+                  aria-label="Increase tip amount"
+                  className="absolute top-2 right-2 w-3.5 h-3.5 flex items-center justify-center text-[#6697F5] hover:text-brand transition-colors"
+                >
+                  <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+                    <polygon points="6,2 11,10 1,10" fill="currentColor" />
+                  </svg>
+                </button>
+
+                {/* Tam giac duoi: Polygon 3 x=144.7 y=1538.5 w=12.4 h=12.4 mau xanh #6697F5 */}
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    adjustValue(slot, -1);
+                  }}
+                  aria-label="Decrease tip amount"
+                  className="absolute bottom-2 right-2 w-3.5 h-3.5 flex items-center justify-center text-[#6697F5] hover:text-brand transition-colors"
+                >
+                  <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+                    <polygon points="6,10 11,2 1,2" fill="currentColor" />
+                  </svg>
+                </button>
+              </div>
 
               {unlocked && removable && (
                 <button
                   onClick={() => clearSlot(slot)}
                   aria-label="Remove this tip amount"
-                  className="absolute -top-1.5 -right-1.5 w-5 h-5 rounded-full bg-danger text-background flex items-center justify-center shadow-btn"
+                  className="absolute -top-1.5 -right-1.5 w-5 h-5 rounded-full bg-danger text-background flex items-center justify-center shadow-btn z-10"
                 >
                   <Icon.X className="w-3 h-3" />
                 </button>

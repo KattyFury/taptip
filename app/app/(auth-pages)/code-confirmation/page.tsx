@@ -71,7 +71,10 @@ export default function CodeConfirmation() {
     setLoading(false);
 
     if (!response.ok) {
-      setError("Invalid code, try again.");
+      const data = (await response.json().catch(() => null)) as {
+        error?: string;
+      } | null;
+      setError(data?.error || "Invalid code, try again.");
       setConfirmationCode("");
       return;
     }
@@ -100,6 +103,7 @@ export default function CodeConfirmation() {
         </>
       }
       tightContent
+      wideContent
       action={
         <BackAction onBack={() => router.push("/sign-in")}>
           <PrimaryButton

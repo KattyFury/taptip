@@ -18,7 +18,8 @@
 
 "use client"
 
-import { Screen, BackAction, PrimaryButton, Field } from "@/components/screen";
+import { Screen, BackAction, PrimaryButton } from "@/components/screen";
+import { SlantInput } from "@/components/ui/slant-input";
 import { GlobalContext } from "@/contexts/global-context";
 import { useRouter } from "next/navigation";
 import { ChangeEventHandler, useContext, useMemo, useState } from "react";
@@ -95,7 +96,7 @@ export default function SignIn() {
         )
       }
     >
-      <Field
+      <SlantInput
         type="email"
         placeholder="Type here"
         value={email}

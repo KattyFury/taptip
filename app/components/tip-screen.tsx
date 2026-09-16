@@ -4,7 +4,8 @@ import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Html5Qrcode } from "html5-qrcode";
 import * as Icon from "@/components/icons";
-import { Screen, BackAction, PrimaryButton } from "@/components/screen";
+import { Screen, BackAction } from "@/components/screen";
+import { CutCornerCard, SlantButton } from "@/components/ui";
 import { useBalance } from "@/contexts/balanceContext";
 import { toast } from "sonner";
 import { decodeTapTipQr } from "@/lib/utils/qr-payment";
@@ -201,57 +202,58 @@ export function TipScreen() {
   return (
     <>
       <Screen
-        title="Tipping..."
         tightContent
+        wideContent
         action={
           <BackAction onBack={() => router.push("/dashboard")}>
-            <PrimaryButton onClick={() => router.push("/dashboard")}>Done</PrimaryButton>
+            <SlantButton onClick={() => router.push("/dashboard")}>Done</SlantButton>
           </BackAction>
         }
       >
-        {/* Do lai TUYET DOI tu get_metadata node 11:458 (px that, khong doan
-            qua % suy dien): camera y=172 h=327.8 (KHONG phai vuong - ti le
-            340x328, gan vuong nhung khong dung 1:1), roi CHI 16px (dung 1
-            row-gap) toi hang preset y=516. Ca 2 nam gon trong 1 khoi gap-4
-            rieng (16px) - KHONG dung gap-6 mac dinh cua Screen (24px, sai
-            khoang cach that trong Figma). Da bo het: khung vang huong dan
-            quet (Figma khong ve), nut "Upload a QR image instead" (Figma
-            khong co), gioi han max-w gia tao truoc do. */}
-        <div className="w-full flex flex-col gap-4">
-          <div
-            className="relative w-full tt-card-cut overflow-hidden bg-foreground"
-            style={{ height: "328px" }}
-          >
-            <div id={QR_REGION_ID} className="w-full h-full" />
+        <div className="w-full flex flex-col items-center gap-4">
+          {/* Rectangle 16 dung Figma Frame 1:122 (w=340, h=414, bg-black, cut corner duoi-phai) */}
+          <div className="w-full max-w-[340px] h-[350px] sm:h-[414px] shrink-0">
+            <CutCornerCard className="relative w-full h-full overflow-hidden bg-black flex items-center justify-center">
+              <div id={QR_REGION_ID} className="w-full h-full" />
+              {scanError && (
+                <div className="absolute inset-0 flex flex-col items-center justify-center p-6 text-center bg-black/90 z-20">
+                  <Icon.Warning className="w-8 h-8 text-danger mb-2" />
+                  <p className="font-body text-small text-white/80 font-medium">{scanError}</p>
+                  <button
+                    onClick={startScanner}
+                    className="mt-3 px-4 py-1.5 rounded-full bg-surface/20 text-white text-xs font-medium hover:bg-surface/30 transition-colors"
+                  >
+                    Retry
+                  </button>
+                </div>
+              )}
+            </CutCornerCard>
           </div>
 
-          {/* Preset $ - nghieng + VIEN xanh (khac han preset phang tren
-              Home): chua chon = nen trong, da chon = nen vang. Dung 3 cot 1
-              hang nhu Figma (khong phai luoi 2 cot). */}
-          <div className="w-full grid grid-cols-3 gap-2">
-            {([1, 2, 3, 4, 5] as const).map((slot) => {
+          {/* Preset $ - 3 nut nghieng dung Figma:
+              - Rectangle 28 ($2): vang chu xanh vien xanh
+              - Rectangle 32 ($10), 33 ($20): trang chu xanh vien xanh
+              - px-2.5 giup goc nghieng -16deg khong bi tran/cat mep phai */}
+          <div className="w-full max-w-[340px] px-2.5 flex items-center justify-between gap-3 h-[64px] sm:h-[70px] shrink-0">
+            {([1, 2, 3] as const).map((slot) => {
               const value = slotAmount(slot);
               if (value == null) return null;
               const isSelected = selectedSlot === slot;
               return (
-                <button
-                  key={slot}
-                  onClick={() => selectSlot(slot)}
-                  className={
-                    `w-full h-[70px] [transform:skewX(var(--skew-angle))] rounded-[var(--radius-slant)] border-2 border-brand font-display text-lead font-bold ` +
-                    (isSelected ? "bg-primary text-primary-foreground" : "bg-background text-brand")
-                  }
-                >
-                  <span className="inline-block [transform:skewX(calc(-1*var(--skew-angle)))]">${value}</span>
-                </button>
+                <div key={slot} className="flex-1 h-full min-w-0">
+                  <SlantButton
+                    variant="preset"
+                    isActive={isSelected}
+                    onClick={() => selectSlot(slot)}
+                    className="text-title"
+                  >
+                    ${value}
+                  </SlantButton>
+                </div>
               );
             })}
           </div>
         </div>
-
-        {scanError && (
-          <p className="font-body text-small font-semibold text-danger text-center">{scanError}</p>
-        )}
       </Screen>
 
       {isOverlayStep && (

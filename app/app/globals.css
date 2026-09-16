@@ -68,11 +68,11 @@
   /* Lop lam toi phia sau modal */
   --scrim: rgba(0, 0, 0, 0.55);
 
-  /* --- Luoi PX co dinh (khung Figma goc 390x844) --- */
-  --grid-row-h: 70px;
-  --grid-row-gap: 16px;
+  /* --- Luoi responsive theo viewport (mobile-first 100dvh) --- */
+  --grid-row-h: clamp(52px, 8.2dvh, 70px);
+  --grid-row-gap: clamp(8px, 1.8dvh, 16px);
   --grid-col-gap: 8px;
-  --grid-margin: 25px;
+  --grid-margin: clamp(16px, 5.5vw, 25px);
 
   /* --- Hinh dang dac trung: nut/o nhap nghieng --- */
   --skew-angle: -16deg;         /* skewX: dinh tren lech PHAI so voi day, dung goc do tu Figma (atan(20.5/70)) */
