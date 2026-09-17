@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Html5Qrcode } from "html5-qrcode";
 import * as Icon from "@/components/icons";
-import { Screen, BackAction } from "@/components/screen";
+import { Screen, BackAction, rowTop, ROW_H, CONTENT_X } from "@/components/screen";
 import { CutCornerCard, SlantButton } from "@/components/ui";
 import { useBalance } from "@/contexts/balanceContext";
 import { toast } from "sonner";
@@ -202,60 +202,63 @@ export function TipScreen() {
   return (
     <>
       <Screen
-        tightContent
-        wideContent
+        title="Tipping..."
+        contentTop={rowTop(3)}
         action={
           <BackAction onBack={() => router.push("/dashboard")}>
             <SlantButton onClick={() => router.push("/dashboard")}>Done</SlantButton>
           </BackAction>
         }
       >
-        <div className="w-full flex flex-col items-center gap-4">
-          {/* Rectangle 17 dung Figma frame "9 Tipping" (node 30:93): cao dung
-              9 hang luoi + 8 khoang gap (v4 09-16: 9*48.8+8*8=503.2, truoc
-              chi 5 hang = 414px - vung noi dung rong hon han o luoi 15 hang) */}
-          <div className="w-full max-w-[340px] h-[calc(9*var(--grid-row-h)+8*var(--grid-row-gap))] shrink-0">
-            <CutCornerCard className="relative w-full h-full overflow-hidden bg-black flex items-center justify-center">
-              <div id={QR_REGION_ID} className="w-full h-full" />
-              {scanError && (
-                <div className="absolute inset-0 flex flex-col items-center justify-center p-6 text-center bg-black/90 z-20">
-                  <Icon.Warning className="w-8 h-8 text-danger mb-2" />
-                  <p className="font-body text-small text-white/80 font-medium">{scanError}</p>
-                  <button
-                    onClick={startScanner}
-                    className="mt-3 px-4 py-1.5 rounded-full bg-surface/20 text-white text-xs font-medium hover:bg-surface/30 transition-colors"
-                  >
-                    Retry
-                  </button>
-                </div>
-              )}
-            </CutCornerCard>
-          </div>
-
-          {/* Preset $ - 3 nut nghieng dung Figma:
-              - Rectangle 28 ($2): vang chu xanh vien xanh
-              - Rectangle 32 ($10), 33 ($20): trang chu xanh vien xanh
-              - px-2.5 giup goc nghieng -16deg khong bi tran/cat mep phai */}
-          <div className="w-full max-w-[340px] px-2.5 flex items-center justify-between gap-3 h-[var(--grid-row-h)] shrink-0">
-            {([1, 2, 3] as const).map((slot) => {
-              const value = slotAmount(slot);
-              if (value == null) return null;
-              const isSelected = selectedSlot === slot;
-              return (
-                <div key={slot} className="flex-1 h-full min-w-0">
-                  <SlantButton
-                    variant="preset"
-                    isActive={isSelected}
-                    onClick={() => selectSlot(slot)}
-                    className="text-title"
-                  >
-                    ${value}
-                  </SlantButton>
-                </div>
-              );
-            })}
-          </div>
+        {/* Khung camera - node 30:98: x=25 y=113.97 w=340 h=503.813
+            (dung 9 hang luoi), nen den, vat goc 37x47.7. Figma KHONG ve
+            khung huong dan quet nao ben trong. */}
+        <div style={{ width: 340, height: 503.813 }}>
+          <CutCornerCard
+            cutX={37}
+            cutY={47.7}
+            className="relative w-full h-full overflow-hidden bg-black flex items-center justify-center"
+          >
+            <div id={QR_REGION_ID} className="w-full h-full" />
+            {scanError && (
+              <div className="absolute inset-0 flex flex-col items-center justify-center p-6 text-center bg-black/90 z-20">
+                <Icon.Warning className="w-8 h-8 text-danger mb-2" />
+                <p className="font-body text-small font-medium text-white/80">{scanError}</p>
+                <button
+                  onClick={startScanner}
+                  className="mt-4 font-body text-small font-medium text-white underline"
+                >
+                  Retry
+                </button>
+              </div>
+            )}
+          </CutCornerCard>
         </div>
+
+        {/* 3 nut preset - node 31:100/102/104: y=625.07 h=49 w=117,
+            x = 33.04 / 136.5 / 240.05 (bounding box chong nhau vi hinh
+            nghieng long vao nhau - dung vay moi khop Figma, khong dung gap).
+            Dang chon = nen vang KHONG vien; chua chon = nen cream vien xanh 1px. */}
+        {([1, 2, 3] as const).map((slot, i) => {
+          const value = slotAmount(slot);
+          if (value == null) return null;
+          const left = [33.04, 136.5, 240.05][i] - CONTENT_X;
+          return (
+            <div
+              key={slot}
+              className="absolute"
+              style={{ left, top: 625.07 - rowTop(3), width: 117, height: ROW_H }}
+            >
+              <SlantButton
+                variant="preset"
+                isActive={selectedSlot === slot}
+                onClick={() => selectSlot(slot)}
+              >
+                ${value}
+              </SlantButton>
+            </div>
+          );
+        })}
       </Screen>
 
       {isOverlayStep && (
@@ -278,12 +281,20 @@ export function TipScreen() {
   );
 }
 
-/** The thong bao nho noi giua man - dung cho buoc dang xu ly va thanh cong. */
+/**
+ * The thong bao noi giua man cho buoc dang gui / thanh cong.
+ *
+ * Figma KHONG ve buoc nay (frame "9" chi co trang thai dang quet) - day la
+ * phan SUY RA. Dung ngon ngu cua he thong thay vi rounded-xl tuy tien nhu
+ * ban truoc: khoi vat goc giong card menu, rong 277.5 nhu card menu.
+ */
 function OverlayCard({ children }: { children: React.ReactNode }) {
   return (
     <>
       <div className="fixed inset-0 z-40 bg-scrim" />
-      <div className="fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-50 w-[calc(100%-100px)] max-w-[330px] bg-background rounded-xl shadow-popover px-5 py-7 flex flex-col items-center gap-4">
+      <div className="fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-50 w-[277.5px] tt-card-cut bg-background shadow-popover px-6 py-8 flex flex-col items-center gap-4"
+        style={{ ["--cut-x" as string]: "29.3px", ["--cut-y" as string]: "46.3px" }}
+      >
         {children}
       </div>
     </>

@@ -3,8 +3,9 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
-import { Screen, BackAction } from "@/components/screen";
+import { Screen, BackAction, rowTop } from "@/components/screen";
 import { CutCornerCard, SlantButton } from "@/components/ui";
+import { shortenAddress } from "@/lib/utils/address";
 
 interface TransactionRow {
   direction: "in" | "out";
@@ -13,10 +14,6 @@ interface TransactionRow {
   createdAt: string;
 }
 
-function shortenAddress(address: string): string {
-  if (!address || address.length < 8) return address;
-  return `0x_${address.slice(-5)}`;
-}
 
 function formatDate(iso: string): string {
   const date = new Date(iso.endsWith("Z") ? iso : `${iso}Z`);
@@ -42,14 +39,22 @@ export function HistoryScreen() {
   return (
     <Screen
       title="History"
-      wideContent
+      contentTop={rowTop(3)}
       action={
         <BackAction onBack={() => router.push("/dashboard")}>
           <SlantButton onClick={() => router.push("/dashboard")}>Done</SlantButton>
         </BackAction>
       }
     >
-      <CutCornerCard className="w-full flex-1 min-h-0 overflow-y-auto bg-surface px-4">
+      {/* Figma node 30:91: x=25 y=114.15 w=340 h=559.813 (dung 10 hang luoi),
+          nen #DBDEE4, vat goc 34.4x46.9. Ban truoc dung flex-1 nen chieu cao
+          chay theo cho trong con lai chu khong phai so that cua Figma. */}
+      <CutCornerCard
+        cutX={34.4}
+        cutY={46.9}
+        className="w-full h-full overflow-y-auto bg-surface px-4"
+        containerClassName="w-[340px] h-[559.813px]"
+      >
         {rows == null && (
           <p className="py-6 text-center font-body text-body text-accent">Loading...</p>
         )}
@@ -70,7 +75,7 @@ export function HistoryScreen() {
             </div>
             <span
               className={
-                "font-display text-lead font-bold shrink-0 " +
+                "font-display text-body font-bold shrink-0 " +
                 (row.direction === "out" ? "text-danger" : "text-success")
               }
             >

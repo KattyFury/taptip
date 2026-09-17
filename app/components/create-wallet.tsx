@@ -20,7 +20,9 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { Screen, PrimaryButton } from "@/components/screen";
+import { Screen, BackAction } from "@/components/screen";
+import { SlantButton } from "@/components/ui";
+import { signOutAction } from "@/app/actions";
 
 /**
  * Tao vi cho user.
@@ -58,21 +60,29 @@ export function CreateWallet() {
     return (
         <Screen
             title="You’re all set"
-            tightContent
             action={
-                <PrimaryButton onClick={createWallet} disabled={isCreating}>
-                    {isCreating ? 'Creating...' : 'Create wallet'}
-                </PrimaryButton>
+                // Figma node 31:108 CO nut Back o hang 14 (code truoc thieu han).
+                // Khong the lui ve /sign-in: layout (auth-pages) thay da dang
+                // nhap se day sang /dashboard, roi /dashboard lai day nguoc ve
+                // day vi chua co vi -> lap vo han. Gan hanh dong gan nghia nhat
+                // la dang xuat, dung tien le da ghi trong HANDOFF.
+                <BackAction onBack={() => void signOutAction()} backLabel="Sign out">
+                    <SlantButton onClick={createWallet} disabled={isCreating}>
+                        {isCreating ? 'Creating...' : 'Create wallet'}
+                    </SlantButton>
+                </BackAction>
             }
             foot={
                 error ? (
-                    <p className="text-danger text-small font-extrabold text-center px-4">
+                    <p className="font-body text-small font-medium text-danger text-center leading-[20px]">
                         {error}
                     </p>
                 ) : null
             }
         >
-            <p className="font-body font-medium text-[20px] leading-[24.38px] text-foreground text-left w-full max-w-[324px]">
+            {/* Figma node 7:154: x=25 w=340 h=244, Montserrat Medium 19px,
+                leading 30px, mau den, can trai */}
+            <p className="font-body text-body font-medium text-foreground text-left w-full leading-[30px]">
                 We’ll set up your USDC wallet on Arc. Nothing to install, no
                 seed phrase to writedown.
             </p>

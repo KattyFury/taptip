@@ -1,21 +1,24 @@
 /**
- * TapTip Logo Component
- * Dựa trên Figma Frame 1:10 (slash) & Frame 1:25 (home)
- * - Wordmark SVG "TapTip" màu xanh thương hiệu (#155EEF) - public/logo-full.svg
+ * Wordmark "TapTip" (public/logo-full.svg, mau #155EEF).
+ *
+ * Kich thuoc lay DUNG khung Figma ve, khong tu chon:
+ *   Splash (frame 1, node 18:78) : 189.926 x 57.514 @ x=100.11 y=166.13
+ *   Home   (frame 5, node 29:8)  :  75.951 x 23     @ x=25    y=16
+ *
+ * Figma dat anh fill kin khung (inset-0 + size-full) nen o day cung set CA
+ * width lan height tuyet doi - khong dung width:auto.
  */
 
+export const LOGO_SPLASH = { width: 189.926, height: 57.514 };
+export const LOGO_HOME = { width: 75.951, height: 23 };
+
 interface TapTipLogoProps {
-  size?: "sm" | "md" | "lg";
+  width: number;
+  height: number;
   className?: string;
 }
 
-const HEIGHT_BY_SIZE = { sm: 28, md: 36, lg: 48 } as const;
-const LOGO_ASPECT_RATIO = 512 / 156;
-
-export function TapTipLogo({ size = "sm", className = "" }: TapTipLogoProps) {
-  const height = HEIGHT_BY_SIZE[size];
-  const width = height * LOGO_ASPECT_RATIO;
-
+export function TapTipLogo({ width, height, className = "" }: TapTipLogoProps) {
   return (
     // eslint-disable-next-line @next/next/no-img-element
     <img
@@ -24,6 +27,7 @@ export function TapTipLogo({ size = "sm", className = "" }: TapTipLogoProps) {
       width={width}
       height={height}
       className={className}
+      style={{ width, height }}
     />
   );
 }

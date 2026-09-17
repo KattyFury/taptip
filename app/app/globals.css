@@ -22,18 +22,23 @@
         nhan hang ("Balance:", "Tip amount:"), text mau --foreground/--accent.
 
    3. HINH DANG DAC TRUNG: nut + o nhap deu la HINH CHU NHAT BI NGHIENG (bo
-      goc) - khong phai bo goc thuong. Dung component <SlantedSurface> trong
-      components/screen.tsx, KHONG tu ve rounded-xl/rounded-full cho nut nua.
-      Card popup (menu, modal) dung hinh CAT 1 GOC (chamfer) rieng - xem
-      --radius-card-cut.
+      goc) - khong phai bo goc thuong. Dung SLANT_SHAPE/SLANT_CONTENT trong
+      components/screen.tsx (hoac <SlantButton> trong components/ui),
+      KHONG tu ve rounded-xl/rounded-full cho nut nua. Card popup (menu,
+      History...) dung hinh CAT 1 GOC (chamfer) rieng - xem .tt-card-cut.
 
-   4. LUOI (v4, 09-16 - doi tu 10 hang sang 15 hang theo Figma ve lai):
-      - Doc: 15 hang, cach nhau 8px, moi hang ~48.8px ((844-8*14)/15=48.8,
-        844 = 15*48.8 + 14*8). Vung noi dung gio la 11/15 hang (truoc 5/10)
-        - nhieu cho hon han cho man nhieu thanh phan (Tap to tip, Tipping).
-      - Ngang: 12 cot, cach nhau 8px, le an toan 25px 2 ben (KHONG doi).
-      - Spacing (padding/gap) LUON la boi so cua 8 (8/16/24/32/40...).
-      - Font-size LUON la boi so cua 4 (12/16/20/24/28/32...).
+   4. LUOI (v5, 09-17 - do lai bang toa do TUYET DOI tu Figma, xem
+      HANDOFF.md muc 09-17):
+      - Khung CO DINH 390x844. Tren may that khong co gian tung phan tu ma
+        SCALE NGUYEN KHUNG (transform:scale trong app/layout.tsx).
+      - Doc: 15 hang x DUNG 48.8px, gap 8px (844 = 15*48.8 + 14*8).
+        Moc y cua hang n = (n-1)*56.8 -> 0, 56.8, 113.6, 170.4, 227.2, 284,
+        340.8, 397.6, 454.4, 511.2, 568, 624.8, 681.6, 738.4, 795.2.
+      - Ngang: le an toan 25px 2 ben -> vung noi dung 340px.
+      - Nut nghieng nam trong dai x=33..357 (rong 324, thut 8px moi ben so
+        voi hop noi dung). Co Back: Back w=113 @x=33 + nut chinh w=224 @x=133.
+      - KHONG dung don vi theo viewport (dvh/vw/cqh) cho kich thuoc noi dung.
+        Ban cu dung clamp(...dvh...) khien moi thu lech khoi Figma - da bo.
 
    5. DO BONG: dung 4 token co san - shadow-btn (nut/the noi), shadow-modal
       (modal), shadow-popover (toast xu ly/thanh cong), shadow-field (long
@@ -53,6 +58,7 @@
   --primary-foreground: #155eef;/* xanh: CHU tren nut CTA vang */
   --brand: #155eef;             /* xanh: tieu de, so tien, nhan, vien nut outline */
   --accent: #a4afc3;            /* bi danh = --hint, giu ten cu cho cac call-site chua doi */
+  --brand-soft: #6797f5;        /* xanh nhat: 2 tam giac tang/giam gia o the preset (Polygon 2/3) */
 
   /* --- Trang thai --- */
   --success: #34c759;
@@ -70,16 +76,25 @@
   /* Lop lam toi phia sau modal */
   --scrim: rgba(0, 0, 0, 0.55);
 
-  /* --- Luoi responsive theo viewport (mobile-first 100dvh) --- */
-  /* v4 09-16: 15 hang (truoc 10), row-gap phang 8px dong bo voi col-gap
-     (truoc 16px/clamp rieng) - xem quy dinh muc 4 o tren. */
-  --grid-row-h: clamp(36px, 5.8dvh, 48.8px);
+  /* --- Luoi PX TUYET DOI trong khung co dinh 390x844 --- */
+  /* v5 09-17: bo clamp()/dvh. Khung khong co gian tung phan tu nua ma
+     scale nguyen khung (app/layout.tsx), nen moi so o day la px that
+     do thang tu Figma - xem quy dinh muc 4 o tren. */
+  --grid-row-h: 48.8px;
   --grid-row-gap: 8px;
   --grid-col-gap: 8px;
-  --grid-margin: clamp(16px, 5.5vw, 25px);
+  --grid-margin: 25px;
+
+  /* Chieu rong khung thiet ke goc - dung cho phep scale o layout */
+  --frame-w: 390px;
+  --frame-h: 844px;
 
   /* --- Hinh dang dac trung: nut/o nhap nghieng --- */
-  --skew-angle: -16deg;         /* skewX: dinh tren lech PHAI so voi day, dung goc do tu Figma (atan(20.5/70)) */
+  /* skewX: dinh tren lech PHAI so voi day. Do lai 09-17 tu 2 file SVG goc
+     (nut Send OTP 24:9 va nut Back 31:110): canh tren va canh duoi lech nhau
+     16.84px tren chieu cao 49px -> atan(16.84/49) = 18.96deg.
+     Gia tri cu -16deg la atan(20.5/70), tinh theo hang 70px cua LUOI CU. */
+  --skew-angle: -19deg;
   --radius-slant: 8px;          /* bo goc cho nut/o nhap nghieng */
 }
 
@@ -93,6 +108,7 @@
   --color-primary: var(--primary);
   --color-primary-foreground: var(--primary-foreground);
   --color-brand: var(--brand);
+  --color-brand-soft: var(--brand-soft);
   --color-accent: var(--accent);
 
   --color-success: var(--success);
@@ -122,12 +138,12 @@
   --color-destructive-foreground: #ffffff;
   --color-ring: var(--brand);
 
-  /* Bo goc: giu rounded-xl/card cho cac khoi CHUA chuyen sang SlantedSurface */
+  /* Bo goc - chi con dung cho the preset o Home (8px, do tu Figma) va vai
+     primitive shadcn con sot. Nut/o nhap dung --radius-slant. */
   --radius-sm: 8px;
   --radius-md: 12px;
   --radius-lg: 12px;
   --radius-xl: 12px;
-  --radius-card: 10px;
 
   /* Do bong */
   --shadow-btn: 0 4px 8px rgba(0, 0, 0, 0.2);
@@ -140,13 +156,19 @@
   --font-body: var(--font-montserrat), sans-serif;
   --font-sans: var(--font-body); /* mac dinh body cho the co ban */
 
-  /* Thang chu - LUON boi so cua 4, quy chieu truc tiep tu Figma (px that,
-     khong con quy doi cqh vi khung gio co dinh 390x844). */
-  --text-figure: 32px; /* so du lon o Home */
-  --text-title: 24px;  /* tieu de man, nut CTA, so tien preset */
-  --text-lead: 20px;   /* nhan hang, noi dung o nhap, dong trong menu */
-  --text-body: 20px;   /* = text-lead, Figma khong tach rieng 2 muc nay */
-  --text-small: 16px;  /* hint/chu thich phu */
+  /* Thang chu - do thang tu Figma 09-17 (get_design_context frame 5/7 +
+     node 11:273). KHONG con luat "boi so cua 4" cua ban cu - thang that
+     cua Figma la 15/19/23 (+35 rieng cho so du). Figma co 2 cho le
+     (title 24, muc menu 20) da duoc user chot chuan hoa ve 23/19. */
+  --text-figure: 35px; /* so du lon o Home ($XXX), Sora Bold */
+  --text-title: 23px;  /* tieu de man, nhan nut hanh dong, so tien preset */
+  --text-body: 19px;   /* noi dung, nhan hang, nhan nut giua man, muc menu */
+  --text-small: 15px;  /* hint xam, dong bao loi */
+
+  /* Line-height do tu Figma (khong suy dien) */
+  --leading-body: 30px;  /* doan van ban dai */
+  --leading-row: 40px;   /* nhan 1 dong: muc menu, nhan nut, "Balance:" */
+  --leading-error: 20px; /* dong bao loi hang 15 */
 }
 
 @layer base {
@@ -168,8 +190,17 @@
   }
 }
 
-/* Khung dien thoai - CO DINH 390x844 (xem app/layout.tsx), khong con
-   container-type:size/cqh nhu ban cu vi luoi gio la px tuyet doi. */
+/* Khung dien thoai - CO DINH 390x844, KHONG co gian tung phan tu. De vua
+   moi kich thuoc man hinh, ca khung duoc scale nguyen khoi bang
+   --frame-scale (tinh trong script o app/layout.tsx). Nho vay ty le trong
+   khung luon dung Figma tuyet doi, khong con container-type:size/cqh nhu
+   ban cu va cung khong con clamp()/dvh tren tung phan tu. */
+.tt-frame {
+  width: var(--frame-w);
+  height: var(--frame-h);
+  transform: scale(var(--frame-scale, 1));
+  transform-origin: center center;
+}
 
 /* Khung quet QR: html5-qrcode tu chen <video> voi kich thuoc theo ty le
    camera -> buoc video phu kin khung vuong, tranh dai den letterbox */
@@ -184,8 +215,8 @@
   display: block;
 }
 
-/* An anh/thong bao va khung mo mac dinh cua thu vien html5-qrcode - o quet
-   duoc ve lai bang overlay vien trang rieng trong send-flow.tsx */
+/* An anh/thong bao va khung mo mac dinh cua thu vien html5-qrcode - Figma
+   khong ve khung huong dan quet nao nen khung camera de tron. */
 #taptip-qr-region img[alt="Info icon"],
 #taptip-qr-region > div:not([style*="border"]) > img,
 #taptip-qr-region #qr-shaded-region {
@@ -219,11 +250,26 @@ input:-webkit-autofill:focus {
   animation: tt-caret 1s steps(1) infinite;
 }
 
-/* Hinh dang "cat goc" dac trung cho card/box lon (menu, History...) - vat
-   cheo goc duoi-phai, 3 goc con lai vuong. Do doc theo PX CO DINH (khong
-   phai %) - do truc tiep tu 2 file SVG goc Figma (menu card + History
-   Rectangle 16): ca 2 box khac kich thuoc nhau nhung cung vat ~68px doc /
-   ~32px ngang -> xac nhan day la 1 "notch" co dinh, khong ty le theo box. */
+/* Hinh dang "cat goc" dac trung cho card/box lon (menu, History, camera) -
+   vat cheo goc duoi-phai, 3 goc con lai BO 8px.
+
+   Do lai 09-17 tu 3 file SVG goc (11:30 menu, 30:91 History, 30:98 camera).
+   Ba khoi KHONG cung mot notch:
+     menu    277.5x240.8 -> vat 29.3 ngang / 46.3 doc
+     History 340x559.8   -> vat 34.4 ngang / 46.9 doc
+     camera  340x503.8   -> vat 37.0 ngang / 47.7 doc
+   Ban truoc de cung 68 doc / 32 ngang va ghi la "notch co dinh" - dung voi
+   BAN VE CU, sai voi ban hien tai. Vi vay kich thuoc vat gio la bien, moi
+   noi goi truyen dung so da do (xem <CutCornerCard cutX cutY>). */
 .tt-card-cut {
-  clip-path: polygon(0 0, 100% 0, 100% calc(100% - 68px), calc(100% - 32px) 100%, 0 100%);
+  --cut-x: 34px;
+  --cut-y: 47px;
+  border-radius: 8px;
+  clip-path: polygon(
+    0 0,
+    100% 0,
+    100% calc(100% - var(--cut-y)),
+    calc(100% - var(--cut-x)) 100%,
+    0 100%
+  );
 }

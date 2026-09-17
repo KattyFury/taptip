@@ -38,7 +38,7 @@ const sora = Sora({
 
 const montserrat = Montserrat({
   subsets: ["latin", "vietnamese"],
-  weight: ["400", "500", "600"],
+  weight: ["400", "500", "600", "700"],
   variable: "--font-montserrat",
   display: "swap",
 });
@@ -71,12 +71,25 @@ export default async function RootLayout({
       suppressHydrationWarning
     >
       <body className="bg-page-backdrop text-foreground font-sans min-h-dvh h-dvh overflow-hidden">
+        {/* Khung thiet ke la 390x844 CO DINH. Thay vi co gian tung phan tu
+            (ban cu dung clamp/dvh -> lech Figma tren moi may), ta scale
+            NGUYEN KHUNG. CSS thuan khong chia duoc length/length ra so cho
+            scale() nen phai tinh bang script - chay truoc paint de khong
+            nhay khung. */}
+        <script
+          dangerouslySetInnerHTML={{
+            __html:
+              "(function(){function s(){var e=Math.min(window.innerWidth/390,window.innerHeight/844);" +
+              "document.documentElement.style.setProperty('--frame-scale',String(e));}" +
+              "s();window.addEventListener('resize',s,{passive:true});" +
+              "window.addEventListener('orientationchange',s);})();",
+          }}
+        />
         <BalanceProvider>
           <Toaster expand />
-          <div className="flex items-center justify-center min-h-dvh h-dvh w-full">
-            {/* Mobile-first: 100% full-height dvh tren dien thoai, khung demo can giua tren desktop */}
-            <div className="tt-frame relative w-full h-full sm:h-[844px] sm:max-h-[min(844px,calc(100dvh-24px))] sm:w-[390px] flex flex-col bg-background border-0 sm:border-2 border-border sm:rounded-[24px] sm:shadow-2xl overflow-hidden">
-              <main className="flex-1 flex flex-col items-center overflow-hidden w-full h-full pt-[env(safe-area-inset-top,0px)] pb-[env(safe-area-inset-bottom,0px)] pl-[env(safe-area-inset-left,0px)] pr-[env(safe-area-inset-right,0px)]">
+          <div className="flex items-center justify-center min-h-dvh h-dvh w-full overflow-hidden">
+            <div className="tt-frame relative flex flex-col bg-background overflow-hidden border-0 sm:border-2 border-border sm:rounded-[24px] sm:shadow-2xl">
+              <main className="flex-1 flex flex-col items-center overflow-hidden w-full h-full">
                 <div className="flex flex-col w-full h-full flex-1 overflow-hidden">{children}</div>
               </main>
             </div>

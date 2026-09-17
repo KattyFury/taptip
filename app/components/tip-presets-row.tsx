@@ -142,44 +142,47 @@ export function TipPresetsRow() {
     persist(slot, next);
   };
 
+  // Toa do do tu Figma frame "5" (11:207), goc toa do la khoi cha 340x106
+  // dat o x=25.04 y=511:
+  //   o khoa  (11:220) x=25.04 y=526 -> rel (0, 15),  33x33, GOC VUONG, den
+  //   o "+"   (11:221) x=25.04 y=568 -> rel (0, 57),  33x33, GOC VUONG, #a4afc3
+  //   the 1-3 (11:222..224) x=65.99/168.33/270.66 -> rel 40.95, w=94.337 h=106
+  //   -> cot the bat dau o 40.95, rong 299.05, cach nhau 8px
+  //      (3 the: (299.05-16)/3 = 94.35, khop dung Figma)
+  //   tam giac (11:229/230) 10.76x9.32 mau #6797F5, thut ~9px khoi goc phai
   return (
-    <div className="flex items-center gap-2.5 h-[70px] w-full max-w-[340px]">
-      {/* Icon khoa (o den tren) + "+" (o xam duoi) xep doc, dung Figma:
-          - Rectangle 21: x=25, y=516, w=33, h=33, mau den (#000000)
-          - Rectangle 25: x=25, y=553, w=33, h=33, mau xam (#A4AFC3) */}
-      <div className="flex flex-col justify-between h-[70px] w-[33px] shrink-0">
-        <button
-          onClick={() => setUnlocked((v) => !v)}
-          aria-label={unlocked ? "Lock tip amounts" : "Unlock to edit tip amounts"}
-          className={`w-[33px] h-[33px] rounded-[6px] flex items-center justify-center transition-colors ${
-            unlocked ? "bg-brand text-white" : "bg-black text-white"
-          }`}
-        >
-          {unlocked ? <Icon.LockOpen className="w-4 h-4" /> : <Icon.Lock className="w-4 h-4" />}
-        </button>
-        <button
-          onClick={addSlot}
-          disabled={!canAddMore}
-          aria-label="Add another tip amount"
-          className="w-[33px] h-[33px] rounded-[6px] bg-[#A4AFC3] text-white flex items-center justify-center disabled:opacity-40 hover:bg-[#8e9bb3] transition-colors"
-        >
-          <Icon.Add className="w-4 h-4 stroke-[2.5]" />
-        </button>
-      </div>
+    <div className="relative w-full h-full select-none">
+      <button
+        onClick={() => setUnlocked((v) => !v)}
+        aria-label={unlocked ? "Lock tip amounts" : "Unlock to edit tip amounts"}
+        className={`absolute flex items-center justify-center transition-colors ${
+          unlocked ? "bg-brand text-white" : "bg-black text-white"
+        }`}
+        style={{ left: 0, top: 15, width: 33, height: 33 }}
+      >
+        {unlocked ? <Icon.LockOpen className="w-4 h-4" /> : <Icon.Lock className="w-4 h-4" />}
+      </button>
+      <button
+        onClick={addSlot}
+        disabled={!canAddMore}
+        aria-label="Add another tip amount"
+        className="absolute bg-accent text-white flex items-center justify-center disabled:opacity-40"
+        style={{ left: 0, top: 57, width: 33, height: 33 }}
+      >
+        <Icon.Add className="w-4 h-4 stroke-[2.5]" />
+      </button>
 
-      {/* Cac nut preset - Figma Frame 1:25:
-          - Rectangle 22, 23, 24: w=94, h=70, rounded-[8px], mau nen #DBDEE4
-          - Chu xanh Sora 700 24px: $2, $10, $20
-          - Moi pill deu co Polygon 2 (tam giac tren) va Polygon 3 (tam giac duoi) mau xanh #6697F5 */}
-      <div className="flex-1 grid gap-2 h-[70px]" style={{ gridTemplateColumns: `repeat(${visibleSlots.length}, minmax(0, 1fr))` }}>
+      <div
+        className="absolute flex"
+        style={{ left: 40.95, top: 0, width: 299.05, height: 106, gap: 8 }}
+      >
         {visibleSlots.map((slot) => {
-          const isDefault = settings.default_slot === slot;
           const isDragging = dragSlot === slot;
           const displayValue = isDragging && dragValue != null ? dragValue : slotValue(slot);
           const removable = slot > DEFAULT_SLOT_COUNT;
 
           return (
-            <div key={slot} className="relative h-[70px] select-none">
+            <div key={slot} className="relative flex-1 min-w-0">
               <div
                 onClick={() => {
                   if (!unlocked) makeDefault(slot);
@@ -188,18 +191,12 @@ export function TipPresetsRow() {
                 onPointerMove={onPointerMove}
                 onPointerUp={onPointerUp}
                 style={{ touchAction: unlocked ? "none" : "auto" }}
-                className={
-                  "w-full h-full rounded-[8px] bg-surface flex items-center justify-center relative cursor-pointer transition-all " +
-                  (isDefault ? "ring-2 ring-brand" : "") +
-                  (unlocked ? " ring-2 ring-brand/50" : "")
-                }
+                className="w-full h-full rounded-[8px] bg-surface flex items-center justify-center relative cursor-pointer"
               >
-                {/* So tien: Sora 700 24px text-brand */}
-                <span className="font-display text-[24px] font-bold text-brand leading-none">
+                <span className="font-display text-title font-bold text-brand leading-none">
                   ${displayValue}
                 </span>
 
-                {/* Tam giac tren: Polygon 2 x=144.7 y=1489 w=12.4 h=12.4 mau xanh #6697F5 */}
                 <button
                   type="button"
                   onClick={(e) => {
@@ -207,14 +204,14 @@ export function TipPresetsRow() {
                     adjustValue(slot, 1);
                   }}
                   aria-label="Increase tip amount"
-                  className="absolute top-2 right-2 w-3.5 h-3.5 flex items-center justify-center text-[#6697F5] hover:text-brand transition-colors"
+                  className="absolute text-brand-soft"
+                  style={{ top: 9, right: 9 }}
                 >
-                  <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
-                    <polygon points="6,2 11,10 1,10" fill="currentColor" />
+                  <svg width="10.76" height="9.32" viewBox="0 0 10.7604 9.31875" fill="none">
+                    <path d="M5.38018 0L10.7604 9.31875H0L5.38018 0Z" fill="currentColor" />
                   </svg>
                 </button>
 
-                {/* Tam giac duoi: Polygon 3 x=144.7 y=1538.5 w=12.4 h=12.4 mau xanh #6697F5 */}
                 <button
                   type="button"
                   onClick={(e) => {
@@ -222,10 +219,17 @@ export function TipPresetsRow() {
                     adjustValue(slot, -1);
                   }}
                   aria-label="Decrease tip amount"
-                  className="absolute bottom-2 right-2 w-3.5 h-3.5 flex items-center justify-center text-[#6697F5] hover:text-brand transition-colors"
+                  className="absolute text-brand-soft"
+                  style={{ bottom: 9, right: 9 }}
                 >
-                  <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
-                    <polygon points="6,10 11,2 1,2" fill="currentColor" />
+                  <svg
+                    width="10.76"
+                    height="9.32"
+                    viewBox="0 0 10.7604 9.31875"
+                    fill="none"
+                    style={{ transform: "rotate(180deg)" }}
+                  >
+                    <path d="M5.38018 0L10.7604 9.31875H0L5.38018 0Z" fill="currentColor" />
                   </svg>
                 </button>
               </div>

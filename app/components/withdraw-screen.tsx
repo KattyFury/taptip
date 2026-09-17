@@ -1,13 +1,14 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { Screen, BackAction, PrimaryButton } from "@/components/screen";
+import { Screen, BackAction } from "@/components/screen";
+import { SlantButton } from "@/components/ui";
 
 /**
- * Man Withdraw rieng - Figma khong ve frame nay (chi co muc "Withdraw"
- * trong Menu), dung lai dung khuon Screen/Back+Done nhu Deposit/History de
- * dong bo, noi dung la thong bao chua kha dung (dung nhu ban PRD: testnet
- * chua ho tro rut tien that).
+ * Man Withdraw - Figma KHONG ve frame nay (chi co muc "Withdraw" trong menu
+ * frame "6"). Day la phan SUY RA, dung lai dung khuon frame "7" Deposit:
+ * tieu de hang 2, body Montserrat Medium 19px leading 30 can trai o hang 4,
+ * Back + Done o hang 14.
  */
 export function WithdrawScreen() {
   const router = useRouter();
@@ -17,11 +18,11 @@ export function WithdrawScreen() {
       title="Withdraw"
       action={
         <BackAction onBack={() => router.push("/dashboard")}>
-          <PrimaryButton onClick={() => router.push("/dashboard")}>Done</PrimaryButton>
+          <SlantButton onClick={() => router.push("/dashboard")}>Done</SlantButton>
         </BackAction>
       }
     >
-      <p className="font-body text-lead text-accent text-center">
+      <p className="font-body text-body font-medium text-foreground text-left w-full leading-[30px]">
         Withdrawals aren&apos;t available yet during the testnet phase.
       </p>
     </Screen>

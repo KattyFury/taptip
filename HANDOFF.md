@@ -11,7 +11,59 @@
 
 ---
 
-## 👉 BẮT ĐẦU TỪ ĐÂY (09-16, sau)
+## 👉 BẮT ĐẦU TỪ ĐÂY (09-17)
+
+**Dựng lại TOÀN BỘ 9 màn đúng Figma, sau khi user báo app vẫn "nửa cũ nửa Figma" dù phiên trước đã áp thiết kế.** Phiên này không sửa vặt từng màn mà đi tìm **nguyên nhân gốc** trước — và có 3 cái, đều là tàn dư hệ cũ đội lốt tên mới:
+
+1. **Đơn vị lưới sai bản chất.** `--grid-row-h: clamp(36px, 5.8dvh, 48.8px)` co giãn theo cửa sổ trình duyệt, trong khi Figma là khung CỐ ĐỊNH 390×844. Đây chính là tư duy tỉ lệ `cqh` của bản cũ sống sót dưới tên mới → mọi thứ lệch, và lệch khác nhau trên từng máy. Đã khoá cứng `48.8px` / lề `25px`, và **scale NGUYÊN KHUNG** bằng `transform: scale(min(100vw/390, 100dvh/844))` (script nhỏ trong `app/layout.tsx` — CSS thuần không chia được length/length ra số cho `scale()`).
+2. **Bố cục dựng bằng flexbox flow.** `Screen` dùng `flex flex-col gap-4 justify-center` nên phần tử rơi vào chỗ flex quyết định, không rơi đúng hàng Figma. Đã đổi sang **đặt tuyệt đối theo toạ độ đo từ Figma**.
+3. **Thang chữ vẫn là thang CŨ** (32/24/20/16, bội số 4). Figma thật: **15/19/23 + 35**. User chốt chuẩn hoá 2 cỡ lẻ (title 24, menu 20) về 23/19.
+
+### Số liệu Figma đã đo (nguồn sự thật — đừng đo lại từ ảnh render)
+Lưới: **15 hàng × 48.8px, gap 8px, lề 25px** → nội dung 340. Mốc hàng n = `(n-1)×56.8`.
+Nút nghiêng nằm trong dải **x=33…357 (rộng 324)**; có Back: Back `w=113 @x=33` + nút chính `w=224 @x=133` (2 bounding box CHỒNG nhau 13px — đúng vậy mới khớp, đừng dùng `gap`).
+Khuôn chung: title `y=49 h=65 w=274` · body `y=170 x=25 w=340` · hàng nút `y=738` · hàng phụ `y=795`.
+
+**Góc nghiêng thật là `-19deg`**, không phải `-16deg`. Đo từ 2 SVG gốc (24:9 Send OTP, 31:110 Back): cạnh trên/dưới lệch **16.84px trên chiều cao 49px**. Giá trị cũ `atan(20.5/70)` tính theo **hàng 70px của lưới CŨ**.
+
+**Vát góc card KHÔNG phải notch cố định** (ghi chú cũ nói vậy là đúng với bản vẽ cũ): menu `29.3×46.3`, History `34.4×46.9`, camera `37×47.7`, cả ba **bo góc 8px**, viền (nếu có) **1px**. `CutCornerCard` giờ bắt buộc truyền `cutX`/`cutY`.
+
+**Mọi nút outline viền 1px** (SVG gốc `stroke` không có `stroke-width` → mặc định 1; trước để `border-2`). **Preset đang chọn chỉ có nền vàng, KHÔNG viền.**
+
+### Những thứ Figma KHÔNG vẽ mà code tự bịa — đã xoá sạch
+- Chip gợi ý `@gmail.com`/`@icloud.com` ở Sign in.
+- 4 icon trong menu + nhãn "Account Number" + đường kẻ phân cách (Figma chỉ có **1 khối text 5 dòng**).
+- Viền xanh quanh khung QR; bước "Tap to show QR code" + nút "Hide QR".
+- `ring-2 ring-brand` quanh thẻ preset ở Home.
+- Bo góc `rounded-[6px]` ở ô khoá/ô "+" (Figma để góc vuông).
+
+### Sai số đã bắt được nhờ đo bằng SỐ thay vì nhìn ảnh
+- **Ô nhập email KHÔNG nghiêng** — SVG gốc là chữ nhật bo góc 8px, 340×49. Cả bản cũ (vẽ parallelogram bằng `<svg>` path riêng) lẫn bản sửa đầu tiên của phiên này (dùng skew) đều sai vì nhìn ảnh rồi đoán. `slant-input.tsx` đã đổi thành `text-field.tsx`.
+- **Màu tam giác preset là `#6797F5`**, code viết `#6697F5` (lệch 1 ký tự) → giờ là token `--brand-soft`.
+- **"Balance:" và "$XXX" nằm CÙNG một hàng** (cả hai `y=390 h=64`), code xếp dọc 2 dòng.
+- **Nền mờ khi mở menu: opacity đúng 0.200** — đo bằng cách lấy màu pixel khung QR trong ảnh Figma rồi giải ngược, không ước lượng. Nút menu thì KHÔNG mờ (Figma để nó ngoài nhóm bị mờ).
+- 2 node `Rectangle 4` (11:215) và `Rectangle 15` (11:208) trong frame Home là **rác**: một cái SVG rỗng hoàn toàn, một cái 0.09×0.09px nằm ngoài khung → không render.
+
+### Phần SUY RA (Figma không vẽ, user đã đồng ý dựng theo khuôn màn khác)
+Màn **OTP**, màn **Withdraw**, **OverlayCard** (Processing/Tipped) ở Tipping, màn **/auth/auth-error**. Nút **Back giữ icon mũi tên** — Figma không vẽ icon nhưng user xác nhận *"nút back bỏ icon vào nên mình k vẽ"*.
+
+### Dọn thêm
+Gộp 2 `SlantButton` trùng tên (ở `screen.tsx` và `ui/`) làm một; xoá `PrimaryButton`/`IconButton`/`SingleAction`/`Field` (3 cái cuối đã chết); gộp `shortenAddress` về `lib/utils/address.ts` (Home và History từng dùng 2 kiểu khác nhau); sửa bug thiếu dấu cách khiến class thành `shrink-0text-danger` ở History; `manifest.ts` đổi `#FFCC00` (vàng hệ CŨ) → `#F5B800`; nạp thêm Montserrat 700 (Figma dùng Montserrat Bold mà font chưa có weight này nên trình duyệt đang giả béo).
+
+### Đã verify
+`tsc --noEmit` sạch sau mỗi màn, `npm run build` production sạch. **Chụp ảnh thật cả 9 màn ở đúng viewport 390×844 qua CDP và ghép cạnh ảnh Figma để đối chiếu** — script ở `scratchpad/shot.js` + `compare.js`. Môi trường chụp màn cần đăng nhập: migrate D1 `--local` + seed 2 user (một có ví, một chưa) + 3 giao dịch + 2 session giả trong KV, rồi bơm cookie `taptip_session` qua CDP; màn Tipping thêm cờ `--use-fake-ui-for-media-stream`.
+
+**Bẫy khi chụp ảnh:** cờ `--screenshot` của Chrome kèm `--window-size` cho ra ảnh **lệch hẳn layout** (nội dung dạt sang phải, tràn mép) dù trang render đúng. Phải dùng CDP `Emulation.setDeviceMetricsOverride` + `Page.captureScreenshot`. Mất một lúc mới phát hiện đó là lỗi công cụ chụp chứ không phải lỗi CSS.
+
+### Còn nợ
+1. Chưa test trên **điện thoại thật** — camera thật, quét QR thật, gửi tip thật. Mọi verify tới giờ đều là Chrome headless + camera giả.
+2. Ngắt dòng tiêu đề màn Sign in khác Figma một chút (Figma ngắt "…email to / get started", app ngắt "…to get / started") — hệ quả trực tiếp của việc chuẩn hoá title 24px→23px, user đã biết và chọn kệ.
+3. `docs/08-design-spec-hien-trang.md` và `TapTip Design Spec.dc.html` vẫn mô tả hệ Inter/vàng-đen CŨ — đã lỗi thời từ lâu, đừng lấy làm nguồn sự thật.
+4. `lib/auth/passkey.ts` + `app/api/credential/route.ts` + cột `passkey_credential` vẫn là tàn dư kiến trúc passkey cũ, chưa hỏi user có xoá không.
+
+---
+
+## 👉 Lịch sử (09-16, sau)
 
 **Đổi lưới dọc từ 10 hàng sang 15 hàng, gap 8px (khớp Figma vẽ lại) — cột ngang 12 cột/gap 8px/lề 25px giữ nguyên, không đổi.** User đưa spec bằng lời ("rộng 12 cột cách 8px, cao 15 hàng cách 8px") + link Figma `node-id=0-1` (cả trang, ~9 frame). Xác nhận đúng số liệu bằng cách đọc `get_design_context` từng frame: các mốc `top: calc(N%+...)` trong code Figma xuất ra đều là bội số của 1/15 (6.67%, 13.33%, 20%... khớp 15 hàng) thay vì 1/10 như bản cũ — không phải đoán, đo trực tiếp từ 9 frame (`1`→`9`) đều khớp cùng 1 khuôn: hàng 1 pad/menu, hàng 2 tiêu đề, hàng 3→13 nội dung (11 hàng, **tăng gần gấp đôi** so với 5 hàng cũ — lý do chính khiến khung camera/QR ở màn Tip giờ cao hơn hẳn), hàng 14 nút hành động, hàng 15 hàng phụ (Skip/lỗi) — hàng 15 nằm SÁT ĐÁY khung, không còn hàng đệm riêng như lưới 10 hàng cũ.
 - Sửa token gốc `--grid-row-h`/`--grid-row-gap` (`globals.css`) — chiều cao 1 hàng mới ≈48.8px (`(844-8*14)/15`), row-gap phẳng 8px (trước `clamp(8px,1.8dvh,16px)`, giờ đồng bộ với col-gap).

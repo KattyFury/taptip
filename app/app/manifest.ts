@@ -25,9 +25,10 @@ export default function manifest(): MetadataRoute.Manifest {
     description: "Tip and gift money as fast as a handshake",
     start_url: "/",
     display: "standalone",
-    // Khop token: nen app trang, mau thuong hieu vang
-    background_color: "#ffffff",
-    theme_color: "#FFCC00",
+    // Khop token globals.css: nen --background, mau thuong hieu --primary.
+    // Truoc 09-17 van con #FFCC00 - vang cua he thiet ke CU.
+    background_color: "#FFFDF5",
+    theme_color: "#F5B800",
     icons: [
       {
         src: "/icon-192x192.png",

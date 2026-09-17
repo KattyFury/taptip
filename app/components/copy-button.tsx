@@ -22,7 +22,7 @@ export function CopyButton({ value, label }: { value: string; label: string }) {
       onClick={handleCopy}
       aria-label={label}
       className={
-        "w-7 h-7 rounded-full flex items-center justify-center shrink-0 " +
+        "inline-flex items-center justify-center shrink-0 align-middle " +
         (copied ? "text-success" : "text-brand")
       }
     >

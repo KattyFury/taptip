@@ -18,13 +18,11 @@
 
 "use client"
 
-import { Screen, BackAction, PrimaryButton } from "@/components/screen";
-import { SlantInput } from "@/components/ui/slant-input";
+import { Screen, BackAction, ROW_H } from "@/components/screen";
+import { SlantButton, TextField } from "@/components/ui";
 import { GlobalContext } from "@/contexts/global-context";
 import { useRouter } from "next/navigation";
 import { ChangeEventHandler, useContext, useMemo, useState } from "react";
-
-const EMAIL_DOMAIN_SUGGESTIONS = ["@gmail.com", "@icloud.com"];
 
 export default function SignIn() {
   const router = useRouter()
@@ -35,16 +33,8 @@ export default function SignIn() {
 
   const isEmailInvalid = useMemo(() => !/^\S+@\S+\.\S+$/.test(email), [email])
 
-  const localPart = email.split('@')[0]
-  const showEmailSuggestions = localPart.trim().length > 0 && isEmailInvalid
-
   const handleEmailChange: ChangeEventHandler<HTMLInputElement> = event => {
     setEmail(event.target.value)
-    setError(null)
-  }
-
-  const applyEmailSuggestion = (domain: string) => {
-    setEmail(`${localPart}${domain}`)
     setError(null)
   }
 
@@ -79,45 +69,31 @@ export default function SignIn() {
   return (
     <Screen
       title="Enter your email to get started"
-      tightContent
-      wideContent
       action={
         <BackAction onBack={() => router.push("/")}>
-          <PrimaryButton disabled={isEmailInvalid || loading} onClick={signInWithEmail}>
+          <SlantButton disabled={isEmailInvalid || loading} onClick={signInWithEmail}>
             {loading ? "Sending..." : "Send OTP"}
-          </PrimaryButton>
+          </SlantButton>
         </BackAction>
       }
       foot={
         error && (
-          <p className="text-danger text-small font-extrabold text-center">
+          <p className="font-body text-small font-medium text-danger text-center leading-[20px]">
             {error}
           </p>
         )
       }
     >
-      <SlantInput
-        type="email"
-        placeholder="Type here"
-        value={email}
-        onChange={handleEmailChange}
-        autoComplete="off"
-      />
-
-      {showEmailSuggestions && (
-        <div className="flex flex-wrap gap-2 justify-center">
-          {EMAIL_DOMAIN_SUGGESTIONS.map(domain => (
-            <button
-              key={domain}
-              type="button"
-              onClick={() => applyEmailSuggestion(domain)}
-              className="text-small px-[14px] py-[5px] bg-surface rounded-full text-foreground"
-            >
-              {localPart}{domain}
-            </button>
-          ))}
-        </div>
-      )}
+      {/* Figma node 24:8: o nhap cao dung 1 hang luoi, rong het 340 */}
+      <div style={{ height: ROW_H }}>
+        <TextField
+          type="email"
+          placeholder="Type here"
+          value={email}
+          onChange={handleEmailChange}
+          autoComplete="off"
+        />
+      </div>
     </Screen>
   );
 }

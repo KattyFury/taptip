@@ -48,9 +48,12 @@ const InputOTPGroup = React.forwardRef<
 InputOTPGroup.displayName = "InputOTPGroup"
 
 /**
- * O nhap mot chu so: vuong, bo 12px, nen chim giong moi o nhap khac,
- * chu so dat font-num (Comfortaa). O dang cho nhap co vien vang 2px va
- * mot vach con tro nhay - dung ring-inset de khong lam xe dich luoi o.
+ * O nhap mot chu so.
+ *
+ * Figma KHONG ve man OTP (chi co Sign in -> You're all set), nen o day la
+ * phan SUY RA: dung lai ngon ngu cua o nhap that o man Sign in (node 24:8) -
+ * chu nhat bo goc 8px, nen --surface, KHONG nghieng - va cao dung 1 hang
+ * luoi. O dang cho nhap co vien xanh 2px (ring-inset de khong xe dich luoi).
  */
 const InputOTPSlot = React.forwardRef<
   React.ElementRef<"div">,
@@ -64,9 +67,9 @@ const InputOTPSlot = React.forwardRef<
       ref={ref}
       className={cn(
         "relative flex items-center justify-center",
-        "w-[42px] h-[48px] xs:w-11 xs:h-12 sm:w-12 sm:h-12 max-w-[48px]",
-        "rounded-[var(--radius-slant)] bg-surface shadow-field",
-        "font-display text-lead font-bold text-brand",
+        "w-[42px] h-[var(--grid-row-h)]",
+        "rounded-[8px] bg-surface",
+        "font-display text-title font-bold text-brand",
         isActive && "ring-2 ring-inset ring-brand",
         className
       )}
@@ -91,7 +94,7 @@ const InputOTPSeparator = React.forwardRef<
   <div
     ref={ref}
     role="separator"
-    className={cn("text-brand text-lead leading-none", className)}
+    className={cn("text-brand text-body leading-none", className)}
     {...props}
   >
     &bull;

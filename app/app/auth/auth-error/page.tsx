@@ -16,6 +16,30 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
+"use client";
+
+import { useRouter } from "next/navigation";
+import { Screen } from "@/components/screen";
+import { SlantButton } from "@/components/ui";
+
+/**
+ * Figma KHONG ve man nay - phan SUY RA, dung khuon Screen chung. Truoc
+ * 09-17 day la <div>Authentication error</div> tran, khong font khong token,
+ * la scaffold con sot lai tu ban fork arc-p2p-payments.
+ */
 export default function AuthError() {
-  return <div>Authentication error</div>;
+  const router = useRouter();
+
+  return (
+    <Screen
+      title="Something went wrong"
+      action={
+        <SlantButton onClick={() => router.push("/sign-in")}>Back to sign in</SlantButton>
+      }
+    >
+      <p className="font-body text-body font-medium text-foreground text-left w-full leading-[30px]">
+        We couldn&apos;t sign you in. Please try again.
+      </p>
+    </Screen>
+  );
 }

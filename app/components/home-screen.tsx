@@ -5,10 +5,10 @@ import { useRouter } from "next/navigation";
 import { QRCodeSVG } from "qrcode.react";
 import * as Icon from "@/components/icons";
 import { useBalance, BalanceProvider } from "@/contexts/balanceContext";
-import { SlantButton } from "@/components/screen";
-import { TapTipLogo, CutCornerCard } from "@/components/ui";
+import { SlantButton, TapTipLogo, LOGO_HOME, CutCornerCard } from "@/components/ui";
 import { TipPresetsRow } from "@/components/tip-presets-row";
 import { CopyButton } from "@/components/copy-button";
+import { shortenAddress } from "@/lib/utils/address";
 import { encodeTapTipQr } from "@/lib/utils/qr-payment";
 import { signOutAction } from "@/app/actions";
 
@@ -31,10 +31,6 @@ function formatBalance(token: number): string {
   });
 }
 
-function shortenAddress(address: string): string {
-  if (!address || address.length < 6) return address;
-  return `0x...${address.slice(-4)}`;
-}
 
 // BalanceProvider rieng, dia chi biet san tu server (primaryWallet.wallet_address)
 // - khong con phu thuoc Web3Context ket noi WebAuthn xong moi thay so du. Che
@@ -51,7 +47,6 @@ function HomeScreenContent({ primaryWallet }: Props) {
   const router = useRouter();
   const { balance, balanceError } = useBalance();
   const [menuOpen, setMenuOpen] = useState(false);
-  const [showQr, setShowQr] = useState(false);
 
   const hasWallet =
     !!primaryWallet.wallet_address && primaryWallet.wallet_address !== "0x0";
@@ -61,165 +56,174 @@ function HomeScreenContent({ primaryWallet }: Props) {
     router.push(path);
   };
 
+  const shortAddress = shortenAddress(primaryWallet.wallet_address);
+
+  // Moi toa do duoi day do tuyet doi tu Figma frame "5" (11:207) va frame "6"
+  // (29:28) bang get_design_context - xem bang so lieu trong HANDOFF 09-17.
   return (
-    <div
-      data-home-root
-      className="flex flex-col justify-between items-center w-full h-full min-h-0 px-[var(--grid-margin)] pt-3 pb-3 sm:pt-4 sm:pb-4 overflow-y-auto"
-    >
-      {/* Header : Logo TapTip + Menu button */}
-      <div className="w-full max-w-[340px] flex items-center justify-between shrink-0 h-[48px] relative">
-        <TapTipLogo size="sm" />
-        <div className="relative">
-          <button
-            onClick={() => setMenuOpen((v) => !v)}
-            aria-label="Open menu"
-            className="w-9 h-9 flex items-center justify-center text-brand"
-          >
-            <Icon.Menu className="w-6 h-6" />
-          </button>
-
-          {menuOpen && (
-            <>
-              <div
-                className="fixed inset-0 z-40"
-                onClick={() => setMenuOpen(false)}
-                aria-hidden="true"
-              />
-              <div className="absolute right-0 top-full z-50 mt-2 w-max">
-                <CutCornerCard variant="bordered">
-                  <div className="w-full flex items-center justify-between gap-3 px-4 py-3 border-b border-brand/30">
-                    <div className="flex flex-col min-w-0">
-                      <span className="font-body text-small text-accent">Account Number</span>
-                      <span className="font-display text-lead font-bold text-brand truncate">
-                        {shortenAddress(primaryWallet.wallet_address)}
-                      </span>
-                    </div>
-                    <CopyButton value={primaryWallet.wallet_address} label="Copy wallet address" />
-                  </div>
-                  <button
-                    className="w-full flex items-center gap-3 text-left px-4 py-3 font-display text-lead font-semibold text-foreground border-b border-brand/30 hover:bg-surface/30"
-                    onClick={() => goTo("/dashboard/deposit")}
-                  >
-                    <Icon.ArrowDown className="w-5 h-5 shrink-0" />
-                    Deposit
-                  </button>
-                  <button
-                    className="w-full flex items-center gap-3 text-left px-4 py-3 font-display text-lead font-semibold text-foreground border-b border-brand/30 hover:bg-surface/30"
-                    onClick={() => goTo("/dashboard/withdraw")}
-                  >
-                    <Icon.ArrowUp className="w-5 h-5 shrink-0" />
-                    Withdraw
-                  </button>
-                  <button
-                    className="w-full flex items-center gap-3 text-left px-4 py-3 font-display text-lead font-semibold text-foreground border-b border-brand/30 hover:bg-surface/30"
-                    onClick={() => goTo("/dashboard/history")}
-                  >
-                    <Icon.Clock className="w-5 h-5 shrink-0" />
-                    History
-                  </button>
-                  <form action={signOutAction}>
-                    <button
-                      type="submit"
-                      className="w-full flex items-center gap-3 text-left px-4 py-3 font-display text-lead font-semibold text-danger hover:bg-danger-bg/30"
-                    >
-                      <Icon.Logout className="w-5 h-5 shrink-0 text-danger" />
-                      Log out
-                    </button>
-                  </form>
-                </CutCornerCard>
-              </div>
-            </>
-          )}
+    <div data-home-root className="relative w-full h-full overflow-hidden">
+      {/* Khi menu mo, Figma frame "6" lam MO toan bo noi dung phia sau: do
+          mau pixel khung QR (den dac -> #ccc9c4 tren nen cream) ra dung
+          opacity 0.200. Rieng nut menu KHONG mo - Figma de no la node rieng
+          (29:63) nam ngoai nhom bi mo (29:62). */}
+      <div className={`absolute inset-0 ${menuOpen ? "opacity-20" : ""}`}>
+        {/* Logo - node 29:8 */}
+        <div className="absolute" style={{ left: 25.04, top: 16 }}>
+          <TapTipLogo {...LOGO_HOME} />
         </div>
-      </div>
 
-      {/* Top Box : Rectangle 3 dung Figma (w=340, h=328, bg-black, border-2 border-brand)
-          Mac dinh la hop den tinh chuan Figma Frame 1:25, bam vao de mo QR code nhan tien */}
-      <div className="w-full max-w-[340px] aspect-[340/310] sm:aspect-[340/328] bg-black border-2 border-brand relative flex items-center justify-center shrink-0 overflow-hidden">
+      {/* Khung QR - node 11:211: 340x333, nen den, KHONG vien, KHONG bo goc.
+          Ban truoc them border-2 border-brand va mot buoc "Tap to show QR"
+          ma Figma khong he ve - da bo ca hai. */}
+      <div
+        className="absolute bg-black overflow-hidden flex items-center justify-center"
+        style={{ left: 25.04, top: 57, width: 340, height: 333 }}
+      >
         {hasWallet ? (
-          showQr ? (
-            <div className="p-3 bg-white flex items-center justify-center rounded">
-              <QRCodeSVG
-                value={encodeTapTipQr(primaryWallet.wallet_address)}
-                size={220}
-                className="w-full h-full max-h-full"
-                fgColor="#000000"
-              />
-            </div>
-          ) : (
-            <button
-              onClick={() => setShowQr(true)}
-              className="w-full h-full flex flex-col items-center justify-center gap-2 group text-white/50 hover:text-white/80 transition-colors"
-              aria-label="Tap to view QR code"
-            >
-              <div className="w-10 h-10 rounded-full border border-white/20 flex items-center justify-center text-white/70 group-hover:scale-110 transition-transform">
-                <Icon.QrCode className="w-5 h-5" />
-              </div>
-              <span className="font-body text-[14px] text-white/60">Tap to show QR code</span>
-            </button>
-          )
+          <QRCodeSVG
+            value={encodeTapTipQr(primaryWallet.wallet_address)}
+            size={313}
+            bgColor="#FFFFFF"
+            fgColor="#000000"
+          />
         ) : (
-          <div className="font-body text-lead text-white/50 text-center px-4">
+          <div className="font-body text-body text-white/50 text-center px-4">
             Setting up your wallet...
           </div>
         )}
-        {showQr && (
-          <button
-            onClick={() => setShowQr(false)}
-            className="absolute top-2 right-2 px-2 py-1 bg-black/80 text-white rounded text-xs font-body hover:bg-black border border-white/30"
-          >
-            Hide QR
-          </button>
-        )}
       </div>
 
-      {/* Balance & Tip amount - dung Figma:
-          - Balance: Montserrat 500 20px #000000, so tien Sora 700 32px #155EEF
-          - Tip amount: Montserrat 500 20px #000000 */}
-      <div className="w-full max-w-[340px] flex flex-col gap-1 shrink-0 pt-1">
-        <div className="flex items-baseline gap-2">
-          <span className="font-body text-[20px] font-medium text-foreground">
-            Balance:
-          </span>
-          <span className="font-display text-[32px] font-bold text-brand leading-none">
-            ${formatBalance(balance.token)}
-          </span>
-        </div>
-        <span className="font-body text-[20px] font-medium text-foreground">
-          Tip amount:
+      {/* Hang "Balance:" + "$XXX" - node 11:213 va 11:214 NAM CUNG MOT HANG
+          (ca hai top=390 h=64): nhan can trai, so tien can giua khung.
+          Ban truoc xep DOC thanh 2 dong - sai han. */}
+      <div className="absolute" style={{ left: 25, top: 390, width: 339.99, height: 64 }}>
+        <span
+          className="absolute left-0 font-body text-body font-medium text-foreground"
+          style={{ top: 12, lineHeight: "40px" }}
+        >
+          Balance:
+        </span>
+        <span
+          className="absolute inset-x-0 text-center font-display text-figure font-bold text-brand"
+          style={{ top: 12, lineHeight: "40px" }}
+        >
+          ${formatBalance(balance.token)}
         </span>
       </div>
 
-      {/* Tip Presets Row : 33px control stack + 3 pills voi tam giac blue */}
-      <div className="w-full max-w-[340px] h-[70px] shrink-0 flex items-center">
+      {/* "Tip amount:" - node 11:218, dong chu sat day khung 65px (ket thuc o 511) */}
+      <span
+        className="absolute font-body text-body font-medium text-foreground"
+        style={{ left: 25.04, top: 470.87, width: 339.96, lineHeight: "40px" }}
+      >
+        Tip amount:
+      </span>
+
+      {/* Hang preset - the o y=511 cao 106 (2 hang luoi), o khoa/+ o cot trai */}
+      <div className="absolute" style={{ left: 25.04, top: 511, width: 340, height: 106 }}>
         <TipPresetsRow />
       </div>
 
-      {/* Hint : Unlock then slide to edit, + to add value (Montserrat 500 16px #A4AFC3) */}
-      <div className="w-full max-w-[340px] shrink-0">
-        <span className="font-body text-[16px] font-medium text-accent">
-          Unlock then slide to edit, + to add value
-        </span>
+      {/* Hint - node 11:219: 15px mau --hint */}
+      <span
+        className="absolute font-body text-small font-medium text-accent"
+        style={{ left: 25.04, top: 617, width: 340.5, lineHeight: "40px" }}
+      >
+        Unlock then slide to edit, + to add value
+      </span>
+
+      {/* "Tap to tip" - node 29:16: x=33 w=324 y=738 h=49 */}
+      <div className="absolute" style={{ left: 33.04, top: 738, width: 324, height: 49 }}>
+        <SlantButton onClick={() => router.push("/dashboard/tip")}>Tap to tip</SlantButton>
       </div>
 
-      {/* Button Tap to tip : Slant button cao dung 1 hang luoi (--grid-row-h,
-          v4 09-16: ~48.8px, truoc 70px), mau vang #F5B800, chu xanh Sora 700 24px */}
-      <div className="w-full max-w-[340px] h-[var(--grid-row-h)] shrink-0 flex items-center">
-        <SlantButton
-          className="text-title w-full h-full font-display font-bold shadow-btn"
-          onClick={() => router.push("/dashboard/tip")}
-        >
-          Tap to tip
-        </SlantButton>
-      </div>
-
-      {/* Thong bao loi so du neu co */}
+      {/* Hang 15 - node 11:212 chinh la SPEC cho dong bao loi:
+          "If bug happen: make it red, this size, and understandable"
+          -> Montserrat Medium 15px, mau --danger, leading 20px */}
       {balanceError && (
-        <div className="w-full max-w-[340px] shrink-0 flex items-center justify-center min-h-[20px]">
-          <p className="font-body text-small font-semibold text-danger text-center">
-            {balanceError}
-          </p>
-        </div>
+        <p
+          className="absolute font-body text-small font-medium text-danger leading-[20px]"
+          style={{ left: 25.04, top: 795, width: 340.5, height: 49 }}
+        >
+          {balanceError}
+        </p>
+      )}
+      </div>
+
+      {/* Nut menu - node 11:217/29:63: Figma ve o DAC 25.04px (placeholder),
+          giu icon that ben trong theo dung chot cua user */}
+      <button
+        onClick={() => setMenuOpen((v) => !v)}
+        aria-label="Open menu"
+        className="absolute z-50 flex items-center justify-center text-brand"
+        style={{ left: 339.995, top: 12.998, width: 25.04, height: 25.04 }}
+      >
+        <Icon.Menu className="w-full h-full" />
+      </button>
+
+      {/* Menu - frame "6" (29:28). Figma chi ve MOT khoi chu 5 dong:
+          khong icon, khong nhan "Account Number", khong duong ke phan cach.
+          Card: x=88.4 y=49 w=277.5 h=240.81, vien xanh 1px, vat 29.3x46.3. */}
+      {menuOpen && (
+        <>
+          <div
+            className="fixed inset-0 z-40"
+            onClick={() => setMenuOpen(false)}
+            aria-hidden="true"
+          />
+          <div
+            className="absolute z-50"
+            style={{ left: 88.4, top: 49, width: 277.5, height: 240.81 }}
+          >
+            <CutCornerCard variant="bordered" cutX={29.3} cutY={46.3}>
+              <div
+                className="w-full h-full flex flex-col justify-center"
+                style={{ paddingLeft: 18.27 }}
+              >
+                {/* Figma viet literal "0xAbCd...EfGh [copy]" - "[copy]" la
+                    cach user ghi tat cho "cho phep copy", user da chot dung
+                    ICON thay vi in ra chu do. */}
+                <div
+                  className="flex items-center gap-2 font-display text-body font-semibold text-brand"
+                  style={{ lineHeight: "40px" }}
+                >
+                  <span>{shortAddress}</span>
+                  <CopyButton value={primaryWallet.wallet_address} label="Copy wallet address" />
+                </div>
+                <button
+                  onClick={() => goTo("/dashboard/deposit")}
+                  className="text-left font-display text-body font-semibold text-foreground"
+                  style={{ lineHeight: "40px" }}
+                >
+                  Deposit
+                </button>
+                <button
+                  onClick={() => goTo("/dashboard/withdraw")}
+                  className="text-left font-display text-body font-semibold text-foreground"
+                  style={{ lineHeight: "40px" }}
+                >
+                  Withdraw
+                </button>
+                <button
+                  onClick={() => goTo("/dashboard/history")}
+                  className="text-left font-display text-body font-semibold text-foreground"
+                  style={{ lineHeight: "40px" }}
+                >
+                  History
+                </button>
+                <form action={signOutAction}>
+                  <button
+                    type="submit"
+                    className="text-left font-display text-body font-semibold text-danger"
+                    style={{ lineHeight: "40px" }}
+                  >
+                    Log out
+                  </button>
+                </form>
+              </div>
+            </CutCornerCard>
+          </div>
+        </>
       )}
     </div>
   );

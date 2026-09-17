@@ -18,7 +18,8 @@
 
 "use client";
 
-import { Screen, BackAction, PrimaryButton } from "@/components/screen";
+import { Screen, BackAction, ROW_H } from "@/components/screen";
+import { SlantButton } from "@/components/ui";
 import {
   InputOTP,
   InputOTPGroup,
@@ -99,29 +100,30 @@ export default function CodeConfirmation() {
         <>
           Enter the code sent to
           <br />
-          <span className="text-lead text-accent break-all">{email}</span>
+          <span className="text-body text-accent break-all">{email}</span>
         </>
       }
-      tightContent
-      wideContent
       action={
         <BackAction onBack={() => router.push("/sign-in")}>
-          <PrimaryButton
+          <SlantButton
             disabled={isConfirmationCodeInvalid || loading}
             onClick={handleCodeValidation}
           >
             {loading ? "Verifying..." : "Continue"}
-          </PrimaryButton>
+          </SlantButton>
         </BackAction>
       }
       foot={
         error && (
-          <p className="text-danger text-small font-extrabold text-center">
+          <p className="font-body text-small font-medium text-danger text-center leading-[20px]">
             {error}
           </p>
         )
       }
     >
+      {/* Figma khong ve man nay - hang o nhap dat o hang 4 nhu o nhap email
+          ben Sign in, cao dung 1 hang luoi, can giua trong 340px */}
+      <div className="flex items-center justify-center" style={{ height: ROW_H }}>
       <InputOTP
         autoFocus
         maxLength={6}
@@ -143,6 +145,7 @@ export default function CodeConfirmation() {
           <InputOTPSlot index={5} />
         </InputOTPGroup>
       </InputOTP>
+      </div>
     </Screen>
   );
 }
