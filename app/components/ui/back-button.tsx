@@ -27,7 +27,7 @@ export function BackButton({
       onClick={onBack}
       aria-label={ariaLabel}
       className={
-        `h-full w-full bg-background border border-brand ${SLANT_SHAPE} ` +
+        `h-full bg-background border border-brand ${SLANT_SHAPE} ` +
         `shadow-btn disabled:opacity-50 disabled:pointer-events-none ` +
         `transition-transform active:scale-[0.98] ${className}`
       }

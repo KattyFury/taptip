@@ -132,8 +132,9 @@ function HomeScreenContent({ primaryWallet }: Props) {
         Unlock then slide to edit, + to add value
       </span>
 
-      {/* "Tap to tip" - node 29:16: x=33 w=324 y=738 h=49 */}
-      <div className="absolute" style={{ left: 33.04, top: 738, width: 324, height: 49 }}>
+      {/* "Tap to tip" - node 29:16 y=738 h=49; dai nut x=25..365 theo quy
+          luat chung (hinh nhin thay tinh ca phan nghieng, xem screen.tsx) */}
+      <div className="absolute" style={{ left: 25, top: 738, width: 340, height: 49 }}>
         <SlantButton onClick={() => router.push("/dashboard/tip")}>Tap to tip</SlantButton>
       </div>
 

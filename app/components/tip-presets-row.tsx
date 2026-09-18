@@ -22,6 +22,24 @@ const DEFAULT_SLOT_COUNT = 3;
  * doi so ngay, dung phan hoi that 09-13: "keo con nhay nhay bay ba"). */
 const PX_PER_DOLLAR = 18;
 
+/** Cot the: rong 299.05, cac the cach nhau 8px (do tu Figma, xem cuoi file) */
+const CARDS_W = 299.05;
+const CARD_GAP = 8;
+/** Thang chu cho so tien (Figma 23/19/15). Sora Bold: moi ky tu ~0.62em. */
+const AMOUNT_SIZES = [
+  { px: 23, cls: "text-title" },
+  { px: 19, cls: "text-body" },
+  { px: 15, cls: "text-small" },
+] as const;
+
+/** Co chu LON NHAT ma "$so" van nam gon trong 2/3 ben trai cua the. */
+function amountSizeClass(text: string, slotCount: number): string {
+  const cardW = (CARDS_W - CARD_GAP * (slotCount - 1)) / slotCount;
+  const room = (cardW * 2) / 3 - 4;
+  const fit = AMOUNT_SIZES.find((s) => text.length * s.px * 0.62 <= room);
+  return (fit ?? AMOUNT_SIZES[AMOUNT_SIZES.length - 1]).cls;
+}
+
 /**
  * Hang preset tien tip ngay tren Home (thay the popup "Tip Setting" rieng +
  * nut "Option" xau xi cu - theo dung yeu cau thiet ke moi 09-12):
@@ -29,7 +47,7 @@ const PX_PER_DOLLAR = 18;
  * - Khoa (icon Lock/LockOpen): mac dinh KHOA - bam 1 cai de MO KHOA, luc do
  *   moi keo (keo doc) tren tung nut de chinh so tien. Bam lai de khoa lai.
  * - Dau + : them nut moi (toi da 5, mac dinh 3: $2/$10/$20).
- * - Bam 1 nut (bat ky luc nao, khoa hay khong) = chon lam mac dinh (vien
+ * - Bam 1 nut (bat ky luc nao, khoa hay khong) = chon lam mac dinh (nen
  *   vang) - mac dinh la so tien Send flow tu dong chon san khi mo Scan to tip.
  */
 export function TipPresetsRow() {
@@ -55,13 +73,19 @@ export function TipPresetsRow() {
   const nextEmptySlot = SLOTS.find((slot) => slotValue(slot) == null);
   const canAddMore = visibleSlots.length < MAX_SLOTS && nextEmptySlot != null;
 
+  // Cap nhat LAC QUAN: hien so moi ngay, luu nen phia sau, loi thi tra lai.
+  // Truoc 09-18 cho server tra ve moi setSettings -> tha tay ra so cu hien
+  // lai ~0.5s roi moi nhay sang so moi ("keo 40 len 50 lai hien 40").
   const persist = async (slot: number, value: number) => {
+    const previous = settings;
+    setSettings({ ...settings, [`slot${slot}`]: value } as TipSettings);
     const res = await fetch("/api/tip-settings", {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ slot, value }),
     });
     if (!res.ok) {
+      setSettings(previous);
       toast.error("Could not save, try again");
       return;
     }
@@ -71,12 +95,15 @@ export function TipPresetsRow() {
 
   const makeDefault = async (slot: number) => {
     if (settings.default_slot === slot) return;
+    const previous = settings;
+    setSettings({ ...settings, default_slot: slot });
     const res = await fetch("/api/tip-settings", {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ slot, setDefault: true }),
     });
     if (!res.ok) {
+      setSettings(previous);
       toast.error("Could not save, try again");
       return;
     }
@@ -174,12 +201,13 @@ export function TipPresetsRow() {
 
       <div
         className="absolute flex"
-        style={{ left: 40.95, top: 0, width: 299.05, height: 106, gap: 8 }}
+        style={{ left: 40.95, top: 0, width: CARDS_W, height: 106, gap: CARD_GAP }}
       >
         {visibleSlots.map((slot) => {
           const isDragging = dragSlot === slot;
           const displayValue = isDragging && dragValue != null ? dragValue : slotValue(slot);
           const removable = slot > DEFAULT_SLOT_COUNT;
+          const isDefault = settings.default_slot === slot;
 
           return (
             <div key={slot} className="relative flex-1 min-w-0">
@@ -191,9 +219,21 @@ export function TipPresetsRow() {
                 onPointerMove={onPointerMove}
                 onPointerUp={onPointerUp}
                 style={{ touchAction: unlocked ? "none" : "auto" }}
-                className="w-full h-full rounded-[8px] bg-surface flex items-center justify-center relative cursor-pointer"
+                className={`w-full h-full rounded-[8px] relative cursor-pointer transition-colors ${
+                  isDefault ? "bg-primary shadow-btn" : "bg-surface"
+                }`}
               >
-                <span className="font-display text-title font-bold text-brand leading-none">
+                {/* So tien can giua trong 2/3 BEN TRAI the (user chot 09-18):
+                    1/3 ben phai de trong cho ngon tay keo + 2 tam giac, khong
+                    che mat so. The mac dinh = nen vang (cung ngon ngu "dang
+                    chon" voi preset man Tipping) de noi bat hon the du bi. */}
+                <span
+                  className={`absolute inset-y-0 left-0 flex items-center justify-center font-display font-bold text-brand leading-none whitespace-nowrap ${amountSizeClass(
+                    `$${displayValue}`,
+                    visibleSlots.length,
+                  )}`}
+                  style={{ width: "66.667%" }}
+                >
                   ${displayValue}
                 </span>
 

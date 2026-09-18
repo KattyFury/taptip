@@ -12,9 +12,9 @@ const CIRCLE_FAUCET_URL = "https://faucet.circle.com/";
 /**
  * Man Deposit - Figma frame "7" (node 30:65).
  *   body      30:69  y=170 x=25 w=340 h=244, Montserrat Medium 19px leading 30
- *   o dia chi 30:72  y=284 x=33 w=324 h=49, nen cream + vien xanh 1px,
+ *   o dia chi 30:72  y=284, dai nut x=25..365 (quy luat 09-18), nen cream + vien xanh 1px,
  *                    nhan Sora SemiBold 19px mau brand, CAN GIUA
- *   faucet    30:73  y=341 x=33 w=324 h=49, nen vang, nhan Sora SemiBold 19px
+ *   faucet    30:73  y=341, dai nut x=25..365, nen vang, nhan Sora SemiBold 19px
  *   Back+Done y=738
  */
 export function DepositScreen({ walletAddress }: { walletAddress: string }) {
@@ -28,7 +28,7 @@ export function DepositScreen({ walletAddress }: { walletAddress: string }) {
   };
 
   // Toa do trong vung noi dung (goc = rowTop(4) = 170.4, left = 25)
-  const slantLeft = SLANT_X - CONTENT_X; // 8.04
+  const slantLeft = SLANT_X - CONTENT_X; // 0 - dai nut trung vung noi dung
   const addrTop = rowTop(6) - rowTop(4); // 113.6
   const faucetTop = rowTop(7) - rowTop(4); // 170.4
 

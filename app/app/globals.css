@@ -96,6 +96,11 @@
      Gia tri cu -16deg la atan(20.5/70), tinh theo hang 70px cua LUOI CU. */
   --skew-angle: -19deg;
   --radius-slant: 8px;          /* bo goc cho nut/o nhap nghieng */
+  /* Phan hinh binh hanh loi ra MOI BEN sau khi skew: 49 * tan(19deg) / 2.
+     Nut phai co lai dung chung nay de HINH NHIN THAY nam tron trong o cha
+     (09-18: truoc do nut ve rong bang o cha roi moi skew -> loi ra 8.4px
+     moi ben, Back to hon ban ve va de len nut ben canh). */
+  --slant-overhang: 8.4px;
 }
 
 @theme inline {

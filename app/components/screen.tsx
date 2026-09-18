@@ -44,13 +44,22 @@ export const rowSpan = (rows: number) => rows * ROW_H + (rows - 1) * ROW_GAP;
 export const CONTENT_X = 25;
 export const CONTENT_W = 340;
 
-/** Dai nut nghieng: x=33..357 (thut 8px moi ben so voi vung noi dung) */
-export const SLANT_X = 33;
-export const SLANT_W = 324;
-/** Trong dai tren: nut Back rong 113 @x=33, nut chinh rong 224 @x=133 */
-export const BACK_W = 113;
-export const MAIN_W = 224;
-export const MAIN_OFFSET = 100; // 133 - 33
+/**
+ * QUY LUAT NUT NGHIENG (user chot 09-18) - moi so la HINH NHIN THAY, tinh ca
+ * phan nghieng (xem --slant-overhang trong components/ui/slant.ts):
+ *   - Dai nut = man hinh tru le 25px hai ben -> x=25..365, rong 340.
+ *   - Co Back: Back = 1/3, nut chinh = 2/3 cua (340 - 8), cach nhau 8px.
+ *   - Hang 3 preset: (340 - 2*8) / 3 = 108 moi nut, cach nhau 8px.
+ * Ban 09-17 lay bounding box Figma (Back 113 @33, chinh 224 @133 - CHONG
+ * nhau 13px) lam be rong TRUOC skew -> nut loi ra 8.4px moi ben, Back to hon
+ * ban ve va de len nut ben canh. Dung GAP that, khong chong o.
+ */
+export const SLANT_X = CONTENT_X;
+export const SLANT_W = CONTENT_W;
+export const SLANT_GAP = 8;
+export const BACK_W = (SLANT_W - SLANT_GAP) / 3; // 110.67
+export const MAIN_W = ((SLANT_W - SLANT_GAP) * 2) / 3; // 221.33
+export const MAIN_OFFSET = BACK_W + SLANT_GAP; // 118.67
 
 /** Tieu de man: Figma dat tuyet doi o y=49, cao 65, rong 274, can giua */
 export const TITLE_TOP = 49;
@@ -137,11 +146,8 @@ export function Screen({
 /* ========================= Cac manh dung chung ============================ */
 
 /**
- * Hang hanh dong co nut Quay lai.
- * Figma: Back x=33 w=113, nut chinh x=133 w=224 - hai bounding box CHONG
- * nhau 13px, dung vay moi dung: hai hinh binh hanh cung goc nghieng long
- * vao nhau, khe nhin thay la mot vet cheo manh. Dung gap flex o day se ra
- * khe qua rong so voi Figma.
+ * Hang hanh dong co nut Quay lai: Back 1/3 ben trai, nut chinh 2/3 ben
+ * phai, khe 8px giua 2 canh nghieng (xem quy luat o BACK_W/MAIN_W).
  */
 export function BackAction({
   onBack,

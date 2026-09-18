@@ -11,7 +11,28 @@
 
 ---
 
-## 👉 BẮT ĐẦU TỪ ĐÂY (09-17)
+## 👉 BẮT ĐẦU TỪ ĐÂY (09-18)
+
+**Sửa theo phản hồi của user sau khi xem bản 09-17 trên site thật.**
+
+**1. Quy luật nút nghiêng (user chốt, THAY số đo 09-17 "Back 113 @33 + chính 224 @133 chồng nhau 13px"):** mọi số là HÌNH NHÌN THẤY, tính cả phần nghiêng.
+- Dải nút = màn 390 trừ lề 25px hai bên → x=25..365, rộng 340.
+- Có Back: Back = 1/3, nút chính = 2/3 của (340 − 8), khe 8px thật giữa 2 cạnh nghiêng (110.67 / 221.33).
+- 3 preset màn Tipping: (340 − 2×8) / 3 = 108 mỗi nút, khe 8px.
+- **Nguyên nhân gốc lỗi "Back to hơn bản vẽ, đè lên nút bên cạnh":** bounding box Figma ĐÃ gồm phần nghiêng, nhưng code dùng nó làm bề rộng TRƯỚC skew → mỗi bên lòi ra 49·tan19°/2 = 8.4px. Giờ `SLANT_SHAPE` tự co lại `--slant-overhang` (8.4px) mỗi bên, nên ô cha rộng bao nhiêu thì hình nhìn thấy rộng đúng bấy nhiêu. Hằng số ở `components/screen.tsx` (`SLANT_*`, `BACK_W`, `MAIN_W`).
+
+**2. Sign in:** thêm lại gợi ý `tên@gmail.com` / `tên@icloud.com` (user yêu cầu — bản 09-17 đã xoá vì Figma không vẽ). Gõ `abc@gm` thì chỉ còn gợi ý khớp.
+
+**3. Hàng preset ở Home (`tip-presets-row.tsx`):**
+- Kéo số không còn nháy về số cũ: trước đây thả tay thì hiện lại số cũ ~0.5s chờ server trả về. Giờ cập nhật lạc quan (hiện số mới ngay, lưu ngầm, lỗi thì trả lại) — áp cho kéo, tam giác ▲▼, và chọn mặc định. Đã test bằng CDP kéo thật: đọc số mỗi 50ms sau khi thả, không lần nào ra số cũ.
+- Số tiền căn giữa trong **2/3 bên trái** thẻ, 1/3 phải để trống cho ngón tay kéo. Cỡ chữ tự lùi 23→19→15 cho vừa khi có 4–5 thẻ.
+- Thẻ **mặc định = nền vàng** (cùng ngôn ngữ "đang chọn" với preset màn Tipping) — user muốn nó nổi hơn thẻ dự bị.
+
+**Bẫy môi trường (mất thời gian thật):** thư mục thật tên `Build on arc` (a thường). Chạy `next build` từ path gõ `Build on Arc` → lỗi `InvariantError: Expected workStore to be initialized` ở `/_global-error` (Next nạp 2 bản module do lệch hoa/thường path trên Windows). **Luôn `cd` bằng đúng `D:\Files\Claude\Build on arc	aptip`.** Máy này session giả local là `demo-session-token` (không phải `devtokendemo` như ghi ở mục 09-17 — đó là máy kia). Git Bash tự đổi đối số `/dashboard` thành path Windows → chạy script chụp với `MSYS_NO_PATHCONV=1`.
+
+---
+
+## Mục 09-17 (dựng lại 9 màn theo Figma)
 
 **Dựng lại TOÀN BỘ 9 màn đúng Figma, sau khi user báo app vẫn "nửa cũ nửa Figma" dù phiên trước đã áp thiết kế.** Phiên này không sửa vặt từng màn mà đi tìm **nguyên nhân gốc** trước — và có 3 cái, đều là tàn dư hệ cũ đội lốt tên mới:
 

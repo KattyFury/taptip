@@ -24,6 +24,9 @@ import { GlobalContext } from "@/contexts/global-context";
 import { useRouter } from "next/navigation";
 import { ChangeEventHandler, useContext, useMemo, useState } from "react";
 
+/** Goi y duoi email (user yeu cau lai 09-18 - ban 09-17 xoa vi Figma khong ve) */
+const EMAIL_DOMAIN_SUGGESTIONS = ["@gmail.com", "@icloud.com"];
+
 export default function SignIn() {
   const router = useRouter()
   const [email, setEmail] = useState('')
@@ -32,6 +35,18 @@ export default function SignIn() {
   const { updateState } = useContext(GlobalContext)
 
   const isEmailInvalid = useMemo(() => !/^\S+@\S+\.\S+$/.test(email), [email])
+
+  // Go "abc" hoac "abc@gm" -> goi y cac duoi con khop; go du duoi roi thi an.
+  const [localPart, typedDomain = ""] = email.split("@")
+  const emailSuggestions =
+    localPart.trim().length > 0 && isEmailInvalid
+      ? EMAIL_DOMAIN_SUGGESTIONS.filter(d => d.startsWith(`@${typedDomain}`))
+      : []
+
+  const applyEmailSuggestion = (domain: string) => {
+    setEmail(`${localPart}${domain}`)
+    setError(null)
+  }
 
   const handleEmailChange: ChangeEventHandler<HTMLInputElement> = event => {
     setEmail(event.target.value)
@@ -94,6 +109,22 @@ export default function SignIn() {
           autoComplete="off"
         />
       </div>
+
+      {/* Hang goi y ngay duoi o nhap (hang luoi 5), cach o nhap 8px */}
+      {emailSuggestions.length > 0 && (
+        <div className="flex gap-2 mt-2" style={{ height: ROW_H }}>
+          {emailSuggestions.map(domain => (
+            <button
+              key={domain}
+              type="button"
+              onClick={() => applyEmailSuggestion(domain)}
+              className="flex-1 min-w-0 truncate px-3 bg-surface rounded-[8px] font-body text-small font-medium text-foreground"
+            >
+              {localPart}{domain}
+            </button>
+          ))}
+        </div>
+      )}
     </Screen>
   );
 }

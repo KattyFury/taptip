@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Html5Qrcode } from "html5-qrcode";
 import * as Icon from "@/components/icons";
-import { Screen, BackAction, rowTop, ROW_H, CONTENT_X } from "@/components/screen";
+import { Screen, BackAction, rowTop, ROW_H, SLANT_W, SLANT_GAP } from "@/components/screen";
 import { CutCornerCard, SlantButton } from "@/components/ui";
 import { useBalance } from "@/contexts/balanceContext";
 import { toast } from "sonner";
@@ -235,30 +235,30 @@ export function TipScreen() {
           </CutCornerCard>
         </div>
 
-        {/* 3 nut preset - node 31:100/102/104: y=625.07 h=49 w=117,
-            x = 33.04 / 136.5 / 240.05 (bounding box chong nhau vi hinh
-            nghieng long vao nhau - dung vay moi khop Figma, khong dung gap).
-            Dang chon = nen vang KHONG vien; chua chon = nen cream vien xanh 1px. */}
-        {([1, 2, 3] as const).map((slot, i) => {
-          const value = slotAmount(slot);
-          if (value == null) return null;
-          const left = [33.04, 136.5, 240.05][i] - CONTENT_X;
-          return (
-            <div
-              key={slot}
-              className="absolute"
-              style={{ left, top: 625.07 - rowTop(3), width: 117, height: ROW_H }}
-            >
-              <SlantButton
-                variant="preset"
-                isActive={selectedSlot === slot}
-                onClick={() => selectSlot(slot)}
-              >
-                ${value}
-              </SlantButton>
-            </div>
-          );
-        })}
+        {/* 3 nut preset - node 31:100/102/104, y=625.07 h=49. Quy luat 09-18:
+            dai 340 tru 2 khe 8px chia 3 -> moi nut 108, khe 8px that giua 2
+            canh nghieng (ban 09-17 de bounding box chong nhau -> nut de len
+            nhau). Dang chon = nen vang KHONG vien; chua chon = vien xanh 1px. */}
+        <div
+          className="absolute flex"
+          style={{ left: 0, width: SLANT_W, top: 625.07 - rowTop(3), height: ROW_H, gap: SLANT_GAP }}
+        >
+          {([1, 2, 3] as const).map((slot) => {
+            const value = slotAmount(slot);
+            if (value == null) return null;
+            return (
+              <div key={slot} className="flex-1 min-w-0 h-full">
+                <SlantButton
+                  variant="preset"
+                  isActive={selectedSlot === slot}
+                  onClick={() => selectSlot(slot)}
+                >
+                  ${value}
+                </SlantButton>
+              </div>
+            );
+          })}
+        </div>
       </Screen>
 
       {isOverlayStep && (

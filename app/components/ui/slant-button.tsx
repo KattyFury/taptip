@@ -17,7 +17,6 @@ export interface SlantButtonProps
   variant?: "primary" | "outline" | "preset";
   size?: "action" | "inline";
   isActive?: boolean;
-  fullWidth?: boolean;
   className?: string;
   children: React.ReactNode;
 }
@@ -26,7 +25,6 @@ export function SlantButton({
   variant = "primary",
   size = "action",
   isActive = false,
-  fullWidth = true,
   className = "",
   children,
   ...props
@@ -55,7 +53,7 @@ export function SlantButton({
   return (
     <button
       className={
-        `h-full ${fullWidth ? "w-full" : ""} ${SLANT_SHAPE} ` +
+        `h-full ${SLANT_SHAPE} ` +
         `disabled:opacity-50 disabled:pointer-events-none ` +
         `transition-all active:scale-[0.98] ${styleClasses} ${className}`
       }
