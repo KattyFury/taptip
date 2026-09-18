@@ -28,7 +28,15 @@
 - Số tiền căn giữa trong **2/3 bên trái** thẻ, 1/3 phải để trống cho ngón tay kéo. Cỡ chữ tự lùi 23→19→15 cho vừa khi có 4–5 thẻ.
 - Thẻ **mặc định = nền vàng** (cùng ngôn ngữ "đang chọn" với preset màn Tipping) — user muốn nó nổi hơn thẻ dự bị.
 
-**Bẫy môi trường (mất thời gian thật):** thư mục thật tên `Build on arc` (a thường). Chạy `next build` từ path gõ `Build on Arc` → lỗi `InvariantError: Expected workStore to be initialized` ở `/_global-error` (Next nạp 2 bản module do lệch hoa/thường path trên Windows). **Luôn `cd` bằng đúng `D:\Files\Claude\Build on arc	aptip`.** Máy này session giả local là `demo-session-token` (không phải `devtokendemo` như ghi ở mục 09-17 — đó là máy kia). Git Bash tự đổi đối số `/dashboard` thành path Windows → chạy script chụp với `MSYS_NO_PATHCONV=1`.
+**Bẫy môi trường (mất thời gian thật):** path phải gõ ĐÚNG hoa/thường như tên folder thật (kiểm bằng `Get-ChildItem D:\Files\Claude`). Windows cho `cd` path lệch hoa vẫn vào được, nhưng `next build` fail `InvariantError: Expected workStore to be initialized` ở `/_global-error` (Next nạp 2 bản module). Phiên 09-18 dính vì folder khi đó tên `Build on arc`; cuối phiên user đã đổi tên thành **`D:\Files\Claude\Build on Arc	aptip`** (A hoa). Máy này session giả local là `demo-session-token` (không phải `devtokendemo` như ghi ở mục 09-17 — đó là máy kia). Git Bash tự đổi đối số `/dashboard` thành path Windows → chạy script chụp với `MSYS_NO_PATHCONV=1`.
+
+### Đã ship (09-18)
+Commit `e6cdfac` đã push `main`; `cf:deploy` Version `4649b245-f920-4b16-be21-dcbedc3ed7a0`, live `/sign-in` trả 200 và CSS live có `--slant-overhang:8.4px`. `wrangler` trên máy này đã đăng nhập được lại (không cần xin token). Verify bằng ảnh chụp CDP local 390×844 (Sign in, Home, Tipping, Deposit, History) + test kéo preset thật; ảnh ở `Desktop	aptip-0918`.
+
+### Còn nợ
+1. Chưa thử trên **điện thoại thật**: kéo preset, gợi ý email, nút Back/Done, camera/QR/gửi tip thật.
+2. Cần user xác nhận 2 chỗ tự hiểu: (a) "số tiền căn giữa 2/3" hiểu là 2/3 **chiều ngang** bên trái thẻ (user viết "chiều cao"); (b) nút đứng một mình (Tap to tip, 2 nút Deposit) cũng kéo ra lề 25px cho đồng bộ.
+3. Script chụp ảnh/test kéo (CDP + `ws`) chỉ nằm ở scratchpad phiên, chưa đưa vào repo.
 
 ---
 
