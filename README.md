@@ -1,30 +1,39 @@
-# TapTip
+<div align="center">
+
+<img src="items/logo-full.svg" width="200" alt="TapTip">
 
 **Tipping should be as fast as a handshake.**
 
-Money moves between people all the time — a tip, a thank-you, lucky money at Tết. That moment lasts a few seconds, so the payment has to fit inside it. TapTip is built on one belief: if paying someone takes longer than the gesture itself, people stop doing it.
+Send USDC by scanning a QR code. No seed phrase, no gas token, no wallet app.
 
-So everything a normal crypto app asks for is gone. No seed phrase. No gas token. No wallet app. No account number to read out loud. You show a QR code, the other person scans it, picks an amount, and it's done.
+[**taptip.fun**](https://taptip.fun) · Arc Testnet · Next.js on Cloudflare Workers
 
-## How it works
+</div>
 
-1. **Sign in with your email.** A 6-digit code. No password.
-2. **A wallet appears behind the scenes.** Circle creates and custodies it. Nothing to install, nothing to write down.
-3. **Show your QR to get tipped.** Your home screen *is* the QR code.
-4. **Tap to Tip to give.** Scan, pick an amount, sent — no confirmation step, no biometric prompt.
+---
 
-That last part is the whole point. A tip is a two-second gesture, so we refuse to put a signature prompt inside it. Circle signs on the server, and the app pays the gas — users never hold a second token, and never see the word "gas".
+## The 10-second version
 
-## Why Arc
+|  | |
+| --- | --- |
+| **To get tipped** | Open the app. Your home screen *is* your QR code. |
+| **To tip someone** | Tap to Tip → scan → pick an amount → sent. |
+| **To sign up** | Type your email, enter a 6-digit code. That's it. |
 
-Arc is Circle's chain where **USDC is the native gas token**. One asset does everything — no "you need ETH to move your USDC" dead end, and fees stay predictable. That is what makes the no-gas experience above possible rather than a workaround.
+Three things make that possible, and each one removes a step users normally accept as unavoidable:
+
+- **No confirmation step.** Circle signs on the server, so a tip is two taps — no signature popup, no Face ID.
+- **No gas token.** Arc uses USDC as its native gas, and the app covers the fee. Users never hold a second asset.
+- **No wallet to install.** A wallet is created behind the scenes on first sign-in and custodied by Circle.
+
+A tip is a two-second gesture. If paying takes longer than the gesture itself, people stop doing it — that belief drives every decision in this repo.
 
 ## Stack
 
 | Layer | Choice |
 | --- | --- |
-| App | Next.js 16 (App Router), deployed to Cloudflare Workers via OpenNext |
-| Wallet | Circle Developer-Controlled Wallets — server-signed, so tipping needs no user confirmation |
+| App | Next.js 16 (App Router) → Cloudflare Workers via OpenNext |
+| Wallet | Circle Developer-Controlled Wallets (server-signed) |
 | Chain | Arc Testnet, USDC |
 | Data | Cloudflare D1 (users, tip amounts, transactions) + KV (sessions) |
 | Email | Resend (login codes) |
@@ -34,12 +43,12 @@ Arc is Circle's chain where **USDC is the native gas token**. One asset does eve
 ```bash
 cd app
 npm install
-cp .env.example .env.local   # fill in Circle + Resend keys
+cp .env.example .env.local        # fill in Circle + Resend keys
 npx wrangler d1 migrations apply taptip-db --local
 npm run dev
 ```
 
-Deploying is manual — pushing to GitHub does **not** ship the site:
+Deploying is **manual** — pushing to GitHub does not ship the site:
 
 ```bash
 npm run cf:deploy
@@ -56,5 +65,3 @@ npm run cf:deploy
 ## Credits
 
 Forked from [`circlefin/arc-p2p-payments`](https://github.com/circlefin/arc-p2p-payments) and rebuilt around the idea above. Apache-2.0 — see [`app/LICENSE`](app/LICENSE).
-
-Status: running on Arc Testnet at [taptip.fun](https://taptip.fun).

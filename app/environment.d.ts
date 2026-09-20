@@ -21,8 +21,7 @@ namespace NodeJS {
     NEXT_PUBLIC_SITE_URL: string;
     CIRCLE_API_KEY: string;
     CIRCLE_ENTITY_SECRET: string;
-    NEXT_PUBLIC_CIRCLE_CLIENT_URL: string;
-    NEXT_PUBLIC_CIRCLE_CLIENT_KEY: string;
+    CIRCLE_WALLET_SET_ID: string;
     RESEND_API_KEY_SENDING: string;
   }
 }
