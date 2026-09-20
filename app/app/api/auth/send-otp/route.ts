@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { sendOtp } from "@/lib/auth/otp";
+import { sendOtp, OtpRateLimitError } from "@/lib/auth/otp";
 
 export async function POST(request: NextRequest) {
   try {
@@ -14,8 +14,11 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ ok: true });
   } catch (err: any) {
     console.error("[send-otp] Error:", err);
+    if (err instanceof OtpRateLimitError) {
+      return NextResponse.json({ error: err.message }, { status: 429 });
+    }
     return NextResponse.json(
-      { error: err?.message || "Failed to send OTP" },
+      { error: "Could not send the login code. Please try again." },
       { status: 500 }
     );
   }

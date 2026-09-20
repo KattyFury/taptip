@@ -4,6 +4,21 @@ import { getKv } from "@/lib/cloudflare";
 
 const OTP_TTL_SECONDS = 5 * 60;
 
+/** Ma chi co 6 so va la yeu to dang nhap DUY NHAT, nen phai chan do cong
+ * lien tuc: het 5 lan sai la dot ma, bat xin ma moi. */
+const MAX_VERIFY_ATTEMPTS = 5;
+
+/** Chan spam gui mail den dia chi nguoi khac + chan dot quota Resend. */
+const SEND_WINDOW_SECONDS = 15 * 60;
+const MAX_SENDS_PER_WINDOW = 5;
+
+export class OtpRateLimitError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = "OtpRateLimitError";
+  }
+}
+
 function generateCode() {
   return crypto.randomInt(0, 1_000_000).toString().padStart(6, "0");
 }
@@ -24,9 +39,19 @@ function otpEmailHtml(code: string) {
 }
 
 export async function sendOtp(email: string) {
-  const code = generateCode();
   const kv = await getKv();
+
+  const sentSoFar = Number((await kv.get(`otp_sent:${email}`)) ?? 0);
+  if (sentSoFar >= MAX_SENDS_PER_WINDOW) {
+    throw new OtpRateLimitError("Too many codes requested. Try again later.");
+  }
+  await kv.put(`otp_sent:${email}`, String(sentSoFar + 1), {
+    expirationTtl: SEND_WINDOW_SECONDS,
+  });
+
+  const code = generateCode();
   await kv.put(`otp:${email}`, code, { expirationTtl: OTP_TTL_SECONDS });
+  await kv.delete(`otp_tries:${email}`);
 
   if (process.env.NODE_ENV !== "production") {
     console.log(`[TapTip Auth] 🔑 Generated OTP for ${email}: ${code}`);
@@ -51,19 +76,30 @@ export async function sendOtp(email: string) {
 
 export async function verifyOtp(email: string, code: string) {
   const kv = await getKv();
-  const stored = await kv.get(`otp:${email}`);
-  console.log(`[TapTip Auth] 🔍 Verifying OTP for ${email}: entered="${code}", stored="${stored}"`);
 
   // Allow bypass code 000000 in development for fast testing
   if (process.env.NODE_ENV !== "production" && code === "000000") {
-    console.log(`[TapTip Auth] ✅ Dev bypass OTP accepted for ${email}`);
     await kv.delete(`otp:${email}`);
     return true;
   }
 
-  if (!stored || stored !== code) {
+  const stored = await kv.get(`otp:${email}`);
+  if (!stored) return false;
+
+  if (stored !== code) {
+    const tries = Number((await kv.get(`otp_tries:${email}`)) ?? 0) + 1;
+    if (tries >= MAX_VERIFY_ATTEMPTS) {
+      await kv.delete(`otp:${email}`);
+      await kv.delete(`otp_tries:${email}`);
+    } else {
+      await kv.put(`otp_tries:${email}`, String(tries), {
+        expirationTtl: OTP_TTL_SECONDS,
+      });
+    }
     return false;
   }
+
   await kv.delete(`otp:${email}`);
+  await kv.delete(`otp_tries:${email}`);
   return true;
 }
