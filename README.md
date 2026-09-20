@@ -57,4 +57,4 @@ npm run cf:deploy
 
 Forked from [`circlefin/arc-p2p-payments`](https://github.com/circlefin/arc-p2p-payments) and rebuilt around the idea above. Apache-2.0 — see [`app/LICENSE`](app/LICENSE).
 
-Status: running on Arc Testnet at [taptip.kattyfury1403.workers.dev](https://taptip.kattyfury1403.workers.dev).
+Status: running on Arc Testnet at [taptip.fun](https://taptip.fun).

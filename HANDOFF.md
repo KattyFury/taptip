@@ -7,7 +7,7 @@
 - Docs gốc (PRD, Product Discovery, wireframe...): [`docs/`](docs/) – sinh ra từ đúng các bước của series `build-on-arc`.
 - Code: [`app/`](app/) – fork [`circlefin/arc-p2p-payments`](https://github.com/circlefin/arc-p2p-payments) (Next.js + Supabase + Circle Modular Wallets/Passkey).
 - Gói bàn giao thiết kế: [`design_handoff_taptip/`](design_handoff_taptip/), [`TapTip Design Spec.dc.html`](TapTip%20Design%20Spec.dc.html).
-- Deploy thật: https://taptip.kattyfury1403.workers.dev (Cloudflare Workers, qua `@opennextjs/cloudflare`)
+- Deploy thật: **https://taptip.fun** (domain chính, gắn 2026-09-20) – vẫn truy cập được qua https://taptip.kattyfury1403.workers.dev (Cloudflare Workers, qua `@opennextjs/cloudflare`)
 
 ---
 
@@ -363,11 +363,14 @@ Gửi tip thật trên điện thoại. Tôi sửa được chuỗi ký nhưng *
 ### Hạ tầng – đã dựng xong, ĐANG SỐNG, domain production đã khai
 - D1 `taptip-db` + KV `taptip_kv` – đã tạo, migrate (bảng `users`/`tip_settings`/`transactions`), khai báo binding trong `app/wrangler.jsonc`. Nhớ migrate cả `--local` lẫn `--remote` (2 D1 tách biệt – `next dev` dùng bản `--local`).
 - Circle account MỚI (account thứ 3 sau 2 lần "brick" thật do lỗi ghi file recovery của Claude Code – xem cảnh báo dưới) – Entity Secret đã đăng ký thành công, recovery file lưu ở `C:\Users\Dell\CircleRecovery\taptip-v2-recovery.dat`, KHÔNG được mất lần nữa.
-- Client Key (Modular Wallets): Allowed Domain **và** Passkey Domain (Modular Wallets → Configurator → Passkey) đã khai `taptip.kattyfury1403.workers.dev` (09-01) – 2 chỗ này phải khớp nhau (bài học v1: thiếu 1 chỗ là passkey lỗi "Invalid credentials" trên domain thật).
+- Client Key (Modular Wallets): Allowed Domain **và** Passkey Domain (Modular Wallets → Configurator → Passkey) đã khai `taptip.kattyfury1403.workers.dev` (09-01) – **CHƯA khai `taptip.fun` (gắn 09-20), user phải tự vào Circle Console thêm cả 2 chỗ thì passkey mới chạy trên domain mới** – 2 chỗ này phải khớp nhau (bài học v1: thiếu 1 chỗ là passkey lỗi "Invalid credentials" trên domain thật).
+- **Domain `taptip.fun` (gắn 09-20)** – zone Cloudflare có sẵn trong account, đã gắn làm Custom Domain của Worker `taptip` (DNS `AAAA taptip.fun 100:: proxied` do Cloudflare tự tạo, cert tự cấp). Khai luôn trong `app/wrangler.jsonc` ở khối `routes` (`custom_domain: true`) để mọi lần `cf:deploy` sau giữ nguyên. Verify: `curl https://taptip.fun` trả 200, `<title>TapTip</title>`.
+  - `SITE_URL`/`NEXT_PUBLIC_SITE_URL` trong `app/.env.local` đã đổi sang `https://taptip.fun`, nhưng 2 biến này **bake lúc build** → chỉ có tác dụng sau lần `npm run cf:deploy` kế tiếp.
+  - ⚠️ **Passkey không mang theo domain:** WebAuthn gắn credential vào RP ID = hostname, nên passkey đã tạo trên `taptip.kattyfury1403.workers.dev` KHÔNG dùng được ở `taptip.fun` – phải đăng ký lại trên domain mới. Đồng thời phải thêm `taptip.fun` vào Allowed Domain + Passkey Domain của Client Key (xem gạch đầu dòng Client Key bên dưới), thiếu là lỗi "Invalid credentials".
 - `app/.env.local` đầy đủ Circle (API key + Entity Secret + Client Key/URL) + Resend, đã bỏ hết Supabase.
 
 ### ⚠️ Push GitHub KHÔNG tự deploy site production
-`taptip.kattyfury1403.workers.dev` chạy qua Cloudflare Workers, deploy bằng `npm run cf:deploy` (trong `app/`) – **thủ công hoàn toàn, không có CI/CD nào theo dõi push lên `KattyFury/taptip`**. Đã dính thật (09-01→09-02): sửa code, commit, push xong xuôi nhưng user mở site thấy y như cũ vì quên chạy `cf:deploy`. Sau mỗi lần sửa code trong `app/` mà muốn user thấy trên site thật, PHẢI tự chạy `npm run cf:deploy` (không chỉ push GitHub) rồi verify bằng `curl` thật lên domain production.
+`taptip.fun` (và `taptip.kattyfury1403.workers.dev`) chạy qua Cloudflare Workers, deploy bằng `npm run cf:deploy` (trong `app/`) – **thủ công hoàn toàn, không có CI/CD nào theo dõi push lên `KattyFury/taptip`**. Đã dính thật (09-01→09-02): sửa code, commit, push xong xuôi nhưng user mở site thấy y như cũ vì quên chạy `cf:deploy`. Sau mỗi lần sửa code trong `app/` mà muốn user thấy trên site thật, PHẢI tự chạy `npm run cf:deploy` (không chỉ push GitHub) rồi verify bằng `curl` thật lên domain production.
 
 **Bẫy phát sinh thêm:** `npm run build`/`cf:deploy` chạy `next build` production, type-check NGHIÊM hơn hẳn `next dev` (dev bỏ qua nhiều lỗi type ở route/file chưa được request tới) – lỗi TS ở code chết cũ (Supabase, chưa dọn) từng nằm im vô hại qua bao lần `tsc --noEmit`/`next dev` nhưng chặn đứng `cf:deploy`. Trước khi tin "tsc sạch = deploy được", thử build production thật 1 lần.
 
@@ -394,7 +397,7 @@ Kết quả hiện tại (ảnh chụp thật đã xác nhận đúng):
 Xem mockup đã duyệt: link low-fi + hi-fi nằm trong lịch sử hội thoại (không lưu lại trong file – nếu cần xem lại thiết kế gốc, hỏi user hoặc `/artifacts` trong Claude Code).
 
 ### CÒN LẠI, ưu tiên tiếp theo
-1. **Cần USER tự làm** – test passkey thật + quét QR thật (camera) + xem lịch sử giao dịch thật, trên điện thoại, tại bản production `https://taptip.kattyfury1403.workers.dev` (domain đã khai xong nên test thẳng bản thật, không cần qua mạng LAN dev server nữa). Việc này cần tương tác WebAuthn thật, không tự động hoá được.
+1. **Cần USER tự làm** – test passkey thật + quét QR thật (camera) + xem lịch sử giao dịch thật, trên điện thoại, tại bản production `https://taptip.fun` (domain đã khai xong nên test thẳng bản thật, không cần qua mạng LAN dev server nữa). Việc này cần tương tác WebAuthn thật, không tự động hoá được.
 2. `components/web3-provider.tsx` (+ chưa rà `app/api/webhooks/circle/route.ts`) – còn 2 hàm chết `registerPasskey`/`loginWithPasskey` (không nơi nào gọi, gọi tới route `/api/update-passkey` còn không tồn tại) trộn chung với `sendUSDC`/balance đang chạy thật trong CÙNG 1 file – phải đọc kỹ toàn bộ trước khi tách, đừng đụng vội vì đây là code ký giao dịch thật.
 3. Nạp/Rút trong dropdown Menu hiện vẫn dùng nội dung tạm (copy từ v1) trong `home-screen.tsx` – chưa qua thiết kế hi-fi riêng, chỉ mới bọc lại bằng `ContentPopup` cho đồng bộ khuôn.
 
