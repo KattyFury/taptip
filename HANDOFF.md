@@ -28,6 +28,8 @@ Không phải hỏng hạ tầng: key Resend còn tốt, DNS domain cũ đủ DK
 2. **Domain gửi lệch domain app** (`taptip.0xhieu.xyz` vs `taptip.fun`).
 3. **Mail chỉ có plain-text 2 dòng** — đã thêm bản HTML có thương hiệu.
 
+**User đã xác nhận cuối phiên 09-20: mail KHÔNG còn vào Spam nữa.** Đây là bằng chứng thật, không phải suy đoán — mail test gửi sau khi thêm DMARC đã vào thẳng Inbox.
+
 ### 2 lỗ bảo mật đã vá (đã deploy, Version `a2bbd5c8-c4e1-4923-a0bc-50c72f62da63`)
 1. **Dò cạn mã OTP.** Mã 6 số là yếu tố đăng nhập DUY NHẤT mà `verify-otp` không đếm số lần thử → quét 000000-999999 là chiếm được tài khoản bất kỳ. Giờ sai 5 lần là **đốt mã** (`otp_tries:<email>` trong KV). **Đã test thật trên production**: gửi mã → sai 5 lần → key `otp:<email>` biến mất khỏi KV.
 2. **Mã OTP bị in ra log production.** `verifyOtp` log cả mã đã nhập lẫn mã đúng mỗi lần gọi; `sendOtp` log mã vừa sinh. Ai đọc được log là đăng nhập được. Đã bỏ, chỉ còn log ở dev.
@@ -42,9 +44,10 @@ Thêm: chặn gửi tối đa **5 mã/15 phút/địa chỉ** (trả 429) — tr
 ### Phát hiện khi kiểm toán, CHƯA xử lý
 1. **`RESEND_API_KEY_SENDING` không phải Worker secret.** `wrangler secret list` không có nó, nhưng production vẫn gửi được — vì OpenNext **nướng `.env.local` vào bundle** (`.open-next/cloudflare/next-env.mjs` chứa key). Hệ quả: đổi key phải build+deploy lại, `wrangler secret put` không ăn. Không rò rỉ (`.open-next` đã gitignore, chưa từng commit).
 2. **4 secret chết trên Worker**: `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`, `NEXT_PUBLIC_CIRCLE_CLIENT_KEY`, `NEXT_PUBLIC_CIRCLE_CLIENT_URL`. Chưa xoá vì là production, cần user gật.
-3. **Trang gốc `taptip.fun` trên desktop hiện màn "Add Taptip to your Home Screen"** — người lạ mở link không hiểu app là gì.
-4. Phiên 30 ngày vẫn **không gia hạn trượt** (nợ cũ).
-5. Token Cloudflare đang dùng **hết hạn 2027-01-01**.
+3. Phiên 30 ngày vẫn **không gia hạn trượt** (nợ cũ).
+4. Token Cloudflare đang dùng **hết hạn 2027-01-01**.
+
+*(Đã gạch một mục sai: bản ghi đầu tiên của phiên này liệt màn "Add Taptip to your Home Screen" ở route `/` là vấn đề — **SAI**. Đó là hướng dẫn cài PWA có chủ đích, có nút Skip, và `app/page.tsx` đã phân nhánh iOS/Android theo userAgent đàng hoàng. Ảnh chụp ra bản Safari chỉ vì Chrome headless rơi vào nhánh mặc định. Đừng "sửa" chỗ này.)*
 
 ### Credential — đọc trước khi hỏi xin
 Kho dùng chung: **`C:\Users\MR VAN\.claude\secrets.env`** (có `CLOUDFLARE_API_TOKEN` + `CLOUDFLARE_ACCOUNT_ID` + 2 key Resend). Token riêng project ở `app/.env.local`. **Đừng bắt user đưa lại token** — user đã phản ứng rất gắt vì phiên nào cũng bị hỏi. `gh` CLI đã login sẵn (`KattyFury`), không cần token GitHub thủ công.
