@@ -59,7 +59,10 @@ export async function sendOtp(email: string) {
 
   const resend = new Resend(process.env.RESEND_API_KEY_SENDING);
   const { data, error } = await resend.emails.send({
-    from: "TapTip <otp@taptip.fun>",
+    // TAM THOI dung domain cu: taptip.fun da them du DNS nhung Resend chua
+    // verify xong, gui tu do se bi tra 403. Doi verified thi doi lai thanh
+    // otp@taptip.fun (domain id 8f9affa4-c2e8-4763-a6d2-4ef64118f097).
+    from: "TapTip <otp@taptip.0xhieu.xyz>",
     to: email,
     subject: `${code} là mã đăng nhập TapTip`,
     text: `Mã đăng nhập TapTip của bạn: ${code}\n\nMã có hiệu lực trong 5 phút. Nếu bạn không yêu cầu đăng nhập, hãy bỏ qua email này.`,
