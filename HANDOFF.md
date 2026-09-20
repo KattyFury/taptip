@@ -7,11 +7,51 @@
 - Docs gốc (PRD, Product Discovery, wireframe...): [`docs/`](docs/) – sinh ra từ đúng các bước của series `build-on-arc`.
 - Code: [`app/`](app/) – fork [`circlefin/arc-p2p-payments`](https://github.com/circlefin/arc-p2p-payments) (Next.js + Supabase + Circle Modular Wallets/Passkey).
 - Gói bàn giao thiết kế: [`design_handoff_taptip/`](design_handoff_taptip/), [`TapTip Design Spec.dc.html`](TapTip%20Design%20Spec.dc.html).
-- Deploy thật: **https://taptip.fun** (domain chính, gắn 2026-09-20) – vẫn truy cập được qua https://taptip.kattyfury1403.workers.dev (Cloudflare Workers, qua `@opennextjs/cloudflare`)
+- Deploy thật: **https://taptip.fun** (domain chính, gắn 2026-09-20) – Cloudflare Workers qua `@opennextjs/cloudflare`. **URL cũ `taptip.kattyfury1403.workers.dev` nay trả 404**: bản deploy 09-20 tự tắt `workers.dev` vì `wrangler.jsonc` không khai `workers_dev`. Muốn bật lại thì thêm `"workers_dev": true`.
 
 ---
 
-## 👉 BẮT ĐẦU TỪ ĐÂY (09-18)
+## 👉 BẮT ĐẦU TỪ ĐÂY (09-20)
+
+**Bắt đầu từ "mail OTP không về", hoá ra không phải lỗi gửi mà là rơi vào Spam — rồi kiểm toán ra 2 lỗ bảo mật thật.**
+
+### Việc còn dở, làm ngay khi vào phiên
+**Đổi địa chỉ gửi về `otp@taptip.fun`.** Hiện `lib/auth/otp.ts` đang TẠM dùng `otp@taptip.0xhieu.xyz` (có comment ngay tại dòng đó). Lý do: domain `taptip.fun` đã tạo trên Resend (id `8f9affa4-c2e8-4763-a6d2-4ef64118f097`), 5 record DNS đã thêm qua Cloudflare API và **đã lan ra cả 4 resolver lớn (8.8.8.8 / 1.1.1.1 / 9.9.9.9 / OpenDNS)**, giá trị DKIM so sánh sha256 **khớp từng byte** với cái Resend yêu cầu — nhưng Resend vẫn báo `pending` sau ~50 phút (MX/SPF/CNAME đã `verified`, chỉ DKIM kẹt). Gửi thử từ `otp@taptip.fun` bị trả **403 "domain is not verified"**, nên deploy với địa chỉ đó là OTP chết sạch. Kiểm tra lại bằng:
+```
+curl -s -X POST https://api.resend.com/domains/8f9affa4-c2e8-4763-a6d2-4ef64118f097/verify -H "Authorization: Bearer $RESEND_API_KEY_ADMIN"
+```
+Nếu vẫn kẹt nhiều giờ: xoá domain trên Resend rồi tạo lại để lấy **cặp DKIM mới**, cập nhật lại record — đừng ngồi chờ tiếp.
+
+### Vì sao mail vào Spam (đã sửa)
+Không phải hỏng hạ tầng: key Resend còn tốt, DNS domain cũ đủ DKIM/SPF/MX, production vẫn gửi thật. Ba nguyên nhân cộng lại:
+1. **Không có DMARC ở bất kỳ đâu** — cả `taptip.0xhieu.xyz` lẫn `0xhieu.xyz` đều không có `_dmarc`. Từ 2024 Gmail phạt nặng chuyện này. Đã thêm `_dmarc` cho **cả** `taptip.fun` và `taptip.0xhieu.xyz` (`p=none`, rua về mail user).
+2. **Domain gửi lệch domain app** (`taptip.0xhieu.xyz` vs `taptip.fun`).
+3. **Mail chỉ có plain-text 2 dòng** — đã thêm bản HTML có thương hiệu.
+
+### 2 lỗ bảo mật đã vá (đã deploy, Version `a2bbd5c8-c4e1-4923-a0bc-50c72f62da63`)
+1. **Dò cạn mã OTP.** Mã 6 số là yếu tố đăng nhập DUY NHẤT mà `verify-otp` không đếm số lần thử → quét 000000-999999 là chiếm được tài khoản bất kỳ. Giờ sai 5 lần là **đốt mã** (`otp_tries:<email>` trong KV). **Đã test thật trên production**: gửi mã → sai 5 lần → key `otp:<email>` biến mất khỏi KV.
+2. **Mã OTP bị in ra log production.** `verifyOtp` log cả mã đã nhập lẫn mã đúng mỗi lần gọi; `sendOtp` log mã vừa sinh. Ai đọc được log là đăng nhập được. Đã bỏ, chỉ còn log ở dev.
+
+Thêm: chặn gửi tối đa **5 mã/15 phút/địa chỉ** (trả 429) — trước đó bơm mail vô hạn vào địa chỉ người khác được. Và `sendOtp` giờ **ném lỗi thật** thay vì nuốt: trước đây Resend fail vẫn trả `{ok:true}` nên user bị đẩy sang màn nhập mã trong khi mail không bao giờ đến.
+
+### Đã dọn
+- Xoá tàn dư Modular Wallets/passkey (bỏ từ 09-02, không ai gọi): `/api/credential`, `lib/auth/passkey.ts`, `setUserPasskeyCredential`, dependency `@circle-fin/modular-wallets-core`. **Giữ nguyên** migration và cột `passkey_credential` trong D1.
+- `.env.example` trước đây **thiếu `CIRCLE_ENTITY_SECRET` và `CIRCLE_WALLET_SET_ID`** dù cả hai đều bắt buộc — ai làm theo README là chết ở bước tạo ví. Đã bổ sung, và bỏ 2 biến chết `NEXT_PUBLIC_CIRCLE_CLIENT_KEY/URL`.
+- README viết lại cho nắm được trong 10 giây. GitHub: homepage sửa từ `workers.dev` sang `taptip.fun`, bỏ topic `passkey` (sai từ lâu).
+
+### Phát hiện khi kiểm toán, CHƯA xử lý
+1. **`RESEND_API_KEY_SENDING` không phải Worker secret.** `wrangler secret list` không có nó, nhưng production vẫn gửi được — vì OpenNext **nướng `.env.local` vào bundle** (`.open-next/cloudflare/next-env.mjs` chứa key). Hệ quả: đổi key phải build+deploy lại, `wrangler secret put` không ăn. Không rò rỉ (`.open-next` đã gitignore, chưa từng commit).
+2. **4 secret chết trên Worker**: `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`, `NEXT_PUBLIC_CIRCLE_CLIENT_KEY`, `NEXT_PUBLIC_CIRCLE_CLIENT_URL`. Chưa xoá vì là production, cần user gật.
+3. **Trang gốc `taptip.fun` trên desktop hiện màn "Add Taptip to your Home Screen"** — người lạ mở link không hiểu app là gì.
+4. Phiên 30 ngày vẫn **không gia hạn trượt** (nợ cũ).
+5. Token Cloudflare đang dùng **hết hạn 2027-01-01**.
+
+### Credential — đọc trước khi hỏi xin
+Kho dùng chung: **`C:\Users\MR VAN\.claude\secrets.env`** (có `CLOUDFLARE_API_TOKEN` + `CLOUDFLARE_ACCOUNT_ID` + 2 key Resend). Token riêng project ở `app/.env.local`. **Đừng bắt user đưa lại token** — user đã phản ứng rất gắt vì phiên nào cũng bị hỏi. `gh` CLI đã login sẵn (`KattyFury`), không cần token GitHub thủ công.
+
+---
+
+## 👉 Lịch sử (09-18)
 
 **Sửa theo phản hồi của user sau khi xem bản 09-17 trên site thật.**
 
