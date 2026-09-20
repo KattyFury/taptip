@@ -1,12 +1,14 @@
 # HANDOFF – TapTip
 
-> Tip & Lì xì nhanh trên Arc. Gửi tip bất cứ lúc nào + lì xì dịp Tết, đăng nhập bằng email + passkey, ví ẩn phía sau bằng Circle Wallets, app trả gas thay user. Yêu cầu số một là **tốc độ**.
+> Tip & Lì xì nhanh trên Arc. Gửi tip bất cứ lúc nào + lì xì dịp Tết, **đăng nhập bằng email + mã OTP 6 số**, ví ẩn phía sau bằng Circle Developer-Controlled Wallets (server ký, user không phải xác nhận gì), app trả gas thay user. Yêu cầu số một là **tốc độ**.
+>
+> *Không còn passkey ở bất kỳ đâu* — passkey ký giao dịch bỏ 09-02, passkey khoá app bỏ 09-11. Thấy chữ "passkey" ở mục lịch sử phía dưới thì đó là chuyện cũ, không phải kiến trúc hiện tại.
 
 **Repo này tách ra ngày 2026-08-22** từ [`KattyFury/build-on-arc`](https://github.com/KattyFury/build-on-arc) (series hướng dẫn build app trên Arc) – TapTip từng là dự án mẫu build song song với series đó, xem lịch sử `git log` để thấy nguyên vẹn quá trình build (giữ qua `git subtree split`, 39 commit gốc). Lý do tách: dự án khiến việc viết guide bị xao nhãng, tạm gác để quay lại sau. Guide series (prompt, lý thuyết) vẫn ở repo `build-on-arc`, không di chuyển theo.
 
 - Docs gốc (PRD, Product Discovery, wireframe...): [`docs/`](docs/) – sinh ra từ đúng các bước của series `build-on-arc`.
-- Code: [`app/`](app/) – fork [`circlefin/arc-p2p-payments`](https://github.com/circlefin/arc-p2p-payments) (Next.js + Supabase + Circle Modular Wallets/Passkey).
-- Gói bàn giao thiết kế: [`design_handoff_taptip/`](design_handoff_taptip/), [`TapTip Design Spec.dc.html`](TapTip%20Design%20Spec.dc.html).
+- Code: [`app/`](app/) – fork [`circlefin/arc-p2p-payments`](https://github.com/circlefin/arc-p2p-payments). **Stack hiện tại đã khác hẳn bản fork gốc**: Next.js 16 + Cloudflare D1/KV + Circle Developer-Controlled Wallets. Supabase và Modular Wallets/Passkey đều đã gỡ sạch.
+- Gói bàn giao thiết kế: [`design_handoff_taptip/`](design_handoff_taptip/), [`TapTip Design Spec.dc.html`](TapTip%20Design%20Spec.dc.html) — ⚠️ **cả hai đã LỖI THỜI** (mô tả hệ Inter/vàng-đen cũ, không phải hệ Sora/xanh-vàng đang chạy). Nguồn sự thật về thiết kế là file Figma `rLGoWK4AHhqov9CKHXJqqE`.
 - Deploy thật: **https://taptip.fun** (domain chính, gắn 2026-09-20) – Cloudflare Workers qua `@opennextjs/cloudflare`. **URL cũ `taptip.kattyfury1403.workers.dev` nay trả 404**: bản deploy 09-20 tự tắt `workers.dev` vì `wrangler.jsonc` không khai `workers_dev`. Muốn bật lại thì thêm `"workers_dev": true`.
 
 ---
@@ -21,6 +23,10 @@
 curl -s -X POST https://api.resend.com/domains/8f9affa4-c2e8-4763-a6d2-4ef64118f097/verify -H "Authorization: Bearer $RESEND_API_KEY_ADMIN"
 ```
 Nếu vẫn kẹt nhiều giờ: xoá domain trên Resend rồi tạo lại để lấy **cặp DKIM mới**, cập nhật lại record — đừng ngồi chờ tiếp.
+
+**Đừng gọi `verify` liên tục.** Phiên 09-20 gọi ~45 lần trong 1 tiếng, và cuối phiên 2 record SPF vốn đã `verified` **quay ngược về `pending`** — kết quả trở nên thất thường, nhiều khả năng do bị Resend siết. Gọi cách nhau vài chục phút là đủ.
+
+Zone ID `taptip.fun` trên Cloudflare: `ac0cd78226ae74ecc9af9fd8e1367c24`. 5 record đã thêm: DKIM TXT `resend._domainkey`, MX + TXT(SPF) ở `send`, CNAME `rsend` (KHÔNG proxy), TXT `_dmarc`.
 
 ### Vì sao mail vào Spam (đã sửa)
 Không phải hỏng hạ tầng: key Resend còn tốt, DNS domain cũ đủ DKIM/SPF/MX, production vẫn gửi thật. Ba nguyên nhân cộng lại:
