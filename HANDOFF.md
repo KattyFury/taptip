@@ -93,6 +93,19 @@ xác nhận QR là nền TRẮNG rõ ràng, module đen tương phản tốt, kh
 (`taptip-qr-that-09-23.png`). Commit `b1b4567`, `cf:deploy` xong (Version
 `2cad155f-3bbb-4ef7-b2b2-c711c629a32c`).
 
+**Fix tiếp ngay sau (cùng phiên) — user chốt thẳng, bỏ qua khung đen của
+Figma:** "bỏ hoàn toàn các viền đen đi, hiển thị QR to rõ đúng phần thuộc
+về nó". Đã bỏ hẳn `bg-black` của khung 340x333, QR giờ size=333 (full
+chiều cao khu vực được cấp, không còn khoảng trống quanh do khung đen
+chiếm chỗ trước đó). Nhánh "chưa có ví" đổi màu chữ `text-white/50` →
+`text-foreground/50` (nền giờ là nền trang sáng, chữ trắng/50 sẽ vô
+hình). Vẫn giữ `marginSize={4}` (vùng yên tĩnh TRẮNG chuẩn ISO/IEC 18004
+— đây là phần thuộc chính QR, khác hẳn khung đen trang trí đã bỏ). Verify
+lại bằng ảnh chụp thật (route tạm local, xoá ngay sau khi chụp) — QR to
+full khu vực, hết viền đen, nền trắng liền với nền trang; ảnh lưu Desktop
+(`taptip-qr-bo-vien-den-09-23.png`). Commit `fd34ead`, `cf:deploy` xong
+(Version `cc5cec21-a0a7-4eb2-9fe0-3485cf9e9af0`).
+
 ---
 
 ## 👉 Lịch sử (09-20)
