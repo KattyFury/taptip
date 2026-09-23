@@ -3,20 +3,24 @@ import { arcTestnet } from "@/lib/chain";
 const ADDRESS_REGEX = /^0x[a-fA-F0-9]{40}$/;
 
 /**
- * QR nhan tip o Home ma hoa theo chuan EIP-681 (`ethereum:0x...@<chainId>`),
- * KHONG con scheme rieng `taptip:` cua ban truoc (09-23, phan hoi that: lay
- * app khac quet QR nay - "khong thay kha dung"). Ly do: `taptip:` la scheme
- * tu bia, khong app nao ngoai TapTip nhan ra - Android/iOS khong co gi de
- * "mo" link do nen coi nhu khong lam gi ca. EIP-681 la chuan pho bien
- * MetaMask/Rainbow/Trust Wallet... deu doc duoc, cho phep ho gui tip cho
- * TapTip user ma khong can cai TapTip. USDC la native currency cua Arc
- * Testnet (xem lib/chain.ts) nen dia chi tran + chainId la du, khong can
- * ghi ro token. Scanner cua TapTip (decodeTapTipQr) da ho tro doc format
- * nay tu truoc (dung cho chieu nguoc lai: TapTip quet QR cua vi khac) nen
- * TapTip quet TapTip van chay binh thuong, khong mat tuong thich nguoc.
+ * QR nhan tip o Home = DIA CHI VI TRAN, khong scheme, khong chain, khong
+ * query gi ca. Day la thu duy nhat MOI app quet QR/vi tren doi deu nhan ra
+ * ngay - khong can biet Arc Testnet la gi, khong can parse URI.
+ *
+ * Lich su sua sai 09-23 (2 lan lam qua tay):
+ * 1. Ban dau `taptip:0x...?chain=...&currency=USDC` - scheme tu bia, khong
+ *    app nao ngoai TapTip nhan ra, quet vo tac dung.
+ * 2. Doi sang EIP-681 `ethereum:0x...@5042002` - dung chuan hon nhung VAN
+ *    sai: doi hoi vi quet phai da biet/co san chain 5042002 (Arc Testnet)
+ *    thi moi xu ly duoc `@<chainId>` - hau het vi ngoai chua tung nghe ten
+ *    Arc Testnet nen van "khong lam gi ca" y het scheme tu bia truoc do.
+ * 3. Dung: dia chi tran. Bat ky vi/app QR nao cung hieu ngay "day la dia
+ *    chi de gui tien toi" bat ke dang o mang nao - khong con phu thuoc vi
+ *    do co biet Arc Testnet hay khong. Scanner cua TapTip (decodeTapTipQr)
+ *    von di da nhan dia chi tran lam truong hop DAU TIEN tu truoc gio.
  */
 export function encodeTapTipQr(address: string): string {
-  return `ethereum:${address}@${arcTestnet.id}`;
+  return address;
 }
 
 export type DecodedTapTipQr =
