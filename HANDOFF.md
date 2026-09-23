@@ -45,6 +45,18 @@
 
 Commit `adf45e1`, đã push `main`.
 
+**Fix thêm 4 (cùng phiên, user báo tiếp ngay sau):** lấy app khác (MetaMask,
+camera thường...) quét QR nhận tip ở Home — "không thấy khả dụng". Nguyên
+nhân: `encodeTapTipQr` dùng scheme riêng `taptip:0x...?chain=...&currency=USDC`
+— không app nào ngoài TapTip nhận diện được scheme tự bịa này nên coi như
+không làm gì cả. Đã hỏi user, chọn hướng đổi sang chuẩn **EIP-681**
+(`ethereum:0xADDR@5042002`) — MetaMask/Rainbow/Trust Wallet đều đọc được.
+Không mất tương thích ngược: `decodeTapTipQr` đã hỗ trợ đọc EIP-681 từ
+trước (dùng cho chiều TapTip quét QR của ví khác), nên TapTip quét TapTip
+vẫn chạy bình thường; decode vẫn giữ nhận cả scheme `taptip:` cũ phòng khi
+còn QR cũ lưu/in ra ngoài. Commit `5fd4112`, đã push + `cf:deploy` xong
+(Version `2967cb55-3ecf-41b5-94f9-36934c978d8a`).
+
 ---
 
 ## 👉 Lịch sử (09-20)
