@@ -72,37 +72,28 @@ function HomeScreenContent({ primaryWallet }: Props) {
           <TapTipLogo {...LOGO_HOME} />
         </div>
 
-      {/* Khung QR - node 11:211: 340x333, nen den, KHONG vien, KHONG bo goc.
-          Ban truoc them border-2 border-brand va mot buoc "Tap to show QR"
-          ma Figma khong he ve - da bo ca hai.
-
-          Phan hoi that 09-23: "QR nam tren nen den co the lam nguoi ta doc
-          sai". DUNG - khong phai cam giac, la loi ky thuat that: thu vien
-          qrcode.react mac dinh KHONG ve "vung yen tinh" (quiet zone) quanh
-          ma (DEFAULT_MARGIN_SIZE = 0 trong node_modules), nen truoc day cac
-          module QR ve SAT MEP hop trang 313px - chi co doung 13.5px vien
-          DEN cua khung ngoai lam "quiet zone". Chuan ISO/IEC 18004 doi hoi
-          quiet zone toi thieu 4 module, PHAI cung mau nen (sang) voi ma -
-          quiet zone mau den (nguoc mau) lam nhieu bo doc QR that bai luc
-          anh sang/goc quet khong ly tuong. Them `marginSize={4}` (dung so
-          module chuan) de qrcode.react tu ve them vien trang NGAY SAT
-          module truoc khi cham vien den trang tri ben ngoai - giu nguyen
-          khung den 340x333 theo dung Figma, chi sua phan vung yen tinh cho
-          dung chuan quet. */}
+      {/* Khung QR - node 11:211 goc Figma la 340x333 nen den, nhung phan hoi
+          that 09-23 (user chot thang, bo qua Figma cu o day): "bo hoan toan
+          cac vien den di, hien thi QR to ro dung phan thuoc ve no" - KHONG
+          con khung den trang tri nao nua, QR chiem full 340x333 duoc cap,
+          tu no la 1 khoi trang+den ro rang, khong co lop nen den bao quanh.
+          Giu `marginSize={4}` (quiet zone trang chuan ISO/IEC 18004, xem
+          giai thich cu trong git log) vi day la phan TRANG thuoc chinh QR,
+          khac hoan toan voi khung den trang tri da bi bo. */}
       <div
-        className="absolute bg-black overflow-hidden flex items-center justify-center"
+        className="absolute overflow-hidden flex items-center justify-center"
         style={{ left: 25.04, top: 57, width: 340, height: 333 }}
       >
         {hasWallet ? (
           <QRCodeSVG
             value={encodeTapTipQr(primaryWallet.wallet_address)}
-            size={313}
+            size={333}
             marginSize={4}
             bgColor="#FFFFFF"
             fgColor="#000000"
           />
         ) : (
-          <div className="font-body text-body text-white/50 text-center px-4">
+          <div className="font-body text-body text-foreground/50 text-center px-4">
             Setting up your wallet...
           </div>
         )}
