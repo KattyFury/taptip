@@ -57,6 +57,25 @@ vẫn chạy bình thường; decode vẫn giữ nhận cả scheme `taptip:` c�
 còn QR cũ lưu/in ra ngoài. Commit `5fd4112`, đã push + `cf:deploy` xong
 (Version `2967cb55-3ecf-41b5-94f9-36934c978d8a`).
 
+**Sửa sai ngay sau đó (cùng phiên) — EIP-681 vẫn SAI, làm quá tay:**
+user chỉnh thẳng "QR màn hình chính là QR dẫn tới địa chỉ ví của người
+dùng, có vậy cũng không build được". Đúng — `ethereum:0xADDR@5042002` vẫn
+đòi hỏi ví quét phải ĐÃ BIẾT/có sẵn mạng Arc Testnet (chain 5042002) thì
+mới xử lý được phần `@<chainId>`, mà hầu hết ví ngoài chưa từng nghe tên
+Arc Testnet — kết quả vẫn y hệt bug ban đầu (scheme lạ, ví không làm gì
+cả), chỉ đổi tên lý do chứ chưa giải quyết được gì. Sửa **đúng và đơn
+giản nhất**: `encodeTapTipQr` giờ trả về **địa chỉ ví trần, không
+scheme, không chain, không query** — bất kỳ app/ví quét QR nào trên đời
+cũng nhận ra ngay đây là địa chỉ để gửi tiền tới, không phụ thuộc ví đó
+có biết Arc Testnet hay không. `decodeTapTipQr` vốn dĩ đã nhận địa chỉ
+trần làm trường hợp ĐẦU TIÊN từ trước giờ nên không cần đổi gì bên decode.
+Commit `562397b`, `cf:deploy` xong (Version
+`020dafe9-dd62-4fa4-b231-d2576b4845b1`).
+
+**Bài học:** đừng suy diễn thêm chuẩn/tính năng (EIP-681, chain ID...) khi
+user đã nói rõ yêu cầu chỉ là "QR dẫn tới địa chỉ ví" — bám sát đúng nghĩa
+đen trước, đừng tự thêm lớp phức tạp "cho chuẩn hơn" rồi lại phải sửa lần 2.
+
 ---
 
 ## 👉 Lịch sử (09-20)
