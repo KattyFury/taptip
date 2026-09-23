@@ -1,11 +1,22 @@
 import { arcTestnet } from "@/lib/chain";
 
-const SCHEME = "taptip";
-const CURRENCY = "USDC";
 const ADDRESS_REGEX = /^0x[a-fA-F0-9]{40}$/;
 
+/**
+ * QR nhan tip o Home ma hoa theo chuan EIP-681 (`ethereum:0x...@<chainId>`),
+ * KHONG con scheme rieng `taptip:` cua ban truoc (09-23, phan hoi that: lay
+ * app khac quet QR nay - "khong thay kha dung"). Ly do: `taptip:` la scheme
+ * tu bia, khong app nao ngoai TapTip nhan ra - Android/iOS khong co gi de
+ * "mo" link do nen coi nhu khong lam gi ca. EIP-681 la chuan pho bien
+ * MetaMask/Rainbow/Trust Wallet... deu doc duoc, cho phep ho gui tip cho
+ * TapTip user ma khong can cai TapTip. USDC la native currency cua Arc
+ * Testnet (xem lib/chain.ts) nen dia chi tran + chainId la du, khong can
+ * ghi ro token. Scanner cua TapTip (decodeTapTipQr) da ho tro doc format
+ * nay tu truoc (dung cho chieu nguoc lai: TapTip quet QR cua vi khac) nen
+ * TapTip quet TapTip van chay binh thuong, khong mat tuong thich nguoc.
+ */
 export function encodeTapTipQr(address: string): string {
-  return `${SCHEME}:${address}?chain=${arcTestnet.id}&currency=${CURRENCY}`;
+  return `ethereum:${address}@${arcTestnet.id}`;
 }
 
 export type DecodedTapTipQr =
@@ -25,9 +36,11 @@ function parseChainId(raw: string | null | undefined): number | null {
  *
  * Chap nhan:
  *   0x...                                          (dia chi tran)
- *   taptip:0x...?chain=<id>&currency=USDC           (QR cua TapTip)
+ *   taptip:0x...?chain=<id>&currency=USDC           (QR cua TapTip BAN CU - encodeTapTipQr
+ *                                                     doi sang EIP-681 tu 09-23, giu doc o day
+ *                                                     chi de khong vo QR cu con luu/in ra)
  *   ethereum:0x...                                  (EIP-681, khong ghi chain)
- *   ethereum:0x...@5042002                          (EIP-681 co chain)
+ *   ethereum:0x...@5042002                          (EIP-681 co chain - dang encodeTapTipQr dung)
  *   ethereum:0xTOKEN@5042002/transfer?address=0xNGUOI_NHAN&uint256=...
  *
  * Quy tac mang: QR co ghi chain ma KHONG phai Arc -> tu choi ro rang. QR
