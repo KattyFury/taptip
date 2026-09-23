@@ -59,7 +59,7 @@ export const viewport: Viewport = {
   userScalable: false,
   viewportFit: "cover",
   interactiveWidget: "resizes-content",
-  themeColor: "#FFFDF5",
+  themeColor: "#FFF8EB", // 09-24: kem giay redesign Tet, truoc la #FFFDF5
 };
 
 export default async function RootLayout({

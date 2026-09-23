@@ -62,8 +62,6 @@
   --primary-foreground: #000000;/* DEN: chu tren nut CTA vang (truoc la xanh) */
   --brand: #42a556;             /* XANH LA: so du/so tien - thay hoan toan xanh 155eef cu */
   --accent: #909090;            /* bi danh = --hint, giu ten cu cho cac call-site chua doi */
-  --brand-soft: #6797f5;        /* CHUA XAC NHAN lai o ban Figma moi - giu tam gia tri cu cho
-                                    2 tam giac tang/giam preset, se cap nhat khi gap frame lien quan */
 
   /* --- Trang thai --- */
   --success: #34c759;
@@ -110,7 +108,6 @@
   --color-primary: var(--primary);
   --color-primary-foreground: var(--primary-foreground);
   --color-brand: var(--brand);
-  --color-brand-soft: var(--brand-soft);
   --color-accent: var(--accent);
 
   --color-success: var(--success);
@@ -162,7 +159,6 @@
      nhieu frame (Sign in 37:85, Home 37:244/261/272/310, OTP 37:190, Deposit
      38:413...), KHONG suy dien. Doi han tu ban 09-17 (15/19/23/35): gio la
      16/20/24/40 - moi frame deu ra dung cac so nay, khong con truong hop le. */
-  --text-figure: 40px; /* so du lon o Home ($XXX ngan) - text-figure-fit tu co nho lai neu so dai, xem tip-presets-row.tsx */
   --text-title: 24px;  /* tieu de man, nhan nut hanh dong */
   --text-body: 20px;   /* noi dung, nhan hang, o nhap */
   --text-small: 16px;  /* nhan "Default/Other amount", pill so tien nho */

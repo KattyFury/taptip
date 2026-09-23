@@ -26,8 +26,8 @@ export default function manifest(): MetadataRoute.Manifest {
     start_url: "/",
     display: "standalone",
     // Khop token globals.css: nen --background, mau thuong hieu --primary.
-    // Truoc 09-17 van con #FFCC00 - vang cua he thiet ke CU.
-    background_color: "#FFFDF5",
+    // 09-24: doi theo redesign Tet (kem giay #FFF8EB, truoc la #FFFDF5).
+    background_color: "#FFF8EB",
     theme_color: "#F5B800",
     icons: [
       {
