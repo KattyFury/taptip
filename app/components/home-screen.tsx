@@ -74,7 +74,21 @@ function HomeScreenContent({ primaryWallet }: Props) {
 
       {/* Khung QR - node 11:211: 340x333, nen den, KHONG vien, KHONG bo goc.
           Ban truoc them border-2 border-brand va mot buoc "Tap to show QR"
-          ma Figma khong he ve - da bo ca hai. */}
+          ma Figma khong he ve - da bo ca hai.
+
+          Phan hoi that 09-23: "QR nam tren nen den co the lam nguoi ta doc
+          sai". DUNG - khong phai cam giac, la loi ky thuat that: thu vien
+          qrcode.react mac dinh KHONG ve "vung yen tinh" (quiet zone) quanh
+          ma (DEFAULT_MARGIN_SIZE = 0 trong node_modules), nen truoc day cac
+          module QR ve SAT MEP hop trang 313px - chi co doung 13.5px vien
+          DEN cua khung ngoai lam "quiet zone". Chuan ISO/IEC 18004 doi hoi
+          quiet zone toi thieu 4 module, PHAI cung mau nen (sang) voi ma -
+          quiet zone mau den (nguoc mau) lam nhieu bo doc QR that bai luc
+          anh sang/goc quet khong ly tuong. Them `marginSize={4}` (dung so
+          module chuan) de qrcode.react tu ve them vien trang NGAY SAT
+          module truoc khi cham vien den trang tri ben ngoai - giu nguyen
+          khung den 340x333 theo dung Figma, chi sua phan vung yen tinh cho
+          dung chuan quet. */}
       <div
         className="absolute bg-black overflow-hidden flex items-center justify-center"
         style={{ left: 25.04, top: 57, width: 340, height: 333 }}
@@ -83,6 +97,7 @@ function HomeScreenContent({ primaryWallet }: Props) {
           <QRCodeSVG
             value={encodeTapTipQr(primaryWallet.wallet_address)}
             size={313}
+            marginSize={4}
             bgColor="#FFFFFF"
             fgColor="#000000"
           />
