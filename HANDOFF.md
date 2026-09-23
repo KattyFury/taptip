@@ -2,18 +2,54 @@
 
 > Tip & Lì xì nhanh trên Arc. Gửi tip bất cứ lúc nào + lì xì dịp Tết, **đăng nhập bằng email + mã OTP 6 số**, ví ẩn phía sau bằng Circle Developer-Controlled Wallets (server ký, user không phải xác nhận gì), app trả gas thay user. Yêu cầu số một là **tốc độ**.
 >
-> *Không còn passkey ở bất kỳ đâu* — passkey ký giao dịch bỏ 09-02, passkey khoá app bỏ 09-11. Thấy chữ "passkey" ở mục lịch sử phía dưới thì đó là chuyện cũ, không phải kiến trúc hiện tại.
+> **Passkey đã QUAY LẠI từ 09-24** — nhưng CHỈ làm khoá/mở app cục bộ (bảo mật "nhẹ", WebAuthn qua `@simplewebauthn`), KHÔNG liên quan gì đến ký giao dịch/ví Circle. Lịch sử: bỏ ký giao dịch bằng passkey 09-02, bỏ khoá app bằng passkey 09-11, rồi **khôi phục lại đúng bản khoá-app đó từ git history 09-24** (user chủ động yêu cầu mang lại). Xem `components/app-lock-gate.tsx` + `lib/auth/applock.ts` + `lib/db/applock.ts`.
 
 **Repo này tách ra ngày 2026-08-22** từ [`KattyFury/build-on-arc`](https://github.com/KattyFury/build-on-arc) (series hướng dẫn build app trên Arc) – TapTip từng là dự án mẫu build song song với series đó, xem lịch sử `git log` để thấy nguyên vẹn quá trình build (giữ qua `git subtree split`, 39 commit gốc). Lý do tách: dự án khiến việc viết guide bị xao nhãng, tạm gác để quay lại sau. Guide series (prompt, lý thuyết) vẫn ở repo `build-on-arc`, không di chuyển theo.
 
 - Docs gốc (PRD, Product Discovery, wireframe...): [`docs/`](docs/) – sinh ra từ đúng các bước của series `build-on-arc`.
-- Code: [`app/`](app/) – fork [`circlefin/arc-p2p-payments`](https://github.com/circlefin/arc-p2p-payments). **Stack hiện tại đã khác hẳn bản fork gốc**: Next.js 16 + Cloudflare D1/KV + Circle Developer-Controlled Wallets. Supabase và Modular Wallets/Passkey đều đã gỡ sạch.
-- Gói bàn giao thiết kế: [`design_handoff_taptip/`](design_handoff_taptip/), [`TapTip Design Spec.dc.html`](TapTip%20Design%20Spec.dc.html) — ⚠️ **cả hai đã LỖI THỜI** (mô tả hệ Inter/vàng-đen cũ, không phải hệ Sora/xanh-vàng đang chạy). Nguồn sự thật về thiết kế là file Figma `rLGoWK4AHhqov9CKHXJqqE`.
+- Code: [`app/`](app/) – fork [`circlefin/arc-p2p-payments`](https://github.com/circlefin/arc-p2p-payments). **Stack hiện tại đã khác hẳn bản fork gốc**: Next.js 16 + Cloudflare D1/KV + Circle Developer-Controlled Wallets. Supabase và Circle Modular Wallets (ký giao dịch bằng passkey) đã gỡ sạch — **chỉ còn passkey KHOÁ APP cục bộ** (xem trên), tách biệt hoàn toàn.
+- Gói bàn giao thiết kế: [`design_handoff_taptip/`](design_handoff_taptip/), [`TapTip Design Spec.dc.html`](TapTip%20Design%20Spec.dc.html) — ⚠️ **cả hai đã LỖI THỜI** (mô tả hệ Inter/vàng-đen cũ). **Từ 09-24, hệ đang chạy CŨNG không còn là Sora/xanh-dương** nữa — đã redesign toàn bộ sang hệ Tết (Quicksand, nền kem `#FFF8EB`, vàng mai `#F5B800`, xanh lá `#42A556`, pill bo tròn thay nút nghiêng) theo bản Figma mới. Nguồn sự thật về thiết kế luôn là file Figma `rLGoWK4AHhqov9CKHXJqqE` tại thời điểm đọc — không tin tài liệu tĩnh nào kể cả HANDOFF này, luôn `get_design_context` lại nếu cần đối chiếu chính xác.
 - Deploy thật: **https://taptip.fun** (domain chính, gắn 2026-09-20) – Cloudflare Workers qua `@opennextjs/cloudflare`. **URL cũ `taptip.kattyfury1403.workers.dev` nay trả 404**: bản deploy 09-20 tự tắt `workers.dev` vì `wrangler.jsonc` không khai `workers_dev`. Muốn bật lại thì thêm `"workers_dev": true`.
 
 ---
 
-## 👉 BẮT ĐẦU TỪ ĐÂY (09-23)
+## 👉 BẮT ĐẦU TỪ ĐÂY (09-24 — REDESIGN TOÀN BỘ)
+
+**User đưa bản Figma mới hoàn toàn** (`rLGoWK4AHhqov9CKHXJqqE`, cùng file cũ nhưng vẽ lại — theo tông Tết: kem giấy/vàng mai/xanh lá sage) + 2 file logo/icon mới, yêu cầu thẳng: **"build lại toàn bộ giao diện taptip lẫn logo theo bản mới của tôi... Figma là nguồn sự thật, mọi sự theo figma"**, sau đó nhấn mạnh thêm **"làm giống Figma 100% thì làm"**. Đã đọc `get_design_context` cho **đủ cả 14 frame** trước khi code (không đoán), cộng với loạt ghi chú thoại trực tiếp của user cho từng màn (10=Splash, 11=PWA-install, 14=Sign in có disable Send OTP khi trống mail, 19=OTP, 20=lỗi, 21=Passkey **"đã bỏ nay mang lên lại làm bảo mật NHẸ"**, 22=tạo ví, 23/24=Get Tip (24 cần auto-fit cỡ chữ số dư), 25/26=Send Tip, 27=**đổi 3 thanh kéo cũ thành picker cuộn kiểu chọn giờ điện thoại**, 28=Menu bình thường, 29=Deposit, 30=History, Withdraw tạm chưa khả dụng — giữ nguyên).
+
+### Nền tảng đổi toàn bộ (v6)
+- **Màu**: nền kem `#FFF8EB`, chữ đen `#000`, `--brand` đổi từ xanh dương `#155EEF` sang **xanh lá `#42A556`** (số dư/số tiền), `--primary` vàng `#F5B800` giữ nguyên nhưng chữ trên nút giờ **đen** (không còn xanh). Lấy màu THẲNG từ `get_design_context` từng frame, **không dùng** bảng "Palette" (node `37:128`, chỉ là note brainstorm) vì lệch với màu vẽ thật trong các màn (note ghi nâu ấm/chữ phụ nâu, màn thật lại dùng đen/#909090 xám thường).
+- **Font**: `Sora` → **`Quicksand`** cho display (tiêu đề/nút), `Montserrat` giữ nguyên cho body. Thang chữ 16/20/24/40 (trước 15/19/23/35).
+- **Hình dạng**: nút nghiêng (skew/slant) → **pill (`rounded-full`) hoàn toàn**. Card/popup lớn (menu, History, camera...) → `rounded-[8px]` đơn giản, bỏ hẳn hệ "cắt góc" (chamfer/`.tt-card-cut`/`CutCornerCard`). Xoá `components/ui/slant.ts`, `components/ui/cut-corner-card.tsx`.
+- **Lưới dọc không đổi** (15 hàng × 48.8px) nhưng **lề ngang đổi từ 25px lên ~33px**, `CONTENT_W` 340→324 — xác nhận qua hàng chục frame đều khớp con số này (xem `components/screen.tsx`).
+- **Logo**: `public/icon-mark.svg` + `public/logo-full.svg` thay bằng 2 file user đưa trực tiếp. Trong app, wordmark **"TapTip.fun" giờ là CHỮ THẬT** (đen+vàng, component mới `components/ui/wordmark.tsx`), không còn `<img>` — Figma vẽ nó bằng text ở mọi màn dùng tới (Splash, Home).
+- `SlantButton`/`BackButton`/`TextField` **giữ nguyên tên component** (tránh sửa 13+ call site) nhưng nội dung viết lại hoàn toàn thành pill.
+
+### Cấu trúc Home đổi hẳn — không còn màn Tipping riêng
+Home giờ là **2 TAB** (pill chia đôi ở hàng hành động): **"Get Tip"** (QR nhận tiền + Balance, như cũ) và **"Send Tip"** (camera quét QR gộp thẳng vào Home — không còn route `/dashboard/tip` riêng — + bảng chọn số tiền `tip-amount-panel.tsx` mới ngay bên dưới). Đã **xoá hẳn** `/dashboard/tip` + `components/tip-screen.tsx` + `components/tip-presets-row.tsx`.
+
+**`tip-amount-panel.tsx` (mới)**: "Default amount" 1 pill vàng (bấm mở **PickerModal** cuộn dọc snap-center để đổi số tiền — đúng yêu cầu "giống chọn giờ điện thoại", thay hệ kéo/mũi tên tăng-giảm cũ) + "Other amounts" danh sách pill (bấm = hoán đổi lên làm default, dấu X đỏ = xoá slot 4/5). Vẫn dùng chung API `/api/tip-settings` cũ, không đổi schema.
+
+**Menu** (frame 28): `rounded-[8px]` viền đen thay chamfer, **thêm mục "Setting" mới** → `/dashboard/settings/page.tsx` — dùng tính năng **THẬT**: bật/tắt khoá Passkey (tái dùng API `/api/applock/*`). Cố tình **không** bịa field "name"/"daily_tip_limit" (từng nhắc trong HANDOFF 08-27) vì 2 cột đó **chưa bao giờ tồn tại trong D1** — kiểm tra `migrations/` xác nhận, chỉ là field chết trong prop `profile` chưa từng port từ Supabase.
+
+### Passkey khoá app — khôi phục từ git history, không viết lại từ đầu
+Phát hiện: tính năng này **đã được xây dựng đầy đủ, đúng chuẩn WebAuthn** (COSE public key, counter chống replay, `@simplewebauthn/browser`+`server`) từ phiên 09-03 (migration `0004_add_applock_credentials.sql`), rồi bị **gỡ bỏ hoàn toàn 09-11** (commit `bd495d3`). Bảng D1 `applock_credentials` **chưa bao giờ bị xoá khỏi production** — verify bằng `wrangler d1 execute --remote`, bảng còn nguyên. Thay vì viết lại, **khôi phục 8 file từ `git show bd495d3^:...`** (6 route `/api/applock/*`, `lib/auth/applock.ts`, `lib/db/applock.ts`, `components/app-lock-gate.tsx`) rồi restyle theo hệ pill mới + gắn `CenteredCard` cũ (đã xoá khỏi codebase) bằng popup tự viết. Cài lại `@simplewebauthn/browser@14`+`server@14`.
+
+Gắn vào flow: OTP verify xong (`needsOnboarding`) → **`/dashboard/turn-on-passkey`** (màn mới, Figma frame 21, Back = skip không ép buộc) → `/dashboard/setup-wallet` ("You're all set") → tạo ví → `/dashboard`. `AppLockGate` bọc quanh `<HomeScreen>` ở `dashboard/page.tsx` — tự khoá lại khi quay lại từ nền, **mặc định không khoá gì** nếu user chưa từng bật.
+
+### Verify đã làm
+`tsc --noEmit` sạch, `npm run build` production sạch (29 route). **Chụp ảnh thật** bằng route test tạm local (không đụng production/không cần login, xoá ngay sau khi chụp) đối chiếu Sign in + Home cả 2 tab với Figma — khớp cấu trúc (wordmark, QR/camera card, Balance, tab pill đáy); ảnh lưu Desktop (`taptip-redesign-*.png`). Deploy production xong, `curl` xác nhận không có lỗi 500 ở mọi route `/dashboard/*` mới.
+
+### Còn nợ — CHƯA làm, cần biết trước khi tưởng "xong hết"
+1. **Chưa test trên điện thoại thật** — đặc biệt luồng Passkey thật (WebAuthn cần HTTPS thật + thiết bị có Face ID/Touch ID/Windows Hello, không test được ở dev local/headless) và camera quét QR trong tab Send Tip.
+2. **PickerModal** là bản tự viết đơn giản (scroll-snap thường, không phải thư viện picker chuyên dụng) — trải nghiệm cuộn có thể chưa mượt bằng picker native thật, cần user tự thử trên điện thoại và phản hồi.
+3. Vài chi tiết pixel nhỏ **chưa đối chiếu lại bằng ảnh chụp cạnh Figma** theo đúng quy trình cũ (script `scratchpad/shot.js`/`compare.js` của phiên 09-17) — do khối lượng 14 màn quá lớn cho 1 phiên, ưu tiên đúng cấu trúc/hành vi trước, tinh chỉnh pixel sau nếu user thấy lệch.
+4. Link Deposit (địa chỉ ví + "Open Circle Faucet") vẫn giữ màu xanh dương `#155EEF`/font cũ theo ĐÚNG những gì Figma vẽ ở frame 29 — nhiều khả năng là 1 ô Figma designer chưa kịp cập nhật theo hệ mới, nhưng theo yêu cầu "giống Figma 100%" nên **cố tình không tự sửa**, chỉ ghi chú lại trong code.
+5. Chưa dọn `design_handoff_taptip/` và `TapTip Design Spec.dc.html` (đã lỗi thời từ trước, giờ càng lỗi thời hơn) — để nguyên, chỉ cảnh báo trong phần giới thiệu đầu file này.
+
+---
+
+## 👉 Lịch sử (09-23)
 
 **3 bug user báo trực tiếp trên bản live, cả 3 đã sửa + verify (`tsc --noEmit` sạch,
 `npm run build` production sạch) + `cf:deploy` xong** (Version `6ddb8c96-583f-4495-85dd-d67d6e692264`):
