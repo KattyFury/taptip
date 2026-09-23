@@ -13,7 +13,41 @@
 
 ---
 
-## 👉 BẮT ĐẦU TỪ ĐÂY (09-20)
+## 👉 BẮT ĐẦU TỪ ĐÂY (09-23)
+
+**3 bug user báo trực tiếp trên bản live, cả 3 đã sửa + verify (`tsc --noEmit` sạch,
+`npm run build` production sạch) + `cf:deploy` xong** (Version `6ddb8c96-583f-4495-85dd-d67d6e692264`):
+
+1. **Nút "+" (thêm mức tip) không đòi mở khoá.** `tip-presets-row.tsx` trước
+   chỉ disable theo `canAddMore`, không xét `unlocked` — bấm được cả lúc
+   đang khoá, không nhất quán với kéo/xoá (cả hai đều cần mở khoá trước).
+   Sửa: `disabled={!unlocked || !canAddMore}`.
+2. **Thêm slot 4/5 ở Home rồi vào Tipping không thấy nút mới.**
+   `tip-screen.tsx` hardcode `([1, 2, 3] as const).map(...)` cho hàng preset
+   — slot 4/5 dù đã lưu trong DB cũng không bao giờ render ở màn Tipping.
+   Sửa: duyệt cả `[1,2,3,4,5]`, slot rỗng tự ẩn (đã có sẵn check
+   `if (value == null) return null`). *Lưu ý: hệ đang giới hạn tối đa 5 slot
+   (3 mặc định + 2 tự thêm = slot 4 và 5), không phải 6 như cách nói "4 5 6"
+   của user — muốn nâng lên 6 slot thật thì cần sửa thêm DB schema
+   (`migrations/0005_tip_settings_5_slots.sql`, `CHECK` constraint) + UI, chưa làm.*
+3. **BUG NGHIÊM TRỌNG — quét QR không bao giờ tip được, bất kể số dư thật
+   là bao nhiêu.** Root cause: `app/dashboard/tip/page.tsx` render
+   `<TipScreen />` mà KHÔNG bọc `BalanceProvider` riêng địa chỉ ví như
+   `HomeScreen` tự làm — `useBalance()` trong `TipScreen` vì vậy chỉ thấy
+   được `BalanceProvider` GỐC ở `app/layout.tsx` (không có địa chỉ, không
+   fetch gì cả), khiến `balance.token` đứng yên ở `0` mãi mãi trên màn
+   Tipping. Check `amount > balanceNum` trong `handleScanResult` vì vậy
+   LUÔN đúng → mọi QR quét được đều bị từ chối "Not enough balance to send
+   this amount" dù ví có tiền thật. Sửa: bọc `<BalanceProvider
+   walletAddress={walletAddress}>` quanh `<TipScreen />` trong `page.tsx`,
+   lấy `walletAddress` thật từ `requireWallet()` (trước đó gọi mà bỏ luôn
+   kết quả) — đúng y cách `HomeScreen` đang làm.
+
+Commit `adf45e1`, đã push `main`.
+
+---
+
+## 👉 Lịch sử (09-20)
 
 **Bắt đầu từ "mail OTP không về", hoá ra không phải lỗi gửi mà là rơi vào Spam — rồi kiểm toán ra 2 lỗ bảo mật thật.**
 
