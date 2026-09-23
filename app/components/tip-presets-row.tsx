@@ -46,7 +46,9 @@ function amountSizeClass(text: string, slotCount: number): string {
  *
  * - Khoa (icon Lock/LockOpen): mac dinh KHOA - bam 1 cai de MO KHOA, luc do
  *   moi keo (keo doc) tren tung nut de chinh so tien. Bam lai de khoa lai.
- * - Dau + : them nut moi (toi da 5, mac dinh 3: $2/$10/$20).
+ * - Dau + : them nut moi (toi da 5, mac dinh 3: $2/$10/$20) - CHI bam duoc
+ *   khi da MO KHOA (dong bo voi kieu keo/xoa, truoc 09-23 nut nay khong bi
+ *   khoa nen bam duoc ca luc dang khoa, khong nhat quan voi phan con lai).
  * - Bam 1 nut (bat ky luc nao, khoa hay khong) = chon lam mac dinh (nen
  *   vang) - mac dinh la so tien Send flow tu dong chon san khi mo Scan to tip.
  */
@@ -191,7 +193,7 @@ export function TipPresetsRow() {
       </button>
       <button
         onClick={addSlot}
-        disabled={!canAddMore}
+        disabled={!unlocked || !canAddMore}
         aria-label="Add another tip amount"
         className="absolute bg-accent text-white flex items-center justify-center disabled:opacity-40"
         style={{ left: 0, top: 57, width: 33, height: 33 }}

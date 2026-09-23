@@ -235,15 +235,20 @@ export function TipScreen() {
           </CutCornerCard>
         </div>
 
-        {/* 3 nut preset - node 31:100/102/104, y=625.07 h=49. Quy luat 09-18:
-            dai 340 tru 2 khe 8px chia 3 -> moi nut 108, khe 8px that giua 2
-            canh nghieng (ban 09-17 de bounding box chong nhau -> nut de len
-            nhau). Dang chon = nen vang KHONG vien; chua chon = vien xanh 1px. */}
+        {/* Nut preset - node 31:100/102/104, y=625.07 h=49. Quy luat 09-18:
+            dai 340 tru cac khe 8px chia deu cho SO NUT DANG CO -> moi nut
+            tu co gian (flex-1), khe 8px that giua 2 canh nghieng (ban 09-17
+            de bounding box chong nhau -> nut de len nhau). Dang chon = nen
+            vang KHONG vien; chua chon = vien xanh 1px.
+            Truoc day hardcode [1,2,3] nen 2 nut tu them o Home (slot 4/5)
+            khong bao gio hien o day - sua thanh duyet CA 5 slot, slot nao
+            null (chua them) tu bo qua nho `if (value == null) return null`
+            ben duoi, nen 3 nut mac dinh van dung y nhu cu khi chua ai them gi. */}
         <div
           className="absolute flex"
           style={{ left: 0, width: SLANT_W, top: 625.07 - rowTop(3), height: ROW_H, gap: SLANT_GAP }}
         >
-          {([1, 2, 3] as const).map((slot) => {
+          {([1, 2, 3, 4, 5] as const).map((slot) => {
             const value = slotAmount(slot);
             if (value == null) return null;
             return (
