@@ -47,6 +47,35 @@ Gắn vào flow: OTP verify xong (`needsOnboarding`) → **`/dashboard/turn-on-p
 4. Link Deposit (địa chỉ ví + "Open Circle Faucet") vẫn giữ màu xanh dương `#155EEF`/font cũ theo ĐÚNG những gì Figma vẽ ở frame 29 — nhiều khả năng là 1 ô Figma designer chưa kịp cập nhật theo hệ mới, nhưng theo yêu cầu "giống Figma 100%" nên **cố tình không tự sửa**, chỉ ghi chú lại trong code.
 5. Chưa dọn `design_handoff_taptip/` và `TapTip Design Spec.dc.html` (đã lỗi thời từ trước, giờ càng lỗi thời hơn) — để nguyên, chỉ cảnh báo trong phần giới thiệu đầu file này.
 
+### Dọn code (09-24, ngay sau — phản hồi "dọn code + handoff mai làm tiếp")
+Rà lại toàn bộ diff của phiên redesign, tìm thấy 2 khoảng còn sót (đã sửa
++ deploy, không phải nợ nữa):
+1. **Icon PWA/favicon vẫn là logo CŨ** (chữ T xanh) dù `icon-mark.svg` đã
+   đổi sang chữ T đen từ đầu phiên — do chỉ đổi file SVG nguồn, chưa sinh
+   lại các file PNG/ICO phái sinh. Đã sinh lại `icon-192x192.png`,
+   `icon-512x512.png`, `apple-icon.png`, `public/apple-touch-icon.png`
+   bằng `sharp` (có sẵn trong `node_modules`, không cần cài thêm) +
+   `favicon.ico` tự ghép container ICO đơn giản bọc PNG 64x64 (sharp
+   không đọc/ghi `.ico` được).
+2. **`background_color`/`themeColor` còn sót màu kem CŨ** (`#FFFDF5`) ở
+   `manifest.ts` + `app/layout.tsx` — dở dang lúc bị tin nhắn tiếp theo
+   ngắt ngang giữa phiên hôm qua, nay đổi đúng `#FFF8EB`.
+
+Xoá thêm dead code sót lại sau khi đổi component: `components/ui/taptip-logo.tsx`
+(ảnh logo cũ, không còn ai import sau khi có `wordmark.tsx` chữ thật),
+token `--brand-soft` (chỉ phục vụ 2 tam giác tăng/giảm của preset cũ, đã
+xoá cùng `tip-presets-row.tsx`), token `--text-figure` (không còn đọc,
+`home-screen.tsx` tự tính cỡ chữ qua `balanceSizePx()`).
+
+Verify: `tsc --noEmit` sạch, `npm run build` sạch (vẫn 30 route). Đã xem
+ảnh icon mới xác nhận đúng logo trước khi commit. Commit `1e3f514`,
+`cf:deploy` xong (Version `043c77cf-2423-47e7-8607-f8b449fc48e3`) —
+`curl` xác nhận `background_color` production đã là `#FFF8EB`.
+
+**Việc còn nợ (mục "Còn nợ" phía trên) KHÔNG đổi** — vẫn còn nguyên 5 việc
+đó cho phiên mai, đợt dọn này chỉ xử lý rác code phát sinh, không đụng
+tới phần chức năng/pixel chưa test.
+
 ---
 
 ## 👉 Lịch sử (09-23)
