@@ -187,8 +187,14 @@ export function TipScreen() {
       console.error("Failed to refresh balance after send:", err);
     });
 
+    // Phan hoi that 09-23: "man Tipping tu dong thoat ra la sai spec, le ra
+    // nen giu nguyen de lo toi co muon tip them nguoi 2 nguoi 3 van duoc".
+    // Truoc day tu router.push ve /dashboard sau 2s - gio quay lai buoc
+    // "scan" (camera tu khoi dong lai qua effect [step] o duoi) thay vi roi
+    // man, cho phep tip lien tiep nhieu nguoi ma khong can vao lai tu dau.
+    // Nut Back/Done (BackAction) van la duong roi man chu dong cua user.
     setTimeout(() => {
-      router.push("/dashboard");
+      setStep("scan");
     }, 2000);
   };
 

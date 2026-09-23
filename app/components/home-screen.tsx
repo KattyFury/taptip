@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { QRCodeSVG } from "qrcode.react";
 import * as Icon from "@/components/icons";
@@ -43,13 +43,51 @@ export default function HomeScreen(props: Props) {
   );
 }
 
+/** Poll nen moi 10s de bat duoc tip MOI NHAN trong luc dang dung tren Home -
+ * truoc day balance chi fetch 1 lan luc mount, ai gui tien cho minh trong
+ * luc minh dang mo app se khong bao gio thay so du cap nhat tru khi tu tay
+ * roi/mo lai man (phan hoi that 09-23: "so du khong update nhanh"). */
+const BALANCE_POLL_MS = 10000;
+
 function HomeScreenContent({ primaryWallet }: Props) {
   const router = useRouter();
-  const { balance, balanceError } = useBalance();
+  const { balance, balanceError, refreshBalances } = useBalance();
   const [menuOpen, setMenuOpen] = useState(false);
+  const [receivedAmount, setReceivedAmount] = useState<number | null>(null);
 
   const hasWallet =
     !!primaryWallet.wallet_address && primaryWallet.wallet_address !== "0x0";
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      refreshBalances().catch(() => {});
+    }, BALANCE_POLL_MS);
+    return () => clearInterval(interval);
+  }, [refreshBalances]);
+
+  // So sanh voi lan doc TRUOC do (khong phai lan dau tien) de phat hien
+  // "vua co tien vao" - lan dau mount chi ghi nhan moc, khong bao "nhan tien"
+  // (moc chua tung biet truoc do). Epsilon nho de tranh nhieu lam tron float.
+  const previousBalanceRef = useRef<number | null>(null);
+  const noticeTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  useEffect(() => {
+    if (balance.loading || isNaN(balance.token)) return;
+    const previous = previousBalanceRef.current;
+    if (previous != null && balance.token > previous + 0.005) {
+      const delta = balance.token - previous;
+      setReceivedAmount(delta);
+      if (noticeTimeoutRef.current) clearTimeout(noticeTimeoutRef.current);
+      noticeTimeoutRef.current = setTimeout(() => setReceivedAmount(null), 3000);
+    }
+    previousBalanceRef.current = balance.token;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [balance.token, balance.loading]);
+  useEffect(
+    () => () => {
+      if (noticeTimeoutRef.current) clearTimeout(noticeTimeoutRef.current);
+    },
+    [],
+  );
 
   const goTo = (path: string) => {
     setMenuOpen(false);
@@ -156,6 +194,22 @@ function HomeScreenContent({ primaryWallet }: Props) {
         </p>
       )}
       </div>
+
+      {/* Popup bao "vua nhan tip" - phan hoi that 09-23: dung Home ma co
+          nguoi tip minh thi khong biet gi ca, khong the doi refresh thu
+          cong. Dat o HANG 1 (dung nghia den: de theo bang so lieu Figma,
+          hang 1 = y=0..48.8, dung noi logo/nut menu dang nam), tu an sau
+          3s (dong bo voi timeout xoa state o useEffect tren). z-60 - CAO
+          HON menu (z-50) va lop mo menuOpen (khong bi mo/che khi menu dang
+          mo) vi day la thong bao quan trong hon UI dang mo. */}
+      {receivedAmount != null && (
+        <div
+          className="absolute z-[60] flex items-center justify-center bg-success text-background font-display text-body font-bold rounded-[8px] shadow-btn pointer-events-none"
+          style={{ left: 25.04, top: 0, width: 340, height: 48.8 }}
+        >
+          +${formatBalance(receivedAmount)} received
+        </div>
+      )}
 
       {/* Nut menu - node 11:217/29:63: Figma ve o DAC 25.04px (placeholder),
           giu icon that ben trong theo dung chot cua user */}
