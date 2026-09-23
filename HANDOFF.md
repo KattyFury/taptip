@@ -106,6 +106,29 @@ full khu vực, hết viền đen, nền trắng liền với nền trang; ảnh
 (`taptip-qr-bo-vien-den-09-23.png`). Commit `fd34ead`, `cf:deploy` xong
 (Version `cc5cec21-a0a7-4eb2-9fe0-3485cf9e9af0`).
 
+**3 fix tiếp theo (cùng phiên) — poll số dư + báo nhận tip + giữ màn
+Tipping sau khi gửi:**
+1. "Được tip xong, số dư không update nhanh" + 2. "Người nhận đang ở màn
+   chính, có người tip nhưng không hiện thông báo" — cùng gốc: Home trước
+   chỉ fetch balance 1 lần lúc mount. Đã thêm poll `refreshBalances()`
+   mỗi 10s trong lúc Home còn mount + so sánh với lần đọc TRƯỚC đó (không
+   phải lần đầu) để phát hiện "vừa nhận tip" — tăng lên thì hiện popup
+   "+$X received" 3s rồi tự ẩn, đặt ở **HÀNG 1** (y=0..48.8, đè lên vùng
+   logo/nút menu, z-index cao hơn menu + không bị mờ khi menu mở).
+2. "Tip xong 1 giao dịch, màn Tipping tự thoát ra là sai spec" —
+   `tip-screen.tsx` trước tự `router.push("/dashboard")` sau khi hiện
+   "Tipped $X" 2s. Sửa: quay lại bước "scan" (camera tự khởi động lại)
+   thay vì rời màn — tip liên tiếp nhiều người không cần vào lại từ đầu.
+   Nút Back/Done vẫn là đường rời màn chủ động, không đổi.
+
+Verify: `tsc --noEmit` sạch, `npm run build` production sạch. Commit
+`bcdf4f4`, `cf:deploy` xong (Version
+`ea41f099-0fa8-47b2-8072-c606fa65de95`).
+
+**Còn nợ:** chưa test polling + popup "received" trên điện thoại thật
+(cần 2 tài khoản, 1 gửi 1 nhận, máy này không mô phỏng được đủ 2 phiên
+đăng nhập song song để verify tận nơi).
+
 ---
 
 ## 👉 Lịch sử (09-20)
