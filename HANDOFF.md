@@ -76,6 +76,23 @@ Commit `562397b`, `cf:deploy` xong (Version
 user đã nói rõ yêu cầu chỉ là "QR dẫn tới địa chỉ ví" — bám sát đúng nghĩa
 đen trước, đừng tự thêm lớp phức tạp "cho chuẩn hơn" rồi lại phải sửa lần 2.
 
+**Fix thêm (cùng phiên) — QR thiếu quiet zone chuẩn:** user nghi ngờ "QR
+nằm trên nền đen làm người ta đọc sai", thậm chí nghi QR bị vẽ đen-trên-đen
+(vô hình). Kiểm tra `node_modules/qrcode.react`: thư viện mặc định
+`DEFAULT_MARGIN_SIZE = 0` — trước đây module QR vẽ SÁT MÉP hộp trắng
+313px, chỉ có ~13.5px viền ĐEN của khung ngoài (`home-screen.tsx`, khung
+340x333 nền đen theo đúng Figma) làm "quiet zone" — sai chuẩn ISO/IEC
+18004 (đòi hỏi quiet zone ≥4 module CÙNG MÀU NỀN sáng, không phải màu
+ngược). Đã thêm `marginSize={4}` cho `<QRCodeSVG>` để tự vẽ viền trắng
+đúng chuẩn ngay sát module, giữ nguyên khung đen trang trí bên ngoài theo
+Figma. **Đã verify bằng ảnh chụp thật** (dựng route tạm local
+`qr-check-temp` render `HomeScreen` với ví giả, KHÔNG đụng production/
+không cần login, chụp Chrome headless, xoá route ngay sau khi xong) —
+xác nhận QR là nền TRẮNG rõ ràng, module đen tương phản tốt, không phải
+đen-trên-đen như user nghi ngờ; ảnh lưu Desktop
+(`taptip-qr-that-09-23.png`). Commit `b1b4567`, `cf:deploy` xong (Version
+`2cad155f-3bbb-4ef7-b2b2-c711c629a32c`).
+
 ---
 
 ## 👉 Lịch sử (09-20)
