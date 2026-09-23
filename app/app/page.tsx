@@ -21,7 +21,7 @@
 import { useEffect, useState, type ReactNode } from "react";
 import { useRouter } from "next/navigation";
 import { Screen, TextLink } from "@/components/screen";
-import { TapTipLogo, LOGO_SPLASH, SlantButton } from "@/components/ui";
+import { TapTipWordmark, SlantButton } from "@/components/ui";
 
 const SPLASH_DURATION_MS = 1600;
 
@@ -70,13 +70,14 @@ export default function Splash() {
     return () => clearTimeout(timer);
   }, [router]);
 
-  // Splash (Figma frame "1", node 5:15): CHI co wordmark, dat tuyet doi o
-  // x=100.11 y=166.13 - KHONG can giua doc (ban truoc can giua nen lech han).
+  // Splash (Figma frame "10", node 37:2): CHI co wordmark chu "TapTip.fun"
+  // (40px), can GIUA NGANG man hinh (x=195, -translate-x-1/2), khong con la
+  // anh logo nhu ban truoc - xem components/ui/wordmark.tsx.
   if (step === "splash") {
     return (
       <div className="relative w-full h-full">
-        <div className="absolute" style={{ left: 100.11, top: 166.13 }}>
-          <TapTipLogo {...LOGO_SPLASH} />
+        <div className="absolute -translate-x-1/2" style={{ left: 195, top: 194.82 }}>
+          <TapTipWordmark fontSize={40} />
         </div>
       </div>
     );
@@ -95,23 +96,21 @@ export default function Splash() {
           <TextLink onClick={() => router.push("/sign-in")}>Skip</TextLink>
         }
       >
-        {/* Figma node 7:49 (so thu tu) + 7:47 (chu), ca hai top=170 cao 220:
-            cot so x=33 rong 25 can giua, cot chu x=66 rong 291, moi dong
-            leading 40px. Ca hai deu Montserrat 19px - so la Bold mau brand,
-            chu la Medium den voi tu khoa in dam. */}
-        <div style={{ marginLeft: 8.04, width: 324 }}>
+        {/* Figma frame "11" (node 37:10): moi dong la 1 khoang tron VANG
+            (ellipse 25x25) chua so DEN, roi toi chu - khong phai "1." chu
+            thuong nhu ban truoc suy ra. Chu dung font-display (Quicksand,
+            dung Figma xac nhan qua get_design_context), khong phai
+            font-body Montserrat nhu cac doan van khac. */}
+        <div className="flex flex-col" style={{ gap: 8 }}>
           {INSTALL_STEPS[platform].map((label, index) => (
-            <div key={index} className="flex" style={{ gap: 8 }}>
+            <div key={index} className="flex items-center" style={{ gap: 8 }}>
               <span
-                className="font-body text-body font-bold text-brand text-center shrink-0"
-                style={{ width: 25, lineHeight: "40px" }}
+                className="rounded-full bg-primary text-foreground font-display font-bold text-small flex items-center justify-center shrink-0"
+                style={{ width: 25, height: 25 }}
               >
-                {index + 1}.
+                {index + 1}
               </span>
-              <span
-                className="font-body text-body font-medium text-foreground"
-                style={{ width: 291, lineHeight: "40px" }}
-              >
+              <span className="font-display text-body font-medium text-foreground">
                 {label}
               </span>
             </div>

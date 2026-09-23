@@ -20,12 +20,7 @@
 
 import { Screen, BackAction, ROW_H } from "@/components/screen";
 import { SlantButton } from "@/components/ui";
-import {
-  InputOTP,
-  InputOTPGroup,
-  InputOTPSeparator,
-  InputOTPSlot,
-} from "@/components/ui/input-otp";
+import { InputOTP, InputOTPGroup, InputOTPSlot } from "@/components/ui/input-otp";
 import { GlobalContext } from "@/contexts/global-context";
 import { useContext, useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
@@ -85,7 +80,9 @@ export default function CodeConfirmation() {
     };
 
     if (needsOnboarding) {
-      router.push("/dashboard/setup-wallet");
+      // Redesign 09-24: xen them buoc "Turn on Passkey" (Figma frame 21)
+      // truoc man tao vi - xem app/dashboard/turn-on-passkey/page.tsx.
+      router.push("/dashboard/turn-on-passkey");
       return;
     }
 
@@ -94,15 +91,10 @@ export default function CodeConfirmation() {
 
   return (
     <Screen
-      // Ca dia chi email cung la tieu de - chi khac mau xanh cho de doc,
-      // khong phai dong chu phu.
-      title={
-        <>
-          Enter the code sent to
-          <br />
-          <span className="text-body text-accent break-all">{email}</span>
-        </>
-      }
+      // Figma frame 19 (37:190) ve dung 1 dong tinh "Enter the code sent to
+      // your email" - KHONG chen dia chi email that vao tieu de nhu ban
+      // truoc suy ra (Figma khong ve dong nay).
+      title="Enter the code sent to your email"
       action={
         <BackAction onBack={() => router.push("/sign-in")}>
           <SlantButton
@@ -121,30 +113,28 @@ export default function CodeConfirmation() {
         )
       }
     >
-      {/* Figma khong ve man nay - hang o nhap dat o hang 4 nhu o nhap email
-          ben Sign in, cao dung 1 hang luoi, can giua trong 340px */}
+      {/* Hang o nhap dat o hang 4 nhu o nhap email ben Sign in, cao dung 1
+          hang luoi, can giua trong 324px. 6 o DEU NHAU, khong chia nhom -
+          dung Figma frame 19 (37:190), khac ban truoc tung suy ra 2 nhom 3. */}
       <div className="flex items-center justify-center" style={{ height: ROW_H }}>
-      <InputOTP
-        autoFocus
-        maxLength={6}
-        value={confirmationCode}
-        onChange={(value) => {
-          setConfirmationCode(value);
-          setError(null);
-        }}
-      >
-        <InputOTPGroup>
-          <InputOTPSlot index={0} />
-          <InputOTPSlot index={1} />
-          <InputOTPSlot index={2} />
-        </InputOTPGroup>
-        <InputOTPSeparator />
-        <InputOTPGroup>
-          <InputOTPSlot index={3} />
-          <InputOTPSlot index={4} />
-          <InputOTPSlot index={5} />
-        </InputOTPGroup>
-      </InputOTP>
+        <InputOTP
+          autoFocus
+          maxLength={6}
+          value={confirmationCode}
+          onChange={(value) => {
+            setConfirmationCode(value);
+            setError(null);
+          }}
+        >
+          <InputOTPGroup>
+            <InputOTPSlot index={0} />
+            <InputOTPSlot index={1} />
+            <InputOTPSlot index={2} />
+            <InputOTPSlot index={3} />
+            <InputOTPSlot index={4} />
+            <InputOTPSlot index={5} />
+          </InputOTPGroup>
+        </InputOTP>
       </div>
     </Screen>
   );

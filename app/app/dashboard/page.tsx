@@ -20,6 +20,7 @@ import { redirect } from "next/navigation";
 import { getSession } from "@/lib/auth/session";
 import { getUserById } from "@/lib/db/users";
 import HomeScreen from "@/components/home-screen";
+import { AppLockGate } from "@/components/app-lock-gate";
 
 export default async function Dashboard() {
   const userId = await getSession();
@@ -39,5 +40,11 @@ export default async function Dashboard() {
   const primaryWallet = { wallet_address: user.wallet_address };
   const profile = { id: user.id, name: "", daily_tip_limit: null };
 
-  return <HomeScreen primaryWallet={primaryWallet} profile={profile} />;
+  // Khoa cua app (WebAuthn cuc bo, xem components/app-lock-gate.tsx) - CHI
+  // khoa khi user da tu bat (co credential); mac dinh khong lam gi ca.
+  return (
+    <AppLockGate>
+      <HomeScreen primaryWallet={primaryWallet} profile={profile} />
+    </AppLockGate>
+  );
 }

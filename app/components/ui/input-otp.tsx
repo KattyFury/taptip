@@ -43,17 +43,16 @@ const InputOTPGroup = React.forwardRef<
   React.ElementRef<"div">,
   React.ComponentPropsWithoutRef<"div">
 >(({ className, ...props }, ref) => (
-  <div ref={ref} className={cn("flex items-center gap-1.5 sm:gap-2", className)} {...props} />
+  <div ref={ref} className={cn("flex items-center gap-2", className)} {...props} />
 ))
 InputOTPGroup.displayName = "InputOTPGroup"
 
 /**
- * O nhap mot chu so.
- *
- * Figma KHONG ve man OTP (chi co Sign in -> You're all set), nen o day la
- * phan SUY RA: dung lai ngon ngu cua o nhap that o man Sign in (node 24:8) -
- * chu nhat bo goc 8px, nen --surface, KHONG nghieng - va cao dung 1 hang
- * luoi. O dang cho nhap co vien xanh 2px (ring-inset de khong xe dich luoi).
+ * O nhap mot chu so - Figma frame "19" (node 37:190) ve THAT 6 o deu nhau,
+ * KHONG chia 2 nhom 3 (khong co dau ngan cach o giua nhu ban truoc suy ra).
+ * Kich thuoc do tu Figma: 47.33 x 49, bo goc 8px, nen --surface (#E4E4DB),
+ * khe 8px deu giua cac o (dung InputOTPGroup gap-2 = 8px, KHONG con
+ * InputOTPSeparator).
  */
 const InputOTPSlot = React.forwardRef<
   React.ElementRef<"div">,
@@ -67,10 +66,10 @@ const InputOTPSlot = React.forwardRef<
       ref={ref}
       className={cn(
         "relative flex items-center justify-center",
-        "w-[42px] h-[var(--grid-row-h)]",
+        "w-[47.33px] h-[49px]",
         "rounded-[8px] bg-surface",
-        "font-display text-title font-bold text-brand",
-        isActive && "ring-2 ring-inset ring-brand",
+        "font-display text-title font-bold text-foreground",
+        isActive && "ring-2 ring-inset ring-foreground",
         className
       )}
       {...props}
@@ -78,7 +77,7 @@ const InputOTPSlot = React.forwardRef<
       {char}
       {hasFakeCaret && (
         <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
-          <div className="tt-caret h-5 w-px bg-brand" />
+          <div className="tt-caret h-5 w-px bg-foreground" />
         </div>
       )}
     </div>

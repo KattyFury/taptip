@@ -23,9 +23,10 @@ import { Screen } from "@/components/screen";
 import { SlantButton } from "@/components/ui";
 
 /**
- * Figma KHONG ve man nay - phan SUY RA, dung khuon Screen chung. Truoc
- * 09-17 day la <div>Authentication error</div> tran, khong font khong token,
- * la scaffold con sot lai tu ban fork arc-p2p-payments.
+ * Man 20 (Figma node 37:209) - redesign 09-24 gio Figma DA ve man nay dung
+ * (truoc do la phan SUY RA, dung khuon Screen chung). Chu chinh xac tu
+ * design context: "We can't sign you in. Please try again later." voi
+ * "can't" IN DAM.
  */
 export default function AuthError() {
   const router = useRouter();
@@ -37,8 +38,8 @@ export default function AuthError() {
         <SlantButton onClick={() => router.push("/sign-in")}>Back to sign in</SlantButton>
       }
     >
-      <p className="font-body text-body font-medium text-foreground text-left w-full leading-[30px]">
-        We couldn&apos;t sign you in. Please try again.
+      <p className="font-display text-body font-medium text-foreground text-left w-full leading-[40px]">
+        We <span className="font-bold">can&apos;t</span> sign you in. Please try again later.
       </p>
     </Screen>
   );

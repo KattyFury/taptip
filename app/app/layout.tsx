@@ -17,7 +17,7 @@
  */
 
 import type { Viewport } from "next";
-import { Sora, Montserrat } from "next/font/google";
+import { Quicksand, Montserrat } from "next/font/google";
 import { Toaster } from "@/components/ui/sonner";
 import "./globals.css";
 import { BalanceProvider } from "@/contexts/balanceContext";
@@ -26,13 +26,16 @@ const defaultUrl = process.env.NEXT_PUBLIC_SITE_URL
   ? process.env.NEXT_PUBLIC_SITE_URL
   : "http://localhost:3000";
 
-// Quy luat thiet ke moi (09-12, thay het ban Inter/Archivo cu): Sora cho
-// display (tieu de, so tien, nut bam), Montserrat cho noi dung (nhan, mo ta,
-// o nhap). Hai font tach rieng - KHONG dung chung 1 font cho ca app nhu ban cu.
-const sora = Sora({
+// Quy luat thiet ke MOI (09-24, redesign theo Figma ban moi user dua truc
+// tiep - "Figma la nguon su that"): doi font display tu Sora sang Quicksand
+// (xac nhan bang get_design_context man Sign in that: title dung
+// "Quicksand:Bold", nut dung "Quicksand:Medium/Bold" - font tron, am, hop
+// tong mau kem/vang/xanh la Tet). Montserrat giu nguyen cho noi dung (van
+// thay "Montserrat:Medium" trong code Figma cho o nhap/nhan).
+const quicksand = Quicksand({
   subsets: ["latin", "latin-ext"],
-  weight: ["600", "700"],
-  variable: "--font-sora",
+  weight: ["500", "600", "700"],
+  variable: "--font-quicksand",
   display: "swap",
 });
 
@@ -67,7 +70,7 @@ export default async function RootLayout({
   return (
     <html
       lang="en"
-      className={`${sora.variable} ${montserrat.variable}`}
+      className={`${quicksand.variable} ${montserrat.variable}`}
       suppressHydrationWarning
     >
       <body className="bg-page-backdrop text-foreground font-sans min-h-dvh h-dvh overflow-hidden">

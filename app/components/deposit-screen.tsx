@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { Screen, BackAction, ROW_H, SLANT_X, SLANT_W, CONTENT_X, rowTop } from "@/components/screen";
+import { Screen, BackAction, rowTop } from "@/components/screen";
 import { SlantButton } from "@/components/ui";
 import { useState } from "react";
 import * as Icon from "@/components/icons";
@@ -10,12 +10,15 @@ import { shortenAddress } from "@/lib/utils/address";
 const CIRCLE_FAUCET_URL = "https://faucet.circle.com/";
 
 /**
- * Man Deposit - Figma frame "7" (node 30:65).
- *   body      30:69  y=170 x=25 w=340 h=244, Montserrat Medium 19px leading 30
- *   o dia chi 30:72  y=284, dai nut x=25..365 (quy luat 09-18), nen cream + vien xanh 1px,
- *                    nhan Sora SemiBold 19px mau brand, CAN GIUA
- *   faucet    30:73  y=341, dai nut x=25..365, nen vang, nhan Sora SemiBold 19px
- *   Back+Done y=738
+ * Man Deposit - Figma frame "29" (node 38:413), redesign 09-24.
+ *
+ * Doi khac han ban truoc: dia chi vi + link Faucet gio la CHU CO GACH CHAN
+ * (khong phai nut pill day du) kem huy hieu tron vang danh so 1/2 - dung
+ * cung ngon ngu voi danh sach 5 buoc o man PWA-install. Mau chu xanh
+ * #155EEF + font Sora - day la CHO DUY NHAT trong toan bo redesign Figma
+ * moi con giu mau/font he cu (moi noi khac da doi qua Quicksand/den/xanh
+ * la), nhieu kha nang la 1 o Figma designer chua kip cap nhat - nhung user
+ * yeu cau "lam giong Figma 100%" nen giu dung nhu Figma ve, khong tu sua.
  */
 export function DepositScreen({ walletAddress }: { walletAddress: string }) {
   const router = useRouter();
@@ -27,10 +30,9 @@ export function DepositScreen({ walletAddress }: { walletAddress: string }) {
     setTimeout(() => setCopied(false), 3000);
   };
 
-  // Toa do trong vung noi dung (goc = rowTop(4) = 170.4, left = 25)
-  const slantLeft = SLANT_X - CONTENT_X; // 0 - dai nut trung vung noi dung
-  const addrTop = rowTop(6) - rowTop(4); // 113.6
-  const faucetTop = rowTop(7) - rowTop(4); // 170.4
+  // Toa do trong vung noi dung (goc = rowTop(4))
+  const addrTop = rowTop(6) - rowTop(4);
+  const faucetTop = addrTop + 48.8 + 8;
 
   return (
     <Screen
@@ -42,39 +44,38 @@ export function DepositScreen({ walletAddress }: { walletAddress: string }) {
       }
     >
       <p className="font-body text-body font-medium text-foreground text-left w-full leading-[30px]">
-        Send USDC (Arc network) to your wallet address below, or use the Circle Faucet
+        Send USDC (Arc network) to your wallet address below, or use the Circle Faucet.
       </p>
 
-      <div
-        className="absolute"
-        style={{ left: slantLeft, top: addrTop, width: SLANT_W, height: ROW_H }}
+      <button
+        type="button"
+        onClick={copyAddress}
+        aria-label="Copy wallet address"
+        className="absolute flex items-center gap-2"
+        style={{ left: 0, top: addrTop, height: 25 }}
       >
-        <SlantButton
-          variant="outline"
-          size="inline"
-          onClick={copyAddress}
-          aria-label="Copy wallet address"
-        >
-          {shortenAddress(walletAddress)}
-          {copied ? (
-            <Icon.Check className="w-4 h-4 text-success" />
-          ) : (
-            <Icon.Copy className="w-4 h-4" />
-          )}
-        </SlantButton>
-      </div>
+        <span className="rounded-full bg-primary text-foreground font-display font-bold text-small w-[25px] h-[25px] flex items-center justify-center shrink-0">
+          1
+        </span>
+        <span className="font-display font-bold text-body text-[#155eef] underline">
+          {shortenAddress(walletAddress)} [copy]
+        </span>
+        {copied ? <Icon.Check className="w-4 h-4 text-success" /> : null}
+      </button>
 
-      <div
-        className="absolute"
-        style={{ left: slantLeft, top: faucetTop, width: SLANT_W, height: ROW_H }}
+      <button
+        type="button"
+        onClick={() => window.open(CIRCLE_FAUCET_URL, "_blank", "noopener,noreferrer")}
+        className="absolute flex items-center gap-2"
+        style={{ left: 0, top: faucetTop, height: 25 }}
       >
-        <SlantButton
-          size="inline"
-          onClick={() => window.open(CIRCLE_FAUCET_URL, "_blank", "noopener,noreferrer")}
-        >
+        <span className="rounded-full bg-primary text-foreground font-display font-bold text-small w-[25px] h-[25px] flex items-center justify-center shrink-0">
+          2
+        </span>
+        <span className="font-display font-bold text-body text-[#155eef] underline">
           Open Circle Faucet
-        </SlantButton>
-      </div>
+        </span>
+      </button>
     </Screen>
   );
 }

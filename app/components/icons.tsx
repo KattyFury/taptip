@@ -39,6 +39,7 @@ import {
   IconChevronUp,
   IconChevronDown,
   IconQrcode,
+  IconFaceId,
   type IconProps as TablerIconProps,
 } from "@tabler/icons-react";
 
@@ -81,3 +82,4 @@ export const LockOpen = wrap(IconLockOpen);
 export const ChevronUp = wrap(IconChevronUp);
 export const ChevronDown = wrap(IconChevronDown);
 export const QrCode = wrap(IconQrcode);
+export const FaceId = wrap(IconFaceId);

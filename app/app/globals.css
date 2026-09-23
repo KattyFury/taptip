@@ -46,19 +46,27 @@
    =========================================================================== */
 
 :root {
-  /* --- Nen & chu --- */
-  --background: #fffdf5;
+  /* --- Nen & chu (v6, 09-24 - redesign Tet theo Figma ban moi user dua
+     truc tiep, "Figma la nguon su that") --- */
+  /* Gia tri lay THANG tu get_design_context (mau THAT ve trong frame),
+     KHONG lay tu bang swatch "Palette" (node 37:128, chi la note tham
+     khao/brainstorm - lech voi mau thuc te ve trong man: note ghi chu
+     "#3A2F1C" cho chu chinh nhung man Sign in/Home ve thang #000000; note
+     ghi "#6B5A3C" cho chu phu nhung man thuc te dung #909090). Da doi
+     chieu 2 man (Sign in 37:85, Home 37:244) truoc khi chot. */
+  --background: #fff8eb;        /* nen kem giay */
   --foreground: #000000;
-  --surface: #dbdee4;          /* box dung noi dung: pill so tien, o nhap, khoi nen chim */
-  --hint: #a4afc3;              /* chu xam phu - placeholder, caption, "muted" */
-  --border: #000000;            /* vien khung ngoai dien thoai (chrome, khong phai noi dung) */
+  --surface: #e4e4db;           /* the QR, pill chua chon (Get/Send Tip) */
+  --hint: #909090;              /* chu xam phu - placeholder, tab chua chon */
+  --border: #000000;            /* vien nut outline + khung ngoai dien thoai */
 
   /* --- Thuong hieu --- */
-  --primary: #f5b800;           /* vang: NEN moi nut CTA */
-  --primary-foreground: #155eef;/* xanh: CHU tren nut CTA vang */
-  --brand: #155eef;             /* xanh: tieu de, so tien, nhan, vien nut outline */
-  --accent: #a4afc3;            /* bi danh = --hint, giu ten cu cho cac call-site chua doi */
-  --brand-soft: #6797f5;        /* xanh nhat: 2 tam giac tang/giam gia o the preset (Polygon 2/3) */
+  --primary: #f5b800;           /* vang: NEN moi nut CTA + tab dang chon */
+  --primary-foreground: #000000;/* DEN: chu tren nut CTA vang (truoc la xanh) */
+  --brand: #42a556;             /* XANH LA: so du/so tien - thay hoan toan xanh 155eef cu */
+  --accent: #909090;            /* bi danh = --hint, giu ten cu cho cac call-site chua doi */
+  --brand-soft: #6797f5;        /* CHUA XAC NHAN lai o ban Figma moi - giu tam gia tri cu cho
+                                    2 tam giac tang/giam preset, se cap nhat khi gap frame lien quan */
 
   /* --- Trang thai --- */
   --success: #34c759;
@@ -71,7 +79,7 @@
   --warning-fg: #854d0e;
 
   /* --- Nen ngoai khung dien thoai (chi thay tren desktop) --- */
-  --page-backdrop: #fffdf5;
+  --page-backdrop: #fff8eb;
 
   /* Lop lam toi phia sau modal */
   --scrim: rgba(0, 0, 0, 0.55);
@@ -89,18 +97,10 @@
   --frame-w: 390px;
   --frame-h: 844px;
 
-  /* --- Hinh dang dac trung: nut/o nhap nghieng --- */
-  /* skewX: dinh tren lech PHAI so voi day. Do lai 09-17 tu 2 file SVG goc
-     (nut Send OTP 24:9 va nut Back 31:110): canh tren va canh duoi lech nhau
-     16.84px tren chieu cao 49px -> atan(16.84/49) = 18.96deg.
-     Gia tri cu -16deg la atan(20.5/70), tinh theo hang 70px cua LUOI CU. */
-  --skew-angle: -19deg;
-  --radius-slant: 8px;          /* bo goc cho nut/o nhap nghieng */
-  /* Phan hinh binh hanh loi ra MOI BEN sau khi skew: 49 * tan(19deg) / 2.
-     Nut phai co lai dung chung nay de HINH NHIN THAY nam tron trong o cha
-     (09-18: truoc do nut ve rong bang o cha roi moi skew -> loi ra 8.4px
-     moi ben, Back to hon ban ve va de len nut ben canh). */
-  --slant-overhang: 8.4px;
+  /* He "nut/o nhap nghieng" (skew) da RETIRE hoan toan 09-24 - redesign moi
+     dung pill (rounded-full) cho tat ca, xem components/ui/slant-button.tsx.
+     Token --skew-angle/--radius-slant/--slant-overhang + components/ui/slant.ts
+     da xoa - khong con noi nao dung. */
 }
 
 @theme inline {
@@ -157,18 +157,18 @@
   --shadow-field: inset 0 2px 5px rgba(0, 0, 0, 0.1);
 
   /* 2 font tach rieng - xem quy dinh muc 2 o tren */
-  --font-display: var(--font-sora), sans-serif;
+  --font-display: var(--font-quicksand), sans-serif;
   --font-body: var(--font-montserrat), sans-serif;
   --font-sans: var(--font-body); /* mac dinh body cho the co ban */
 
-  /* Thang chu - do thang tu Figma 09-17 (get_design_context frame 5/7 +
-     node 11:273). KHONG con luat "boi so cua 4" cua ban cu - thang that
-     cua Figma la 15/19/23 (+35 rieng cho so du). Figma co 2 cho le
-     (title 24, muc menu 20) da duoc user chot chuan hoa ve 23/19. */
-  --text-figure: 35px; /* so du lon o Home ($XXX), Sora Bold */
-  --text-title: 23px;  /* tieu de man, nhan nut hanh dong, so tien preset */
-  --text-body: 19px;   /* noi dung, nhan hang, nhan nut giua man, muc menu */
-  --text-small: 15px;  /* hint xam, dong bao loi */
+  /* Thang chu v2 (09-24, redesign Tet) - do THANG tu get_design_context
+     nhieu frame (Sign in 37:85, Home 37:244/261/272/310, OTP 37:190, Deposit
+     38:413...), KHONG suy dien. Doi han tu ban 09-17 (15/19/23/35): gio la
+     16/20/24/40 - moi frame deu ra dung cac so nay, khong con truong hop le. */
+  --text-figure: 40px; /* so du lon o Home ($XXX ngan) - text-figure-fit tu co nho lai neu so dai, xem tip-presets-row.tsx */
+  --text-title: 24px;  /* tieu de man, nhan nut hanh dong */
+  --text-body: 20px;   /* noi dung, nhan hang, o nhap */
+  --text-small: 16px;  /* nhan "Default/Other amount", pill so tien nho */
 
   /* Line-height do tu Figma (khong suy dien) */
   --leading-body: 30px;  /* doan van ban dai */

@@ -26,8 +26,6 @@
 import type { ReactNode } from "react";
 import { BackButton } from "@/components/ui/back-button";
 
-export { SLANT_SHAPE, SLANT_CONTENT } from "@/components/ui/slant";
-
 /* ===================== Hang so luoi (do tu Figma) ========================= */
 
 export const FRAME_W = 390;
@@ -40,26 +38,28 @@ export const rowTop = (row: number) => (row - 1) * (ROW_H + ROW_GAP);
 /** Chieu cao cua mot khoi chiem n hang lien tiep. rowSpan(9) = 503.2 */
 export const rowSpan = (rows: number) => rows * ROW_H + (rows - 1) * ROW_GAP;
 
-/** Vung noi dung: le an toan 25px hai ben -> rong 340 */
-export const CONTENT_X = 25;
-export const CONTENT_W = 340;
+/**
+ * Vung noi dung v2 (09-24, redesign Tet) - LE DOI tu 25px len ~33px.
+ * Doi chieu nhieu frame Figma moi (Sign in email input, Home QR card, hang
+ * nut hanh dong...) deu ra dung `left: calc(8.33%+0.54px)` tren khung 390 =
+ * 32.487+0.54 = 33.03px, RONG 324 (khong con 340 nhu ban 09-17). Day la thay
+ * doi that, khong phai lam tron - kiem tra ca chuc frame deu khop.
+ */
+export const CONTENT_X = 33.03;
+export const CONTENT_W = 324;
 
 /**
- * QUY LUAT NUT NGHIENG (user chot 09-18) - moi so la HINH NHIN THAY, tinh ca
- * phan nghieng (xem --slant-overhang trong components/ui/slant.ts):
- *   - Dai nut = man hinh tru le 25px hai ben -> x=25..365, rong 340.
- *   - Co Back: Back = 1/3, nut chinh = 2/3 cua (340 - 8), cach nhau 8px.
- *   - Hang 3 preset: (340 - 2*8) / 3 = 108 moi nut, cach nhau 8px.
- * Ban 09-17 lay bounding box Figma (Back 113 @33, chinh 224 @133 - CHONG
- * nhau 13px) lam be rong TRUOC skew -> nut loi ra 8.4px moi ben, Back to hon
- * ban ve va de len nut ben canh. Dung GAP that, khong chong o.
+ * Hang nut hanh dong (Back + nut chinh) - pill, KHONG con nghieng.
+ * Do tu Figma (OTP 37:190, Deposit 38:413...): Back la pill RONG CO DINH
+ * 92px (khong con ty le 1/3), nut chinh 224px, khe 8px - vua khop CONTENT_W
+ * (92+8+224=324). Nut don (khong Back, vd "Back to sign in") rong het 324.
  */
 export const SLANT_X = CONTENT_X;
 export const SLANT_W = CONTENT_W;
 export const SLANT_GAP = 8;
-export const BACK_W = (SLANT_W - SLANT_GAP) / 3; // 110.67
-export const MAIN_W = ((SLANT_W - SLANT_GAP) * 2) / 3; // 221.33
-export const MAIN_OFFSET = BACK_W + SLANT_GAP; // 118.67
+export const BACK_W = 92;
+export const MAIN_W = 224;
+export const MAIN_OFFSET = BACK_W + SLANT_GAP; // 100
 
 /** Tieu de man: Figma dat tuyet doi o y=49, cao 65, rong 274, can giua */
 export const TITLE_TOP = 49;
@@ -101,7 +101,7 @@ export function Screen({
           className="absolute left-1/2 -translate-x-1/2 flex items-center justify-center"
           style={{ top: TITLE_TOP, height: TITLE_H, width: TITLE_W }}
         >
-          <h1 className="font-display text-title font-bold text-brand text-center">
+          <h1 className="font-display text-title font-bold text-foreground text-center">
             {title}
           </h1>
         </div>

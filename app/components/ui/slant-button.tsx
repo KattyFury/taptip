@@ -1,16 +1,25 @@
 /**
- * SlantButton - nut nghieng dac trung, BAN DUY NHAT trong app.
- * (Truoc 09-17 ton tai 2 ban trung ten o day va o components/screen.tsx,
- * render khac nhau va bi dung lan lon giua cac man - da gop lam mot.)
+ * Nut pill (bo tron hoan toan) - THAY THE HOAN TOAN he "nut nghieng" cu.
  *
- * Cac cap nhan do tu Figma:
- *   size="action" : Sora Bold 23px   - nut hang 14 (Send OTP, Done, Continue,
- *                                      Create wallet, Tap to tip) + preset Tipping
- *   size="inline" : Sora SemiBold 19px - nut giua man (o dia chi, Open Circle Faucet)
+ * Redesign 09-24 theo Figma ban moi user dua truc tiep (rLGoWK4AHhqov9CKHXJqqE,
+ * "Figma la nguon su that", user chot: "lam giong Figma 100% thi lam"). Doi
+ * chieu nhieu frame (Sign in 37:85, OTP 37:190, Home 37:244...) deu ra dung
+ * `rounded-[50px]` (= pill hoan toan voi moi chieu cao dung trong app nay,
+ * dung thang rounded-full) - khong con hinh binh hanh nghieng nua.
+ *
+ * GIU NGUYEN TEN COMPONENT `SlantButton` (dung sai ten so voi hinh dang that
+ * bay gio) de KHONG phai doi import o 13 file dang dung no - day la lua chon
+ * co chu dich, danh doi 1 cai ten hoi sai lay it rui ro sua nham khi doi
+ * hang loat call site. Neu sau nay don dep, doi ten thanh PillButton va
+ * chay tim-thay-thay the dong loat.
+ *
+ * Cap nhan do tu Figma:
+ *   size="action" : Quicksand Bold 24px - nut hang 14 (Send OTP, Done,
+ *                    Continue, Create wallet)
+ *   size="inline" : Quicksand/Montserrat SemiBold 20px - nut giua man
  */
 
 import React from "react";
-import { SLANT_SHAPE, SLANT_CONTENT } from "./slant";
 
 export interface SlantButtonProps
   extends React.ButtonHTMLAttributes<HTMLButtonElement> {
@@ -31,39 +40,34 @@ export function SlantButton({
 }: SlantButtonProps) {
   let styleClasses = "";
 
-  // Vien 1px: cac SVG goc (24:9 Send OTP, 31:110 Back, 30:72 o dia chi,
-  // 31:102 preset) deu la stroke="#155EEF" KHONG co stroke-width -> mac dinh
-  // 1. Ban truoc de border-2 cho tat ca.
-  // Preset DANG CHON chi co fill vang, KHONG vien (SVG 31:100 khong stroke).
+  // Mau lay THANG tu get_design_context, khong doan:
+  //   primary: bg #F5B800, chu DEN (truoc la xanh 155eef)
+  //   outline: bg kem (--background), vien DEN 1px, chu DEN (truoc la brand)
+  // Disabled: Figma dung opacity 0.33 (khong phai 0.5 nhu ban cu) - xem man
+  // Sign in luc chua go email, nut "Send OTP" mo dung muc nay.
   if (variant === "primary") {
-    styleClasses = "bg-primary text-primary-foreground shadow-btn border-0";
+    styleClasses = "bg-primary text-primary-foreground border-0";
   } else if (variant === "outline") {
-    styleClasses = "bg-background border border-brand text-brand shadow-btn";
+    styleClasses = "bg-background border border-foreground text-foreground";
   } else if (variant === "preset") {
     styleClasses = isActive
-      ? "bg-primary text-brand shadow-btn"
-      : "bg-background border border-brand text-brand shadow-btn";
+      ? "bg-primary text-foreground border border-foreground"
+      : "bg-background border border-foreground text-foreground";
   }
 
-  const label =
-    size === "action"
-      ? "text-title font-bold"
-      : "text-body font-semibold";
+  const label = size === "action" ? "text-title font-bold" : "text-body font-semibold";
 
   return (
     <button
       className={
-        `h-full ${SLANT_SHAPE} ` +
-        `disabled:opacity-50 disabled:pointer-events-none ` +
-        `transition-all active:scale-[0.98] ${styleClasses} ${className}`
+        `h-full w-full rounded-full ` +
+        `disabled:opacity-[0.33] disabled:pointer-events-none ` +
+        `transition-transform active:scale-[0.98] ${styleClasses} ${className}`
       }
       {...props}
     >
       <span
-        className={
-          `flex items-center justify-center gap-2 w-full h-full font-display ${label} ` +
-          `${SLANT_CONTENT} px-4 leading-none`
-        }
+        className={`flex items-center justify-center gap-2 w-full h-full font-display ${label} px-4 leading-none`}
       >
         {children}
       </span>

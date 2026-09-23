@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { Screen, BackAction, rowTop } from "@/components/screen";
-import { CutCornerCard, SlantButton } from "@/components/ui";
+import { SlantButton } from "@/components/ui";
 import { shortenAddress } from "@/lib/utils/address";
 
 interface TransactionRow {
@@ -46,15 +46,10 @@ export function HistoryScreen() {
         </BackAction>
       }
     >
-      {/* Figma node 30:91: x=25 y=114.15 w=340 h=559.813 (dung 10 hang luoi),
-          nen #DBDEE4, vat goc 34.4x46.9. Ban truoc dung flex-1 nen chieu cao
-          chay theo cho trong con lai chu khong phai so that cua Figma. */}
-      <CutCornerCard
-        cutX={34.4}
-        cutY={46.9}
-        className="w-full h-full overflow-y-auto bg-surface px-4"
-        containerClassName="w-[340px] h-[559.813px]"
-      >
+      {/* Figma frame "30" (node 38:453): the 324x568, bo goc 8px, nen
+          --surface - KHONG con vat goc (cut-corner) nhu ban truoc, redesign
+          09-24 bo han he chamfer, chi dung rounded-[8px] don gian. */}
+      <div className="w-full h-full overflow-y-auto bg-surface rounded-[8px] px-4">
         {rows == null && (
           <p className="py-6 text-center font-body text-body text-accent">Loading...</p>
         )}
@@ -83,7 +78,7 @@ export function HistoryScreen() {
             </span>
           </div>
         ))}
-      </CutCornerCard>
+      </div>
     </Screen>
   );
 }
