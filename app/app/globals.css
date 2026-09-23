@@ -2,47 +2,44 @@
 @plugin "tailwindcss-animate";
 
 /* ===========================================================================
-   TapTip - Design tokens (v3, 09-12)
-   Nguon: Figma "Taptip" (rLGoWK4AHhqov9CKHXJqqE, ban ve lai 09-12) + bo quy
-   luat thiet ke moi user dua truc tiep trong chat. THAY THE HOAN TOAN ban
-   token cu (Inter/Archivo, vang FFCC00 + den, luoi ty le cqh) - xem lich su
-   trong git log neu can doi chieu.
+   TapTip - Design tokens (v6, 09-24 - REDESIGN TET)
+   Nguon: Figma "Taptip" (rLGoWK4AHhqov9CKHXJqqE, ban ve lai user dua truc
+   tiep 09-24) - "Figma la nguon su that, lam giong Figma 100%". THAY THE
+   HOAN TOAN ban Modernist truoc (Sora/xanh 155EEF/vang F5B800/nut nghieng) -
+   xem lich su git log neu can doi chieu ban cu.
 
    QUY DINH DUNG CHUNG (doc truoc khi sua bat ky component nao):
 
-   1. MAU: khong bao gio viet mau truc tiep trong component. Chi dung token
-      qua class Tailwind: bg-background, text-brand, bg-primary, text-accent...
-      2 mau thuong hieu CHINH: --primary (vang F5B800, nen moi nut CTA) +
-      --brand (xanh 155EEF, chu tren nut CTA + moi tieu de/so tien/nhan).
+   1. MAU: khong bao gio viet mau truc tiep trong component (tru vai ngoai
+      le Figma tu ve khac, vd link Deposit #155EEF - xem comment tai cho).
+      Chi dung token qua class Tailwind: bg-background, text-brand,
+      bg-primary... 2 mau thuong hieu CHINH: --primary (vang F5B800, nen
+      moi nut CTA + tab dang chon) + --brand (XANH LA 42A556, so du/so tien -
+      khong con la xanh duong nhu ban cu).
 
-   2. CHU: 2 font tach rieng, KHONG dung chung 1 font nhu ban cu.
-      - font-display (Sora, weight 600/700): tieu de, nut bam, so tien, nhan
-        pill - moi cho nao dung mau --brand hoac chu tren nen --primary.
+   2. CHU: 2 font tach rieng.
+      - font-display (Quicksand, weight 500/600/700): tieu de, nut bam, muc
+        menu - THAY Sora cu.
       - font-body (Montserrat, weight 400/500/600): noi dung, mo ta, o nhap,
-        nhan hang ("Balance:", "Tip amount:"), text mau --foreground/--accent.
+        nhan hang ("Balance:", "Default amount:"...).
 
-   3. HINH DANG DAC TRUNG: nut + o nhap deu la HINH CHU NHAT BI NGHIENG (bo
-      goc) - khong phai bo goc thuong. Dung SLANT_SHAPE/SLANT_CONTENT trong
-      components/screen.tsx (hoac <SlantButton> trong components/ui),
-      KHONG tu ve rounded-xl/rounded-full cho nut nua. Card popup (menu,
-      History...) dung hinh CAT 1 GOC (chamfer) rieng - xem .tt-card-cut.
+   3. HINH DANG DAC TRUNG: PILL (rounded-full) cho moi nut/o nhap/tab - he
+      "nghieng" (skew) cu da RETIRE HOAN TOAN, xem components/ui/slant-button.tsx
+      (ten component giu nguyen, noi dung viet lai thanh pill). Card/popup
+      lon (menu, History, picker...) dung rounded-[8px] don gian - he "cat
+      goc" (chamfer/.tt-card-cut) cung da retire.
 
-   4. LUOI (v5, 09-17 - do lai bang toa do TUYET DOI tu Figma, xem
-      HANDOFF.md muc 09-17):
-      - Khung CO DINH 390x844. Tren may that khong co gian tung phan tu ma
-        SCALE NGUYEN KHUNG (transform:scale trong app/layout.tsx).
-      - Doc: 15 hang x DUNG 48.8px, gap 8px (844 = 15*48.8 + 14*8).
-        Moc y cua hang n = (n-1)*56.8 -> 0, 56.8, 113.6, 170.4, 227.2, 284,
-        340.8, 397.6, 454.4, 511.2, 568, 624.8, 681.6, 738.4, 795.2.
-      - Ngang: le an toan 25px 2 ben -> vung noi dung 340px.
-      - Nut nghieng nam trong dai x=33..357 (rong 324, thut 8px moi ben so
-        voi hop noi dung). Co Back: Back w=113 @x=33 + nut chinh w=224 @x=133.
-      - KHONG dung don vi theo viewport (dvh/vw/cqh) cho kich thuoc noi dung.
-        Ban cu dung clamp(...dvh...) khien moi thu lech khoi Figma - da bo.
+   4. LUOI DOC khong doi tu v5 (09-17): khung CO DINH 390x844, scale nguyen
+      khung (transform:scale trong app/layout.tsx), 15 hang x 48.8px, gap
+      8px. Moc y hang n = (n-1)*56.8.
+      LE NGANG DOI (v6, xac nhan qua hang chuc frame Figma moi): tu 25px
+      len ~33px, vung noi dung tu 340 xuong CONTENT_W=324 (xem
+      components/screen.tsx). Hang nut hanh dong: Back pill RONG CO DINH
+      92px (khong con ty le 1/3) + nut chinh 224px, khe 8px.
 
-   5. DO BONG: dung 4 token co san - shadow-btn (nut/the noi), shadow-modal
-      (modal), shadow-popover (toast xu ly/thanh cong), shadow-field (long
-      vao trong, cho o nhap lieu).
+   5. DO BONG: Figma redesign KHONG ve shadow ro net nhu ban cu (pill/card
+      phang) - hau het cho moi da bo shadow-btn, chi con dung o vai popup
+      can noi bat (vd app-lock-gate "Try again").
    =========================================================================== */
 
 :root {
@@ -255,26 +252,6 @@ input:-webkit-autofill:focus {
   animation: tt-caret 1s steps(1) infinite;
 }
 
-/* Hinh dang "cat goc" dac trung cho card/box lon (menu, History, camera) -
-   vat cheo goc duoi-phai, 3 goc con lai BO 8px.
-
-   Do lai 09-17 tu 3 file SVG goc (11:30 menu, 30:91 History, 30:98 camera).
-   Ba khoi KHONG cung mot notch:
-     menu    277.5x240.8 -> vat 29.3 ngang / 46.3 doc
-     History 340x559.8   -> vat 34.4 ngang / 46.9 doc
-     camera  340x503.8   -> vat 37.0 ngang / 47.7 doc
-   Ban truoc de cung 68 doc / 32 ngang va ghi la "notch co dinh" - dung voi
-   BAN VE CU, sai voi ban hien tai. Vi vay kich thuoc vat gio la bien, moi
-   noi goi truyen dung so da do (xem <CutCornerCard cutX cutY>). */
-.tt-card-cut {
-  --cut-x: 34px;
-  --cut-y: 47px;
-  border-radius: 8px;
-  clip-path: polygon(
-    0 0,
-    100% 0,
-    100% calc(100% - var(--cut-y)),
-    calc(100% - var(--cut-x)) 100%,
-    0 100%
-  );
-}
+/* He "cat goc" (chamfer, .tt-card-cut / CutCornerCard) da RETIRE hoan toan
+   09-24 - redesign moi dung rounded-[8px] don gian cho moi card/popup lon
+   (menu, History, camera...). Xem components/ui/cut-corner-card.tsx da xoa. */
