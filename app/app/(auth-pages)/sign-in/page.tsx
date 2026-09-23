@@ -24,8 +24,10 @@ import { GlobalContext } from "@/contexts/global-context";
 import { useRouter } from "next/navigation";
 import { ChangeEventHandler, useContext, useMemo, useState } from "react";
 
-/** Goi y duoi email (user yeu cau lai 09-18 - ban 09-17 xoa vi Figma khong ve) */
-const EMAIL_DOMAIN_SUGGESTIONS = ["@gmail.com", "@icloud.com"];
+/** Goi y duoi email (user yeu cau lai 09-18 - ban 09-17 xoa vi Figma khong ve).
+ * Bo @icloud.com (phan hoi that 09-23): 2 chip tranh nhau 1 hang lam xuong
+ * dong xau - chi giu @gmail.com, chip duy nhat khong con tranh cho nua. */
+const EMAIL_DOMAIN_SUGGESTIONS = ["@gmail.com"];
 
 export default function SignIn() {
   const router = useRouter()
