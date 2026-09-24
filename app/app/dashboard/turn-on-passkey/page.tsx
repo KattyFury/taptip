@@ -8,13 +8,13 @@
  * Developer-Controlled Wallets, khong ky giao dich gi ca (xem
  * lib/auth/applock.ts, khoi phuc tu commit truoc khi bi go 09-11:
  * bd495d3^). "Nhe" o day nghia la 1 lop khoa tien loi cuc bo, khong bat
- * buoc - bam Back de bo qua van tao vi binh thuong.
+ * buoc - bam Skip de bo qua van tao vi binh thuong.
  *
  * Dung LAI man nay cho 2 tinh huong (phan hoi that 09-24 - "ai bo qua thi
  * lan sau nhac lai cho nguoi ta khi nguoi ta log in, dung lam no bat buoc"):
  * 1. Onboarding lan dau (chua co vi) - ?next khong co, mac dinh ve
  *    /dashboard/setup-wallet nhu truoc gio.
- * 2. Nhac lai moi lan dang nhap cho user DA co vi nhung van chua bat
+ * 2. Nhac lai (toi da 1 lan/ngay) cho user DA co vi nhung van chua bat
  *    Passkey (xem app/(auth-pages)/code-confirmation/page.tsx,
  *    promptPasskey) - ?next=/dashboard, Skip di thang vao app binh
  *    thuong, KHONG chan duong, khong ep ai ca.
@@ -23,9 +23,9 @@
 import { useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { startRegistration, type PublicKeyCredentialCreationOptionsJSON } from "@simplewebauthn/browser";
-import { Screen, BackAction, TextLink, BodyText } from "@/components/screen";
+import { Screen, SingleAction, TextLink, BodyText } from "@/components/screen";
+import { markClientUnlocked } from "@/components/app-lock-gate";
 import { SlantButton } from "@/components/ui";
-import { signOutAction } from "@/app/actions";
 
 async function postJson<T>(url: string, body?: unknown): Promise<T> {
   const res = await fetch(url, {
@@ -58,11 +58,12 @@ export default function TurnOnPasskey() {
       );
       const response = await startRegistration({ optionsJSON: options });
       await postJson("/api/applock/register-verify", { response });
+      markClientUnlocked();
       router.push(next);
     } catch (err) {
       console.warn("Turn on passkey failed:", err);
       // Nguoi dung tu huy prompt (Face ID/Touch ID/Windows Hello) - khong
-      // phai loi that, cho ho thu lai hoac bam Back de bo qua, khong ep.
+      // phai loi that, cho ho thu lai hoac bam Skip de bo qua, khong ep.
       setError(
         err instanceof Error && err.name === "NotAllowedError"
           ? "Cancelled. Try again or skip for now."
@@ -77,15 +78,14 @@ export default function TurnOnPasskey() {
   return (
     <Screen
       title="Turn on Passkey"
-      // Ngoai le duy nhat cua quy tac "Back = man truoc": man truoc la OTP cua
-      // 1 lan dang nhap DA XONG (phien da tao) - quay lai OTP vo nghia, nen
-      // Back = dang xuat ve man nhap email. Skip o duoi van la bo qua.
+      // User chot 09-24b: KHONG co nut Back - chi 1 nut don 274 can giua
+      // (nhu Continue o add-home) + Skip ben duoi.
       action={
-        <BackAction onBack={() => void signOutAction()} backLabel="Back to sign in">
+        <SingleAction>
           <SlantButton onClick={turnOn} disabled={loading}>
             {loading ? "Setting up..." : "Continue"}
           </SlantButton>
-        </BackAction>
+        </SingleAction>
       }
       // Figma "passkey" (37:224): hang phu y=795 la chu "Skip" - loi (neu co)
       // hien ngay duoi doan van thay vi chiem cho cua Skip.

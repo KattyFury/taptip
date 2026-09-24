@@ -47,6 +47,11 @@ Verify: `tsc` sạch, `npm run build` sạch; ảnh so sánh từng màn ở Des
 - **Nút ← mọi màn = quay về màn trước** (`router.back()`, `fallback` khi không có lịch sử). Ngoại lệ duy nhất: màn Turn on Passkey (màn trước là OTP của lần đăng nhập đã xong) → Back = đăng xuất về màn email.
 - **Email**: giữ gợi ý `@gmail.com`; lỗi ở dòng dưới cùng; giới hạn 5 mã/15 phút giữ tạm; quay lại từ OTP thì ô email giữ nguyên.
 - **OTP**: đủ 6 số tự gửi; **Resend code** (chờ 60s); `autoComplete="one-time-code"` để điện thoại gợi ý mã.
+- **Turn on Passkey**: KHÔNG có nút ←, chỉ 1 nút Continue to căn giữa (274) + Skip. Nhắc bật Passkey cho người đã Skip **tối đa 1 lần/ngày** (KV `passkey_prompted:<userId>` TTL 24h trong verify-otp).
+- **Khoá Passkey**: ẩn nền **dưới 5 phút** không khoá. `AppLockGate` giờ bọc **TOÀN BỘ /dashboard/*** (`dashboard/layout.tsx`) — trước chỉ Home, gõ thẳng /dashboard/withdraw là rút được tiền.
+- **Server kiểm tra khoá** (`lib/auth/applock.ts`): mở khoá thành công → KV `applock_unlocked:<sessionToken>` 30 phút (tự gia hạn khi còn <10 phút). User có Passkey mà phiên chưa mở → `/api/tip`, `/api/applock/disable`, thêm passkey mới đều trả 423 `APPLOCK_REQUIRED` (client bắn event để gate khoá lại). Client khoá lại (ẩn ≥5 phút) gọi `/api/applock/lock` xoá luôn trạng thái server.
+- **Reset passkey khi mở khoá thất bại** (user chốt: có thể là chủ thật hoặc trộm): có bước xác nhận → `/api/applock/reset` xoá passkey + **khoá GỬI/RÚT 24h** (KV `wallet_lock:<userId>`), vẫn xem & nhận tip. `/api/tip` trả 423 `WALLET_LOCKED`; Home hiện thẻ vàng "Sending is paused until …".
+- **You’re all set / Create wallet**: GIỮ màn này (cho người dùng hiểu đã tạo ví), ← về màn Passkey.
 - **Màn "Something went wrong" đã XOÁ** (`/auth/auth-error`) — không chỗ nào dùng, là màn Claude bịa ra từ trước.
 
 **Còn nợ:** chưa test trên điện thoại thật; ô vuông đen ở nút menu Figma vẫn coi là placeholder icon (dùng icon hamburger); Figma nút Continue màn passkey viền #602323 (gần như đen) — dùng viền đen chung.

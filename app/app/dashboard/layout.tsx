@@ -19,6 +19,7 @@
 import type { ReactNode } from "react";
 import { redirect } from "next/navigation";
 import { getSession } from "@/lib/auth/session";
+import { AppLockGate } from "@/components/app-lock-gate";
 
 interface Props {
   children: ReactNode
@@ -35,8 +36,9 @@ export default async function Layout({ children }: Props) {
     // KHONG con padding ngang o day (09-12): moi man con (Home/Screen) tu
     // quan ly le an toan 25px rieng qua luoi 15 hang cua chinh no - dat them
     // padding o day se thanh CONG DON 2 lop le, sai luoi.
+    // Khoa Passkey boc MOI man /dashboard/* (09-24b) - truoc day chi Home.
     <div className="relative flex flex-col h-full">
-      {children}
+      <AppLockGate>{children}</AppLockGate>
     </div>
   );
 }

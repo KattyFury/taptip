@@ -1,7 +1,7 @@
 import { type NextRequest, NextResponse } from "next/server";
 import { verifyAuthenticationResponse, type AuthenticationResponseJSON } from "@simplewebauthn/server";
 import { getSession } from "@/lib/auth/session";
-import { consumeApplockChallenge, getRpIdAndOrigin } from "@/lib/auth/applock";
+import { consumeApplockChallenge, getRpIdAndOrigin, markSessionUnlocked } from "@/lib/auth/applock";
 import {
   getApplockCredentialByCredentialId,
   updateApplockCredentialCounter,
@@ -61,6 +61,7 @@ export async function POST(req: NextRequest) {
       verification.authenticationInfo.newCounter,
     );
 
+    await markSessionUnlocked();
     return NextResponse.json({ verified: true });
   } catch (error) {
     console.error("App-lock auth verify failed:", error);

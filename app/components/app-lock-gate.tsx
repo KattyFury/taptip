@@ -1,47 +1,50 @@
 "use client";
 
 /**
- * Khoa cua app bang passkey - xac thuc lai MOI LAN mo app hoac quay lai tu
- * nen, NHUNG CHI KHI nguoi dung DA TU BAT no (xem components/passkey-menu-
- * item.tsx trong menu Home). Mac dinh KHONG khoa gi ca - khong ep bat buoc
- * cai passkey, khong popup chan Home o lan mo dau tien. "Hoi" nguoi dung
- * bang cach dat lua chon co san trong menu, khong bang popup chan duong.
+ * Khoa app bang Passkey - CHI khi nguoi dung da tu bat (co credential). Mac
+ * dinh khong khoa gi, Passkey la tuy chon (xem turn-on-passkey, Setting).
  *
- * Lich su sua trong ngay 09-03 (nhieu vong phan hoi):
- * - Ban dau: popup "Set up a passkey" ep bat buoc moi lan mo app chua co
- *   passkey. BO HAN theo phan hoi: "lua chon them hay khong la cua nguoi
- *   dung, chuyen cua app la hoi nguoi dung khi ho chua dung" - tuc la dat
- *   san lua chon (menu), khong tu y bat/chan.
- * - Con lai o day: SAU KHI da bat (co credential), Home moi thuc su bi
- *   khoa - xac thuc tu dong khi mo/quay lai tu nen, that bai that (huy/loi)
- *   moi hien popup "Try again" (CenteredCard, khong the bam ra ngoai de
- *   lach, chi con Unlock hoac Log out).
+ * Quy tac user chot 09-24b:
+ *   - Boc TOAN BO /dashboard/* (app/dashboard/layout.tsx) - truoc day chi boc
+ *     Home, go thang /dashboard/withdraw la rut duoc tien khong can mo khoa.
+ *   - Co Passkey: hien Splash + prompt Passkey TRUOC, chua render man nao.
+ *   - An xuong nen DUOI 5 phut quay lai khong khoa; tu 5 phut tro len khoa lai.
+ *   - Mo khoa that bai -> popup: Unlock / "Switched devices? Reset passkey" /
+ *     Log out. Reset = xoa passkey + KHOA GUI/RUT 24H (van xem, van nhan tip)
+ *     - co buoc xac nhan noi ro dieu nay.
+ *   - Server cung kiem tra (lib/auth/applock.ts): phien chua mo khoa thi
+ *     /api/tip tra 423 APPLOCK_REQUIRED -> ban su kien "taptip-applock-required"
+ *     de gate khoa lai ngay.
  *
- * TACH BIET HOAN TOAN voi vi Circle Developer-Controlled Wallets o
- * components/send-flow.tsx: cai nay KHONG ky giao dich gi ca, Circle van tu
- * ky gui tien phia server y nguyen (toc do gui tip khong doi).
- *
- * Trang thai KHONG luu server (khong dat cookie "da mo khoa") - unlocked
- * chi la React state cuc bo, tu mat khi tab an di (visibilitychange) hoac
- * app tai lai. Dung the moi dam bao "MOI LAN" thay vi chi 1 lan roi nho
- * trong bao lau.
+ * TACH BIET voi vi Circle: khong ky giao dich gi ca.
  */
 
-import { useCallback, useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { startAuthentication, type PublicKeyCredentialRequestOptionsJSON } from "@simplewebauthn/browser";
 import { signOutAction } from "@/app/actions";
 import { FixedOverlay, SlantButton } from "@/components/ui";
 import { SplashView } from "@/components/splash-view";
 
-type GateState =
-  | "checking"
-  // Chua bat khoa (khong co credential nao) - Home mo binh thuong, khong
-  // popup, khong chan gi ca.
-  | "off"
-  | "need-auth"
-  | "authenticating"
-  | "unlocked";
+type GateState = "checking" | "off" | "need-auth" | "authenticating" | "unlocked";
+
+/** An nen duoi moc nay quay lai khong phai mo khoa lai */
+const RELOCK_AFTER_MS = 5 * 60 * 1000;
+export const APPLOCK_REQUIRED_EVENT = "taptip-applock-required";
+
+/**
+ * Nho trong PHIEN (bien module, song qua cac lan chuyen trang client): di
+ * Home -> Deposit -> Home khong bi hoi lai / khong nhay Splash. Mat khi tai
+ * lai trang.
+ */
+let sessionUnlocked = false;
+let knownOff = false;
+
+/** Goi sau khi vua dang ky passkey thanh cong (vua chung minh chinh chu) -
+ * khoi bat mo khoa lai ngay lap tuc. */
+export function markClientUnlocked() {
+  sessionUnlocked = true;
+  knownOff = false;
+}
 
 async function postJson<T>(url: string, body?: unknown): Promise<T> {
   const res = await fetch(url, {
@@ -50,34 +53,30 @@ async function postJson<T>(url: string, body?: unknown): Promise<T> {
     body: body ? JSON.stringify(body) : undefined,
   });
   const data = (await res.json().catch(() => null)) as (T & { error?: string }) | null;
-  if (!res.ok) {
-    throw new Error(data?.error || "Something went wrong");
-  }
+  if (!res.ok) throw new Error(data?.error || "Something went wrong");
   return data as T;
 }
 
-/**
- * Nho trang thai trong PHIEN (bien module, song qua cac lan chuyen trang
- * client) - de di Home -> Deposit -> Home khong bi hoi Passkey lai / khong
- * nhay Splash moi lan. Mat khi tai lai trang hoac app bi an xuong nen.
- */
-let sessionUnlocked = false;
-let knownOff = false;
-
 export function AppLockGate({ children }: { children: React.ReactNode }) {
-  const router = useRouter();
   const [state, setState] = useState<GateState>(() =>
     sessionUnlocked ? "unlocked" : knownOff ? "off" : "checking",
   );
   const [error, setError] = useState<string | null>(null);
+  const [confirmReset, setConfirmReset] = useState(false);
+  const [resetting, setResetting] = useState(false);
+  const hiddenAtRef = useRef<number | null>(null);
+
+  const lock = useCallback(() => {
+    sessionUnlocked = false;
+    setError(null);
+    setState("need-auth");
+  }, []);
 
   const authenticate = useCallback(async () => {
     setState("authenticating");
     setError(null);
     try {
-      const options = await postJson<PublicKeyCredentialRequestOptionsJSON>(
-        "/api/applock/auth-options",
-      );
+      const options = await postJson<PublicKeyCredentialRequestOptionsJSON>("/api/applock/auth-options");
       const response = await startAuthentication({ optionsJSON: options });
       await postJson("/api/applock/auth-verify", { response });
       sessionUnlocked = true;
@@ -95,109 +94,136 @@ export function AppLockGate({ children }: { children: React.ReactNode }) {
     }
   }, []);
 
-  // Kiem tra 1 lan luc mount: user co bat khoa nay chua (co credential
-  // khong). KHONG co thi "off" thang - khong hoi gi ca, khong popup nao.
+  // Hoi trang thai 1 lan luc mount
   useEffect(() => {
     let cancelled = false;
-
     fetch("/api/applock/status")
-      .then((r) => (r.ok ? (r.json() as Promise<{ hasCredential: boolean }>) : null))
+      .then((r) => (r.ok ? (r.json() as Promise<{ hasCredential: boolean; unlocked: boolean }>) : null))
       .catch(() => null)
       .then((status) => {
         if (cancelled) return;
-        // Khong hoi duoc trang thai (mat mang...) - khong khoa cung nguoi
-        // dung, coi nhu "off" cho lan nay, se thu lai o lan mo ke tiep.
-        knownOff = !status?.hasCredential;
-        // Da mo khoa trong phien nay roi thi giu nguyen, khong hoi lai
-        setState((prev) =>
-          prev === "unlocked" ? prev : status?.hasCredential ? "need-auth" : "off",
-        );
+        if (!status?.hasCredential) {
+          // Khong hoi duoc (mat mang) cung coi nhu off - khong khoa oan nguoi dung
+          knownOff = true;
+          setState("off");
+          return;
+        }
+        knownOff = false;
+        // Client nho la da mo nhung server da het han -> khoa lai
+        if (sessionUnlocked && status.unlocked) setState("unlocked");
+        else lock();
       });
-
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [lock]);
 
-  // Da bat khoa + dang o trang thai "need-auth" thi tu mo prompt luon,
-  // khong bat nguoi dung bam them 1 nhip - trinh duyet co the chan (khong
-  // co user gesture) nhung khi do chi roi ve popup "Try again" ben duoi,
-  // khong loi gi ca.
+  // Tu mo prompt ngay khi can (trinh duyet co the chan vi khong co thao tac
+  // nguoi dung - khi do roi ve popup "Try again", khong loi gi)
   useEffect(() => {
-    if (state === "need-auth" && !error) {
-      authenticate();
-    }
+    if (state === "need-auth" && !error) authenticate();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [state === "need-auth"]);
 
-  // "quay lai tu nen": tab/app an di roi hien lai thi khoa lai NGAY - chi
-  // ap dung khi da tung mo khoa that su (khong dong khi dang giua chung
-  // xac thuc, se lam gian doan ceremony WebAuthn). Khong dinh gi den
-  // trang thai "off" - chua bat khoa thi khong co gi de khoa lai.
+  // An nen >= 5 phut -> khoa lai (ca phia server)
   useEffect(() => {
-    const onVisibilityChange = () => {
-      if (document.visibilityState !== "hidden") return;
-      sessionUnlocked = false;
-      setState((prev) => (prev === "unlocked" ? "need-auth" : prev));
+    const onVisibility = () => {
+      if (document.visibilityState === "hidden") {
+        hiddenAtRef.current = Date.now();
+        return;
+      }
+      const hiddenAt = hiddenAtRef.current;
+      hiddenAtRef.current = null;
+      if (hiddenAt == null || Date.now() - hiddenAt < RELOCK_AFTER_MS) return;
+      setState((prev) => {
+        if (prev !== "unlocked") return prev;
+        fetch("/api/applock/lock", { method: "POST" }).catch(() => {});
+        sessionUnlocked = false;
+        return "need-auth";
+      });
     };
-    document.addEventListener("visibilitychange", onVisibilityChange);
-    return () => document.removeEventListener("visibilitychange", onVisibilityChange);
+    document.addEventListener("visibilitychange", onVisibility);
+    return () => document.removeEventListener("visibilitychange", onVisibility);
   }, []);
 
-  // Popup "Try again" chi hien khi xac thuc TU DONG da that bai that su
-  // (huy/loi) - luc dang tu dong thu (chua co loi) thi KHONG popup, prompt
-  // cua trinh duyet la du, Home chi mo (scrim) phia sau.
+  // Server bao phien chua mo khoa (vd het 30 phut) -> khoa ngay
+  useEffect(() => {
+    const onRequired = () => {
+      if (!knownOff) lock();
+    };
+    window.addEventListener(APPLOCK_REQUIRED_EVENT, onRequired);
+    return () => window.removeEventListener(APPLOCK_REQUIRED_EVENT, onRequired);
+  }, [lock]);
+
+  const reset = async () => {
+    setResetting(true);
+    try {
+      await postJson("/api/applock/reset");
+      knownOff = true;
+      sessionUnlocked = false;
+      setConfirmReset(false);
+      setState("off");
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Could not reset, try again.");
+      setConfirmReset(false);
+    } finally {
+      setResetting(false);
+    }
+  };
+
+  if (state === "off" || state === "unlocked") return <>{children}</>;
+
   const showCard = state === "need-auth" && !!error;
 
-  if (state === "off" || state === "unlocked") {
-    return <>{children}</>;
-  }
-
-  // User chot 09-24b: co Passkey thi hien Passkey TRUOC khi vao Home - phia
-  // sau popup la man Splash, KHONG render Home (truoc day Home mo mo phia
-  // sau, van nhin ra so du / QR). "checking" cung dung Splash (dang tai).
-
   return (
-    // Popup "Try again" di qua FixedOverlay (Portal ra document.body) - xem
-    // components/ui/fixed-overlay.tsx ve loi fixed trong .tt-frame co transform.
+    // Chua mo khoa: chi Splash phia sau, KHONG render man nao cua dashboard
     <div className="relative flex flex-col h-full">
       <SplashView />
 
-      {/* Popup "Try again" - khong con CenteredCard (da xoa khoi codebase
-          o cac ban redesign sau). Dung lai ngon ngu popup pill/rounded-[8px]
-          moi (giong khung picker so tien / menu Home) thay vi component cu.
-          KHONG dismissible bang cach bam ra ngoai - nhung KHONG con la ngo
-          cut: ngoai xac thuc lai/dang xuat, them "Switched devices?" (phan
-          hoi that 09-24: "doi may thi yeu cau tao passkey lai chu khong
-          khoa nguoi ta") - dua sang /dashboard/settings, route NAY KHONG bi
-          AppLockGate boc (chi Home moi bi khoa, xem dashboard/page.tsx),
-          nen luon vao duoc du dang ket o day. O Settings bam "Turn off" roi
-          "Turn on" lai la dang ky passkey MOI cho thiet bi hien tai - khong
-          can passkey cu (da mat/doi may) van thoat khoa duoc, vi ho da qua
-          vong xac thuc that su (email+OTP) khi dang nhap phien nay roi. */}
       {showCard && (
         <FixedOverlay>
           <div className="fixed inset-0 z-50 flex items-center justify-center px-5">
             <div className="w-full max-w-[340px] bg-background border border-foreground rounded-[8px] px-6 py-8 flex flex-col items-center gap-4">
-              <h2 className="font-display text-title font-bold text-foreground">Try again</h2>
-              <div className="w-full" style={{ height: 49.32 }}>
-                <SlantButton onClick={authenticate}>Unlock</SlantButton>
-              </div>
-              {error && (
-                <p className="text-danger text-small font-bold text-center">{error}</p>
+              {confirmReset ? (
+                <>
+                  <h2 className="font-display text-title font-bold text-foreground">Reset Passkey?</h2>
+                  <p className="font-body text-small font-medium text-secondary-text text-center leading-[24px]">
+                    For your safety, <span className="font-bold text-foreground">sending and withdrawing
+                    will be paused for 24 hours</span>. You can still open the app and receive tips.
+                  </p>
+                  <div className="w-full" style={{ height: 49.32 }}>
+                    <SlantButton onClick={reset} disabled={resetting}>
+                      {resetting ? "Resetting..." : "Reset Passkey"}
+                    </SlantButton>
+                  </div>
+                  <button
+                    className="font-display text-small font-semibold text-foreground text-center underline"
+                    onClick={() => setConfirmReset(false)}
+                  >
+                    Cancel
+                  </button>
+                </>
+              ) : (
+                <>
+                  <h2 className="font-display text-title font-bold text-foreground">Try again</h2>
+                  <div className="w-full" style={{ height: 49.32 }}>
+                    <SlantButton onClick={authenticate}>Unlock</SlantButton>
+                  </div>
+                  {error && <p className="text-danger text-small font-bold text-center">{error}</p>}
+                  <button
+                    className="font-display text-small font-medium text-secondary-text text-center underline"
+                    onClick={() => setConfirmReset(true)}
+                  >
+                    Switched devices? Reset passkey
+                  </button>
+                  <button
+                    className="font-display text-small font-semibold text-danger text-center"
+                    onClick={() => void signOutAction()}
+                  >
+                    Log out
+                  </button>
+                </>
               )}
-              <button
-                className="font-display text-small font-medium text-secondary-text text-center underline"
-                onClick={() => router.push("/dashboard/settings")}
-              >
-                Switched devices? Reset passkey
-              </button>
-              <button
-                className="font-display text-small font-semibold text-danger text-center"
-                onClick={() => void signOutAction()}
-              >
-                Log out
-              </button>
             </div>
           </div>
         </FixedOverlay>

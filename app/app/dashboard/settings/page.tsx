@@ -19,6 +19,7 @@ import {
 import { Screen, BackAction } from "@/components/screen";
 import { SlantButton } from "@/components/ui";
 import * as Icon from "@/components/icons";
+import { markClientUnlocked } from "@/components/app-lock-gate";
 
 type LockStatus = "loading" | "off" | "on" | "busy";
 
@@ -56,6 +57,7 @@ export default function SettingsPage() {
       );
       const response = await startRegistration({ optionsJSON: options });
       await postJson("/api/applock/register-verify", { response });
+      markClientUnlocked();
       setLockStatus("on");
     } catch (err) {
       setError(

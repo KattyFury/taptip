@@ -6,6 +6,7 @@ import { toast } from "sonner";
 import { Screen, BackAction } from "@/components/screen";
 import { SlantButton, TextField } from "@/components/ui";
 import { BalanceProvider, useBalance } from "@/contexts/balanceContext";
+import { describeSendError, type SendErrorBody } from "@/lib/utils/send-errors";
 
 const ADDRESS_REGEX = /^0x[a-fA-F0-9]{40}$/;
 
@@ -65,8 +66,8 @@ function WithdrawContent() {
     setSending(false);
 
     if (!res?.ok) {
-      const err = res ? ((await res.json().catch(() => null)) as { error?: string } | null)?.error : null;
-      setMessage({ kind: "error", text: err || "Send failed, try again." });
+      const body = res ? ((await res.json().catch(() => null)) as SendErrorBody | null) : null;
+      setMessage({ kind: "error", text: describeSendError(body, "Send failed, try again.") });
       return;
     }
     toast.success(`Sent $${formatAmount(value)}`);

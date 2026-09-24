@@ -13,6 +13,7 @@ import { getSession } from "@/lib/auth/session";
 import { getUserById } from "@/lib/db/users";
 import { sendUsdc } from "@/lib/circle/wallets";
 import { createTransaction } from "@/lib/db/transactions";
+import { passesAppLock, walletLockedUntil } from "@/lib/auth/applock";
 
 const ADDRESS_REGEX = /^0x[a-fA-F0-9]{40}$/;
 
@@ -20,6 +21,25 @@ export async function POST(req: NextRequest) {
   const userId = await getSession();
   if (!userId) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  // Khoa 24h sau khi reset passkey (xem lib/auth/applock.ts) - van NHAN duoc
+  const lockedUntil = await walletLockedUntil(userId);
+  if (lockedUntil) {
+    return NextResponse.json(
+      {
+        error: "Sending is paused for 24h after resetting your Passkey.",
+        code: "WALLET_LOCKED",
+        until: lockedUntil,
+      },
+      { status: 423 },
+    );
+  }
+  if (!(await passesAppLock(userId))) {
+    return NextResponse.json(
+      { error: "Unlock the app with your Passkey first.", code: "APPLOCK_REQUIRED" },
+      { status: 423 },
+    );
   }
 
   const body = (await req.json().catch(() => null)) as {

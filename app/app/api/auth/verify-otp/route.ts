@@ -3,6 +3,7 @@ import { verifyOtp } from "@/lib/auth/otp";
 import { createSession } from "@/lib/auth/session";
 import { getUserByEmail, createUser } from "@/lib/db/users";
 import { getApplockCredentialsByUserId } from "@/lib/db/applock";
+import { getKv } from "@/lib/cloudflare";
 
 export async function POST(request: NextRequest) {
   try {
@@ -30,13 +31,17 @@ export async function POST(request: NextRequest) {
 
     const hasWallet = !!user.wallet_address;
 
-    // Da co vi (khong phai lan dau) nhung chua bat khoa Passkey - vd tung
-    // bam "Skip" o /dashboard/turn-on-passkey, hoac dang nhap tu truoc khi
-    // tinh nang nay ton tai. KHONG bat buoc, chi NHAC LAI moi lan dang
-    // nhap (theo yeu cau that 09-24: "ai bo qua thi lan sau nhac lai") -
-    // man turn-on-passkey van co nut Skip, khong chan duong ai ca.
-    const promptPasskey =
+    // Da co vi nhung chua bat Passkey (tung Skip...) -> nhac lai, KHONG bat buoc
+    // (man turn-on-passkey co Skip).
+    let promptPasskey =
       hasWallet && (await getApplockCredentialsByUserId(user.id)).length === 0;
+    // User chot 09-24b: nhac MOI NGAY 1 LAN (khong phai moi lan dang nhap)
+    if (promptPasskey) {
+      const kv = await getKv();
+      const key = `passkey_prompted:${user.id}`;
+      if (await kv.get(key)) promptPasskey = false;
+      else await kv.put(key, "1", { expirationTtl: 24 * 60 * 60 });
+    }
 
     return NextResponse.json({
       ok: true,

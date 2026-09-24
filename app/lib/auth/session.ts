@@ -45,3 +45,10 @@ export async function destroySession() {
   }
   cookieStore.delete(SESSION_COOKIE);
 }
+
+/** Token phien hien tai (cookie) - dung de gan trang thai "da mo khoa
+ * Passkey" theo TUNG phien (lib/auth/applock.ts), khong theo user. */
+export async function getSessionToken(): Promise<string | null> {
+  const cookieStore = await cookies();
+  return cookieStore.get(SESSION_COOKIE)?.value ?? null;
+}

@@ -1,7 +1,7 @@
 import { type NextRequest, NextResponse } from "next/server";
 import { verifyRegistrationResponse, type RegistrationResponseJSON } from "@simplewebauthn/server";
 import { getSession } from "@/lib/auth/session";
-import { consumeApplockChallenge, getRpIdAndOrigin } from "@/lib/auth/applock";
+import { consumeApplockChallenge, getRpIdAndOrigin, markSessionUnlocked, passesAppLock } from "@/lib/auth/applock";
 import { createApplockCredential } from "@/lib/db/applock";
 
 export async function POST(req: NextRequest) {
@@ -16,6 +16,14 @@ export async function POST(req: NextRequest) {
 
   if (!body?.response) {
     return NextResponse.json({ error: "Missing registration response" }, { status: 400 });
+  }
+
+  // Da co passkey ma phien chua mo khoa -> khong cho ke khac tu them passkey cua ho
+  if (!(await passesAppLock(userId))) {
+    return NextResponse.json(
+      { error: "Unlock the app with your Passkey first.", code: "APPLOCK_REQUIRED" },
+      { status: 423 },
+    );
   }
 
   const expectedChallenge = await consumeApplockChallenge(userId, "register");
@@ -50,6 +58,7 @@ export async function POST(req: NextRequest) {
       transports: credential.transports ?? null,
     });
 
+    await markSessionUnlocked();
     return NextResponse.json({ verified: true });
   } catch (error) {
     console.error("App-lock registration verify failed:", error);

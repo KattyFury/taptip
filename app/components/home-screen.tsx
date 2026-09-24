@@ -33,6 +33,7 @@ import {
 import { shortenAddress } from "@/lib/utils/address";
 import { encodeTapTipQr, decodeTapTipQr } from "@/lib/utils/qr-payment";
 import { signOutAction } from "@/app/actions";
+import { describeSendError, formatLockUntil, type SendErrorBody } from "@/lib/utils/send-errors";
 import { toast } from "sonner";
 
 const QR_REGION_ID = "taptip-qr-region";
@@ -63,7 +64,8 @@ interface TransactionRow {
 
 type Notice =
   | { id: string; kind: "received" | "tipped"; amount: number; address: string }
-  | { id: string; kind: "low-balance" };
+  | { id: string; kind: "low-balance" }
+  | { id: string; kind: "wallet-locked"; until: number };
 
 /** Lam tron XUONG 2 chu so thap phan - khong bao gio hien nhieu hon so that co. */
 function formatAmount(token: number): string {
@@ -111,6 +113,8 @@ function HomeScreenContent({ primaryWallet, initialTab = "get", initialOverlay }
   const [settings, setSettings] = useState<TipSettings | null>(null);
   const [transactions, setTransactions] = useState<TransactionRow[]>([]);
   const [dismissed, setDismissed] = useState<string[]>([]);
+  /** Khoa gui/rut 24h sau khi reset Passkey (ms) */
+  const [lockedUntil, setLockedUntil] = useState<number | null>(null);
   const [copied, setCopied] = useState(false);
   const [scanError, setScanError] = useState<string | null>(null);
   const [sendStep, setSendStep] = useState<"scan" | "sending" | "success">("scan");
@@ -134,6 +138,10 @@ function HomeScreenContent({ primaryWallet, initialTab = "get", initialOverlay }
       .then((data) => setSettings(data.settings))
       .catch(() => toast.error("Could not load tip amounts"));
     setDismissed(readDismissed());
+    fetch("/api/applock/status")
+      .then((r) => (r.ok ? (r.json() as Promise<{ walletLockedUntil: number | null }>) : null))
+      .then((s) => s && setLockedUntil(s.walletLockedUntil))
+      .catch(() => {});
   }, []);
 
   const loadTransactions = useCallback(() => {
@@ -158,6 +166,9 @@ function HomeScreenContent({ primaryWallet, initialTab = "get", initialOverlay }
 
   // ================= Thong bao o tab Get Tip ================================
   const notices: Notice[] = [];
+  if (lockedUntil && lockedUntil > Date.now()) {
+    notices.push({ id: "wallet-locked", kind: "wallet-locked", until: lockedUntil });
+  }
   const lowBalance =
     !balance.loading && !balanceError && (balanceNum <= 0 || (defaultAmount != null && balanceNum < defaultAmount));
   if (lowBalance && !dismissed.includes("low-balance")) {
@@ -178,15 +189,17 @@ function HomeScreenContent({ primaryWallet, initialTab = "get", initialOverlay }
   }
   // Canh bao het tien nam CUOI danh sach nhu Figma (xanh, do, roi vang)
   notices.sort((a, b) => Number(a.kind === "low-balance") - Number(b.kind === "low-balance"));
+  // Khoa vi luon nam DAU (quan trong nhat)
+  notices.sort((a, b) => Number(b.kind === "wallet-locked") - Number(a.kind === "wallet-locked"));
 
   const dismissNotice = (id: string) => {
     const next = [...dismissed, id];
     setDismissed(next);
-    // Canh bao het tien chi an trong phien nay - lan mo app sau van con thieu
-    // tien thi phai nhac lai.
-    if (id === "low-balance") return;
+    // Canh bao het tien / khoa vi chi an trong phien nay - mo app lan sau
+    // van con thi phai nhac lai.
+    if (id === "low-balance" || id === "wallet-locked") return;
     try {
-      localStorage.setItem(DISMISSED_KEY, JSON.stringify(next.filter((d) => d !== "low-balance").slice(-200)));
+      localStorage.setItem(DISMISSED_KEY, JSON.stringify(next.filter((d) => d !== "low-balance" && d !== "wallet-locked").slice(-200)));
     } catch {
       // localStorage bi chan - chi an trong phien nay
     }
@@ -267,10 +280,8 @@ function HomeScreenContent({ primaryWallet, initialTab = "get", initialOverlay }
     }).catch(() => null);
 
     if (!response?.ok) {
-      const message = response
-        ? ((await response.json().catch(() => null)) as { error?: string } | null)?.error
-        : null;
-      toast.error(message || "Send failed, try again");
+      const body = response ? ((await response.json().catch(() => null)) as SendErrorBody | null) : null;
+      setScanError(describeSendError(body, "Send failed, try again."));
       setSendStep("scan");
       return;
     }
@@ -493,6 +504,31 @@ function HomeScreenContent({ primaryWallet, initialTab = "get", initialOverlay }
 function NoticeRow({ notice, onDismiss }: { notice: Notice; onDismiss: () => void }) {
   const bg =
     notice.kind === "received" ? "bg-success-bg" : notice.kind === "tipped" ? "bg-danger-bg" : "bg-warning-bg";
+
+  if (notice.kind === "wallet-locked") {
+    return (
+      <div className={`relative rounded-[8px] ${bg}`} style={{ height: 49 }}>
+        <p
+          className="absolute flex items-center font-body text-small font-medium text-foreground leading-[20px]"
+          style={{ left: 7.62, top: 0, width: 277.31, height: 49 }}
+        >
+          <span>
+            Sending is paused until <span className="font-bold">{formatLockUntil(notice.until)}</span> (Passkey was reset).
+          </span>
+        </p>
+        <button
+          type="button"
+          onClick={onDismiss}
+          aria-label="Dismiss"
+          className="absolute top-1/2 -translate-y-1/2 flex items-center justify-center"
+          style={{ right: 11.16, width: 16.7455, height: 17.4736 }}
+        >
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src="/figma/close-x.svg" alt="" width={16.7455} height={17.4736} />
+        </button>
+      </div>
+    );
+  }
 
   return (
     <div className={`relative rounded-[8px] ${bg}`} style={{ height: 49 }}>
