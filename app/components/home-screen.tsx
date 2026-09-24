@@ -346,6 +346,16 @@ function HomeScreenContent({ primaryWallet }: Props) {
           "Setting" moi (khong co trong ban truoc). */}
       {menuOpen && (
         <>
+          {/* Lop bat click-ra-ngoai nay KHONG dung FixedOverlay (khac
+              AppLockGate) - vi popup card ben duoi la `absolute` dinh vi
+              THEO toa do 390x844 cua .tt-frame (CONTENT_X...), khong the
+              tach rieng ra Portal ma khong tinh lai toa do that tren man
+              hinh. Trong suot (khong bg-scrim) nen KHONG bi bug "line xam"
+              nhu components/app-lock-gate.tsx - chi co 1 nhuoc diem nho:
+              tren dien thoai co letterbox, bam vao dung dai vien ngoai
+              cung se khong dong duoc menu (van dong binh thuong khi bam
+              bat ky dau khac tren man hinh). Xem components/ui/fixed-
+              overlay.tsx de biet ro nguyen nhan goc. */}
           <div
             className="fixed inset-0 z-40"
             onClick={() => setMenuOpen(false)}

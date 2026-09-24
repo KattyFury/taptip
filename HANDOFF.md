@@ -13,7 +13,68 @@
 
 ---
 
-## 👉 BẮT ĐẦU TỪ ĐÂY (09-24, sau redesign — vá lỗi Passkey khoá nhầm user cũ)
+## 👉 BẮT ĐẦU TỪ ĐÂY (09-24, cùng phiên — line xám 2 bên popup Passkey + đổi máy không bị khoá cứng)
+
+**User báo kèm ảnh chụp thật:** khi popup xác thực Passkey tự động hiện lên
+(AppLockGate), 2 bên màn hình xuất hiện 1 vệt màu kem nhạt xấu (khác tông
+với phần bị làm tối). Đã soi pixel ảnh gửi (dựng script Node+`sharp` đo màu
+từng điểm cạnh trái/phải) — xác nhận đây là bug THẬT, không phải ảo giác:
+có 1 dải ~15-20px ở cả 2 mép sáng hơn hẳn phần còn lại, hoàn toàn đồng nhất
+qua mọi hàng pixel đo được (đặc trưng của 1 ranh giới CSS cứng, không phải
+nhiễu ảnh/ánh sáng chụp).
+
+**Root cause:** `.tt-frame` (app/layout.tsx) dùng `transform:
+scale(--frame-scale)` để fit khung thiết kế 390x844 cố định vào mọi màn
+hình. Theo đúng spec CSS, 1 ancestor có `transform` sẽ tạo ra "containing
+block" MỚI cho mọi con cháu `position: fixed` — `inset-0` của chúng vì vậy
+bám theo box 390x844 (TRƯỚC KHI scale) của `.tt-frame`, KHÔNG PHẢI viewport
+thật của trình duyệt. Trên gần như mọi điện thoại thật (tỷ lệ màn hình hiếm
+khi đúng 390:844 tuyệt đối), frame-scale để lại 1 khe letterbox 2 bên — khe
+này bình thường vô hình (`--page-backdrop` trùng màu `--background`), nhưng
+lớp `bg-scrim` (nền đen mờ) của `AppLockGate` không với tới được khe đó,
+lộ ra dải màu kem chưa bị làm tối = "line xám" user thấy.
+
+**Đã tái hiện + chứng minh bằng file HTML độc lập** (không đụng code app):
+dựng 2 bản y hệt cơ chế (`scrim` là con cháu `.frame` có transform vs.
+`scrim` là sibling) ở cùng 1 window-size gây letterbox thật — ảnh "buggy"
+cho ra đúng 2 vệt sáng 2 bên y hệt ảnh user gửi, ảnh "fixed" phủ kín tuyệt
+đối. Xác nhận đúng nguyên nhân trước khi sửa, không đoán mò.
+
+**Đã sửa:** `components/ui/fixed-overlay.tsx` (mới) — component
+`<FixedOverlay>` dùng React Portal (`createPortal`) để render nội dung
+thẳng vào `document.body`, thoát khỏi phạm vi `transform` của `.tt-frame`
+(giống cách `<Toaster />` vốn đã đặt NGOÀI `.tt-frame` trong DOM từ đầu).
+Áp dụng cho:
+- `app-lock-gate.tsx` — cả scrim lẫn popup "Try again" (đây là chỗ DUY NHẤT
+  có `bg-scrim` màu thật nên là chỗ DUY NHẤT gây ra line nhìn thấy được).
+- `tip-amount-panel.tsx` (PickerModal) — cùng bug gốc, tuy backdrop trong
+  suốt (không thấy line) nhưng cùng sửa luôn cho nhất quán + vùng bấm-ra-
+  ngoài-để-đóng giờ phủ đúng toàn màn hình thật.
+- `home-screen.tsx` (menu) — **CỐ TÌNH KHÔNG** áp dụng: popup card của menu
+  định vị `absolute` theo toạ độ 390x844 riêng của `.tt-frame`
+  (`CONTENT_X`...), tách overlay đó ra Portal sẽ làm sai z-index (scrim sẽ
+  đè lên card thay vì nằm dưới) mà không tính lại toạ độ thật trên màn
+  hình — rủi ro hơn lợi ích vì lớp bắt-click này vốn trong suốt, không gây
+  line xấu. Đã ghi rõ lý do trong code để phiên sau không lặp lại điều tra.
+
+**Thêm luôn phần user yêu cầu kèm theo ("nếu người dùng đổi máy thì sẽ yêu
+cầu tạo passkey lại chứ không có khoá người ta"):** phát hiện `/dashboard/
+settings` **không** bị `AppLockGate` bọc (chỉ mỗi Home mới bị khoá, xem
+`dashboard/page.tsx`) — tức đường thoát đã có sẵn, chỉ là màn "Try again"
+không hề chỉ tới đó. Thêm nút **"Switched devices? Reset passkey"** trong
+popup, đưa thẳng sang Settings — ở đó bấm "Turn off" rồi "Turn on" lại là
+đăng ký passkey MỚI cho thiết bị hiện tại, không cần passkey cũ (đã mất/đổi
+máy). An toàn vì user đã qua vòng xác thực thật (email+OTP) lúc đăng nhập
+phiên này rồi mới chạm tới màn này.
+
+Verify: `tsc --noEmit` sạch, `npm run build` sạch (27 route) + chứng minh
+bằng ảnh HTML độc lập ở trên (chưa test lại trên điện thoại thật — cần user
+tự thử vì môi trường này không có thiết bị Face ID/Touch ID/Windows Hello
+thật để tái hiện đúng luồng WebAuthn).
+
+---
+
+## 👉 Lịch sử (09-24, sau redesign — vá lỗi Passkey khoá nhầm user cũ)
 
 **User báo (viết HOA, gấp): "Passkey không phải là must mà là thứ bỏ qua
 được, ai bỏ qua thì lần sau nhắc lại cho người ta khi người ta log in,

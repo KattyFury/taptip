@@ -28,9 +28,10 @@
  */
 
 import { useCallback, useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import { startAuthentication, type PublicKeyCredentialRequestOptionsJSON } from "@simplewebauthn/browser";
 import { signOutAction } from "@/app/actions";
-import { SlantButton } from "@/components/ui";
+import { FixedOverlay, SlantButton } from "@/components/ui";
 
 type GateState =
   | "checking"
@@ -55,6 +56,7 @@ async function postJson<T>(url: string, body?: unknown): Promise<T> {
 }
 
 export function AppLockGate({ children }: { children: React.ReactNode }) {
+  const router = useRouter();
   const [state, setState] = useState<GateState>("checking");
   const [error, setError] = useState<string | null>(null);
 
@@ -136,43 +138,60 @@ export function AppLockGate({ children }: { children: React.ReactNode }) {
   }
 
   return (
-    // Boc trong 1 lop `relative` rieng, KHONG padding - dung y het cach
-    // data-home-root (home-screen.tsx) dang lam de popup cua no tu nhien co
-    // le 20px 2 ben (xem ghi chu dai hon trong lich su sua doi cua file
-    // nay o git log neu can, tom tat: AppLockGate boc HomeScreen NGANG
-    // HANG voi px-5 cua dashboard/layout.tsx, khong phai BEN TRONG data-
-    // home-root, nen left-0/right-0 tran cua CenteredCard se bo qua
-    // padding neu khong co lop boc nay).
+    // Lop bao ngoai chi con de layout {children} (HomeScreen can 1 khung
+    // relative/flex binh thuong) - 2 overlay ben duoi da chuyen qua
+    // FixedOverlay (Portal ra document.body) nen KHONG con phu thuoc vi tri
+    // cua div nay nua (xem components/ui/fixed-overlay.tsx: fixed inset-0
+    // long trong .tt-frame - von co transform: scale - se bam sai theo box
+    // 390x844 truoc scale thay vi viewport that, lo ra "line xam" 2 ben tren
+    // dien thoai that khi frame-scale khong khop tuyet doi ca 2 truc).
     <div className="relative flex flex-col h-full">
       {children}
 
       {showScrim && (
-        <div className="fixed inset-0 z-40 bg-scrim" aria-hidden="true" />
+        <FixedOverlay>
+          <div className="fixed inset-0 z-40 bg-scrim" aria-hidden="true" />
+        </FixedOverlay>
       )}
 
       {/* Popup "Try again" - khong con CenteredCard (da xoa khoi codebase
           o cac ban redesign sau). Dung lai ngon ngu popup pill/rounded-[8px]
           moi (giong khung picker so tien / menu Home) thay vi component cu.
-          KHONG dismissible - da bat khoa thi chi con 2 duong: xac thuc lai
-          thanh cong, hoac dang xuat han. */}
+          KHONG dismissible bang cach bam ra ngoai - nhung KHONG con la ngo
+          cut: ngoai xac thuc lai/dang xuat, them "Switched devices?" (phan
+          hoi that 09-24: "doi may thi yeu cau tao passkey lai chu khong
+          khoa nguoi ta") - dua sang /dashboard/settings, route NAY KHONG bi
+          AppLockGate boc (chi Home moi bi khoa, xem dashboard/page.tsx),
+          nen luon vao duoc du dang ket o day. O Settings bam "Turn off" roi
+          "Turn on" lai la dang ky passkey MOI cho thiet bi hien tai - khong
+          can passkey cu (da mat/doi may) van thoat khoa duoc, vi ho da qua
+          vong xac thuc that su (email+OTP) khi dang nhap phien nay roi. */}
       {showCard && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center px-5">
-          <div className="w-full max-w-[324px] bg-background border border-foreground rounded-[8px] shadow-xl px-6 py-8 flex flex-col items-center gap-4">
-            <h2 className="font-display text-title font-bold text-foreground">Try again</h2>
-            <div className="w-full" style={{ height: 49 }}>
-              <SlantButton onClick={authenticate}>Unlock</SlantButton>
+        <FixedOverlay>
+          <div className="fixed inset-0 z-50 flex items-center justify-center px-5">
+            <div className="w-full max-w-[324px] bg-background border border-foreground rounded-[8px] shadow-xl px-6 py-8 flex flex-col items-center gap-4">
+              <h2 className="font-display text-title font-bold text-foreground">Try again</h2>
+              <div className="w-full" style={{ height: 49 }}>
+                <SlantButton onClick={authenticate}>Unlock</SlantButton>
+              </div>
+              {error && (
+                <p className="text-danger text-small font-bold text-center">{error}</p>
+              )}
+              <button
+                className="font-display text-small font-medium text-foreground/60 text-center underline"
+                onClick={() => router.push("/dashboard/settings")}
+              >
+                Switched devices? Reset passkey
+              </button>
+              <button
+                className="font-display text-small font-semibold text-danger text-center"
+                onClick={() => void signOutAction()}
+              >
+                Log out
+              </button>
             </div>
-            {error && (
-              <p className="text-danger text-small font-bold text-center">{error}</p>
-            )}
-            <button
-              className="font-display text-small font-semibold text-danger text-center"
-              onClick={() => void signOutAction()}
-            >
-              Log out
-            </button>
           </div>
-        </div>
+        </FixedOverlay>
       )}
     </div>
   );

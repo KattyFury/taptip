@@ -21,6 +21,7 @@
 import { useState } from "react";
 import * as Icon from "@/components/icons";
 import { toast } from "sonner";
+import { FixedOverlay } from "@/components/ui";
 
 export interface TipSettings {
   slot1: number;
@@ -233,6 +234,9 @@ function PickerModal({
   };
 
   return (
+    // FixedOverlay: ca backdrop lan card nam CHUNG 1 khoi (portal ca 2 cung
+    // luc, khong tach roi z-index) - xem components/ui/fixed-overlay.tsx.
+    <FixedOverlay>
     <div className="fixed inset-0 z-50 flex items-center justify-center px-5" onClick={onClose}>
       <div
         className="relative bg-background border border-foreground rounded-[8px] overflow-hidden"
@@ -290,5 +294,6 @@ function PickerModal({
         </button>
       </div>
     </div>
+    </FixedOverlay>
   );
 }
