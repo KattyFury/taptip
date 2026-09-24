@@ -18,7 +18,7 @@
 
 "use client";
 
-import { Screen, BackAction, ROW_H } from "@/components/screen";
+import { Screen, BackAction } from "@/components/screen";
 import { SlantButton } from "@/components/ui";
 import { InputOTP, InputOTPGroup, InputOTPSlot } from "@/components/ui/input-otp";
 import { GlobalContext } from "@/contexts/global-context";
@@ -125,7 +125,7 @@ export default function CodeConfirmation() {
       {/* Hang o nhap dat o hang 4 nhu o nhap email ben Sign in, cao dung 1
           hang luoi, can giua trong 324px. 6 o DEU NHAU, khong chia nhom -
           dung Figma frame 19 (37:190), khac ban truoc tung suy ra 2 nhom 3. */}
-      <div className="flex items-center justify-center" style={{ height: ROW_H }}>
+      <div className="flex items-center justify-center" style={{ height: 49 }}>
         <InputOTP
           autoFocus
           maxLength={6}

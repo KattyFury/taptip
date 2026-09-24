@@ -13,7 +13,38 @@
 
 ---
 
-## 👉 BẮT ĐẦU TỪ ĐÂY (09-24, cùng phiên — line xám 2 bên popup Passkey + đổi máy không bị khoá cứng)
+## 👉 BẮT ĐẦU TỪ ĐÂY (09-24b — build lại toàn bộ UI theo Figma cập nhật)
+
+**User sửa nhiều trong Figma + chê bản redesign 09-24 "chưa giống y chang"**, yêu cầu làm lại, **build từng màn và chụp ra Desktop để duyệt**, màn có vẽ trước, màn còn thiếu trong flow làm sau.
+
+Đã đọc lại `get_design_context` đủ **14 frame** (splash, add-home, enter-email, enter-otp, error, passkey, create-wallet, home, tip, edit, menu, deposit, withdraw, history). Ảnh so sánh **Figma | App** từng màn: `Desktop\taptip-figma-09-24\01..16-*.png` (15, 16 là màn không có trong Figma: Setting, popup Passkey khoá).
+
+### Thay đổi nền tảng (khác hẳn bản 09-24 đầu)
+- **Lề 25px, rộng 340** (bản trước 33/324 là SAI). Hàng nút y=738: Back **100** + khe 8 + nút chính **232**; nút đơn **274 căn giữa** (`SingleAction`). Skip y=795 rộng cả khung.
+- Tiêu đề căn **mép trên** trong hộp 65px, line-height `normal` (không phải 1.5).
+- **Chỉ còn Quicksand** — Montserrat bỏ hẳn (Figma mới dùng Quicksand Medium 20/40 cho cả nội dung).
+- Màu: muted **#AEAEAE**, chữ phụ **#686868** (`text-secondary-text`), đỏ **#E12B32**, viền pill chọn **#1A1A1A** (`ink`); thẻ thông báo xanh #AFF4C6 / đỏ #FCB3AD / vàng #FFE8A3.
+- Nút vàng **có viền đen 1px**; ô nhập bo **8px** (không còn pill), lề chữ 10px.
+- Asset Figma thật trong `public/figma/`: `arrow-left.svg` (mũi tên Back — mọi màn cùng 1 path), `close-x.svg`, `step-dot.svg`, `splash-deco.svg`.
+
+### Theo màn
+- **Splash**: thêm 3 hình trang trí (khung xanh/vàng góc dưới-trái = asset, 2 ô vuông xoay 60° viền đỏ/vàng).
+- **Home Get Tip**: thẻ xám 340x235 giờ là **danh sách thông báo** (Received xanh / Tipped đỏ / thiếu USDC vàng + link faucet), mỗi dòng có X để ẩn (lưu localStorage; cảnh báo thiếu tiền chỉ ẩn trong phiên). Nguồn: poll `/api/transactions` 10s, chỉ giao dịch 24h gần nhất, tối đa 4 dòng. Bỏ popup "+$X received" cũ.
+- **Tab**: Get Tip đang chọn = pill **xanh lá**, Send Tip = pill **đỏ**, chữ tab kia #AEAEAE.
+- **Send Tip**: lưới **2x2** pill (slot 1-4, slot 4 trống thì tự điền), mô tả + link **EDIT** đỏ → (dòng mô tả đổi thành "Tap the amount you want to change.", EDIT → CANCEL) → bấm 1 ô → **picker** lướt 5 số (hộp 340x275 y=405) → **SAVE** xanh mới lưu, X / bấm ra ngoài = huỷ. Luồng này user chốt 09-24b (Figma đã thêm SAVE; bước "chọn ô" Figma không vẽ). Menu & picker làm **mờ (blur)** nền phía sau, không còn nền đen.
+- **Menu**: hộp 173.8x212 góc phải, chữ căn phải 16/32, "[copy]" trong Figma = icon copy.
+- **Deposit**: chữ 19/30, địa chỉ + link faucet **xanh lá** (bỏ xanh dương #155EEF cũ).
+- **Withdraw**: Figma giờ vẽ **form thật** → đã làm: ô địa chỉ + ô số tiền + SEND, gửi qua `/api/tip` (Circle ký server). Có kiểm tra địa chỉ/số tiền/số dư.
+- **History**: thẻ xám 340x575; dòng dùng lại kiểu thẻ thông báo Home + ngày.
+- **Setting / popup khoá Passkey** (không có trong Figma): theo cùng ngôn ngữ (thẻ xám, pill viền đen, nền mờ).
+
+Verify: `tsc` sạch, `npm run build` sạch; ảnh so sánh từng màn ở Desktop. **CHƯA deploy** — chờ user duyệt ảnh.
+
+**Còn nợ:** chưa test trên điện thoại thật; ô vuông đen ở nút menu Figma vẫn coi là placeholder icon (dùng icon hamburger); Figma nút Continue màn passkey viền #602323 (gần như đen) — dùng viền đen chung.
+
+---
+
+## 👉 Lịch sử (09-24, cùng phiên — line xám 2 bên popup Passkey + đổi máy không bị khoá cứng)
 
 **User báo kèm ảnh chụp thật:** khi popup xác thực Passkey tự động hiện lên
 (AppLockGate), 2 bên màn hình xuất hiện 1 vệt màu kem nhạt xấu (khác tông

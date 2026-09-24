@@ -99,23 +99,28 @@ export default function SettingsPage() {
         )
       }
     >
-      <div className="w-full bg-surface rounded-[8px] flex items-center justify-between px-4" style={{ height: 65 }}>
-        <div className="flex items-center gap-3">
-          <Icon.FaceId className="w-5 h-5 text-foreground shrink-0" />
-          <span className="font-body text-body font-medium text-foreground">
+      {/* Figma chua ve man Setting - dung cung ngon ngu voi the xam o Home/
+          History: the #E4E4DB bo 8, cao 65, pill 100x49 viền den (vang khi
+          chua bat = hanh dong chinh, kem khi da bat). */}
+      <div className="w-full bg-surface rounded-[8px] flex items-center justify-between" style={{ height: 65, paddingLeft: 10, paddingRight: 8 }}>
+        <div className="flex items-center gap-2">
+          <Icon.FaceId className="w-6 h-6 text-foreground shrink-0" />
+          <span className="font-body text-body font-bold text-foreground">
             Passkey lock
           </span>
         </div>
         <button
           onClick={() => (lockStatus === "on" ? disableLock() : enableLock())}
           disabled={busy}
-          className="font-display text-small font-bold rounded-full bg-primary text-foreground border border-foreground disabled:opacity-[0.33]"
-          style={{ width: 100, height: 32.66 }}
+          className={`font-display text-small font-bold rounded-full text-foreground border border-foreground disabled:opacity-[0.33] ${
+            lockStatus === "on" ? "bg-background" : "bg-primary"
+          }`}
+          style={{ width: 100, height: 49 }}
         >
           {lockStatus === "on" ? "Turn off" : busy ? "..." : "Turn on"}
         </button>
       </div>
-      <p className="font-body text-small font-medium text-foreground/60 mt-3">
+      <p className="font-body text-small font-medium text-secondary-text leading-[24px] mt-3">
         Uses your device&apos;s Face ID / Touch ID / Windows Hello to lock the app -
         separate from your wallet, does not sign transactions.
       </p>

@@ -1,53 +1,97 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+/**
+ * Home - Figma 09-24b: "home" (43:264, tab Get Tip), "tip" (44:445, tab Send
+ * Tip), "edit" (44:495, picker so tien), "menu" (44:521). Toa do la px tuyet
+ * doi trong khung 390x844, do thang tu get_design_context:
+ *
+ *   Header      wordmark 20px x=25, nut menu 33.32 o x=331.5 y=8.16
+ *   Khung       QR (Get) / camera (Send): x=25 y=56.32 340x333 bo 8
+ *   Balance     y=397.32 cao 49: nhan 20 dam + so xanh #42A556 (28-37px)
+ *   The xam     x=25 y=446.32 340x235 bo 8, #E4E4DB
+ *                 Get : danh sach thong bao 324x49 (xanh/do/vang) co dau X
+ *                 Send: luoi 2x2 so tien + mo ta + EDIT (tip-amount-panel)
+ *   Thanh tab   y=738 340x49.32 pill xam; tab dang chon pill 174px - Get
+ *               xanh la #42A556, Send do #E12B32; chu tab chua chon #AEAEAE
+ *   Menu/picker lam MO (blur) toan bo phia sau - dung Figma, khong dung nen den.
+ */
+
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { QRCodeSVG } from "qrcode.react";
 import { Html5Qrcode } from "html5-qrcode";
 import * as Icon from "@/components/icons";
 import { useBalance, BalanceProvider } from "@/contexts/balanceContext";
 import { TapTipWordmark } from "@/components/ui";
-import { TipAmountPanel, type TipSettings } from "@/components/tip-amount-panel";
-import { CopyButton } from "@/components/copy-button";
+import {
+  TipAmountGrid,
+  AmountPicker,
+  saveSlotValue,
+  slotValue,
+  type TipSettings,
+} from "@/components/tip-amount-panel";
 import { shortenAddress } from "@/lib/utils/address";
 import { encodeTapTipQr, decodeTapTipQr } from "@/lib/utils/qr-payment";
-import { CONTENT_X, CONTENT_W } from "@/components/screen";
 import { signOutAction } from "@/app/actions";
 import { toast } from "sonner";
 
 const QR_REGION_ID = "taptip-qr-region";
+const CIRCLE_FAUCET_URL = "https://faucet.circle.com/";
+const DISMISSED_KEY = "taptip_dismissed_notices";
+/** Thong bao giao dich chi hien trong 24h gan nhat */
+const NOTICE_WINDOW_MS = 24 * 60 * 60 * 1000;
+/** The xam cao 235: 4 dong 49 + khe 8 vua khit - toi da 4 thong bao */
+const MAX_NOTICES = 4;
+const POLL_MS = 10000;
 
 interface Props {
-  primaryWallet: {
-    wallet_address: string;
-  };
-  profile: {
-    id: string;
-    name: string;
-    daily_tip_limit: number | null;
-  };
+  primaryWallet: { wallet_address: string };
+  profile: { id: string; name: string; daily_tip_limit: number | null };
+  /** Chi dung cho anh chup so sanh Figma / test: mo san 1 trang thai */
+  initialTab?: Tab;
+  initialOverlay?: "menu" | "edit" | "choose";
 }
+
+type Tab = "get" | "send";
+
+interface TransactionRow {
+  direction: "in" | "out";
+  counterparty: string;
+  amount: number;
+  createdAt: string;
+}
+
+type Notice =
+  | { id: string; kind: "received" | "tipped"; amount: number; address: string }
+  | { id: string; kind: "low-balance" };
 
 /** Lam tron XUONG 2 chu so thap phan - khong bao gio hien nhieu hon so that co. */
-function formatBalance(token: number): string {
+function formatAmount(token: number): string {
   if (isNaN(token) || token <= 0) return "0";
-  return (Math.floor(token * 100) / 100).toLocaleString("en-US", {
-    maximumFractionDigits: 2,
-  });
+  return (Math.floor(token * 100) / 100).toLocaleString("en-US", { maximumFractionDigits: 2 });
 }
 
-/** Co chu LON NHAT ma "$so" van vua trong khung - Figma frame 23 (so dai,
- * 24px) vs frame 24/26 (so ngan, 40px): "man nhan nhung so tien to va ngan
- * nen fit vua cho trong" (phan hoi that 09-24) - tu co gian theo do dai. */
+/** Figma: "$XXX" (ngan) 37px, "$XXXXXXX" (dai) 28px - co chu tu co theo do dai. */
 function balanceSizePx(text: string): number {
-  if (text.length <= 4) return 40;
-  if (text.length <= 6) return 30;
-  return 24;
+  if (text.length <= 4) return 37;
+  if (text.length <= 6) return 32;
+  return 28;
 }
 
-// BalanceProvider rieng, dia chi biet san tu server (primaryWallet.wallet_address)
-// - khong con phu thuoc Web3Context ket noi WebAuthn xong moi thay so du. Che
-// len BalanceProvider goc o app/layout.tsx (khong dia chi, khong lam gi).
+function parseUtc(iso: string): number {
+  return new Date(iso.endsWith("Z") ? iso : `${iso}Z`).getTime();
+}
+
+function readDismissed(): string[] {
+  try {
+    return JSON.parse(localStorage.getItem(DISMISSED_KEY) || "[]") as string[];
+  } catch {
+    return [];
+  }
+}
+
+// BalanceProvider rieng theo dia chi vi biet san tu server - che len
+// BalanceProvider goc o app/layout.tsx (khong dia chi).
 export default function HomeScreen(props: Props) {
   return (
     <BalanceProvider walletAddress={props.primaryWallet.wallet_address}>
@@ -56,84 +100,105 @@ export default function HomeScreen(props: Props) {
   );
 }
 
-/** Poll nen moi 10s de bat duoc tip MOI NHAN trong luc dang dung tren Home. */
-const BALANCE_POLL_MS = 10000;
-
-type Tab = "get" | "send";
-
-function HomeScreenContent({ primaryWallet }: Props) {
+function HomeScreenContent({ primaryWallet, initialTab = "get", initialOverlay }: Props) {
   const router = useRouter();
   const { balance, balanceError, refreshBalances } = useBalance();
-  const [menuOpen, setMenuOpen] = useState(false);
-  const [receivedAmount, setReceivedAmount] = useState<number | null>(null);
-  const [tab, setTab] = useState<Tab>("get");
+  const [tab, setTab] = useState<Tab>(initialTab);
+  const [menuOpen, setMenuOpen] = useState(initialOverlay === "menu");
+  // O dang sua trong picker (null = picker dong)
+  const [pickerSlot, setPickerSlot] = useState<number | null>(initialOverlay === "edit" ? 1 : null);
+  const pickerOpen = pickerSlot != null;
   const [settings, setSettings] = useState<TipSettings | null>(null);
+  const [transactions, setTransactions] = useState<TransactionRow[]>([]);
+  const [dismissed, setDismissed] = useState<string[]>([]);
+  const [copied, setCopied] = useState(false);
   const [scanError, setScanError] = useState<string | null>(null);
   const [sendStep, setSendStep] = useState<"scan" | "sending" | "success">("scan");
   const [lastAmount, setLastAmount] = useState<number | null>(null);
 
   const scannerRef = useRef<Html5Qrcode | null>(null);
-
-  const hasWallet =
-    !!primaryWallet.wallet_address && primaryWallet.wallet_address !== "0x0";
+  const address = primaryWallet.wallet_address;
+  const hasWallet = !!address && address !== "0x0";
   const balanceNum = isNaN(balance.token) ? 0 : balance.token;
+  const overlayOpen = menuOpen || pickerOpen;
 
   const goTo = (path: string) => {
     setMenuOpen(false);
     router.push(path);
   };
 
-  const shortAddress = shortenAddress(primaryWallet.wallet_address);
-
-  // ============= Poll so du nen + bao "vua nhan tip" (hang 1, tu an 3s) ====
-  useEffect(() => {
-    const interval = setInterval(() => {
-      refreshBalances().catch(() => {});
-    }, BALANCE_POLL_MS);
-    return () => clearInterval(interval);
-  }, [refreshBalances]);
-
-  const previousBalanceRef = useRef<number | null>(null);
-  const noticeTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  useEffect(() => {
-    if (balance.loading || isNaN(balance.token)) return;
-    const previous = previousBalanceRef.current;
-    if (previous != null && balance.token > previous + 0.005) {
-      const delta = balance.token - previous;
-      setReceivedAmount(delta);
-      if (noticeTimeoutRef.current) clearTimeout(noticeTimeoutRef.current);
-      noticeTimeoutRef.current = setTimeout(() => setReceivedAmount(null), 3000);
-    }
-    previousBalanceRef.current = balance.token;
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [balance.token, balance.loading]);
-  useEffect(
-    () => () => {
-      if (noticeTimeoutRef.current) clearTimeout(noticeTimeoutRef.current);
-    },
-    [],
-  );
-
-  // ============= Tip settings (dung chung cho ca tab Send + picker) =======
+  // ================= Du lieu: tip settings + giao dich ======================
   useEffect(() => {
     fetch("/api/tip-settings")
       .then((res) => res.json() as Promise<{ settings: TipSettings }>)
       .then((data) => setSettings(data.settings))
       .catch(() => toast.error("Could not load tip amounts"));
+    setDismissed(readDismissed());
   }, []);
 
-  const defaultAmount = settings
-    ? (settings[`slot${settings.default_slot}` as keyof TipSettings] as number | null)
-    : null;
+  const loadTransactions = useCallback(() => {
+    fetch("/api/transactions")
+      .then((res) => (res.ok ? (res.json() as Promise<{ transactions: TransactionRow[] }>) : null))
+      .then((data) => data && setTransactions(data.transactions))
+      .catch(() => {});
+  }, []);
 
-  // ============= Camera - CHI chay khi tab=send va dang o buoc scan =======
+  // Poll nen moi 10s: so du + giao dich moi -> the "Received $X from ..."
+  // hien ngay trong luc dang mo Home (phan hoi that 09-23).
+  useEffect(() => {
+    loadTransactions();
+    const interval = setInterval(() => {
+      refreshBalances().catch(() => {});
+      loadTransactions();
+    }, POLL_MS);
+    return () => clearInterval(interval);
+  }, [refreshBalances, loadTransactions]);
+
+  const defaultAmount = settings ? slotValue(settings, settings.default_slot) : null;
+
+  // ================= Thong bao o tab Get Tip ================================
+  const notices: Notice[] = [];
+  const lowBalance =
+    !balance.loading && !balanceError && (balanceNum <= 0 || (defaultAmount != null && balanceNum < defaultAmount));
+  if (lowBalance && !dismissed.includes("low-balance")) {
+    notices.push({ id: "low-balance", kind: "low-balance" });
+  }
+  const now = Date.now();
+  for (const tx of transactions) {
+    if (notices.length >= MAX_NOTICES) break;
+    if (now - parseUtc(tx.createdAt) > NOTICE_WINDOW_MS) continue;
+    const id = `${tx.direction}-${tx.createdAt}-${tx.counterparty}-${tx.amount}`;
+    if (dismissed.includes(id)) continue;
+    notices.push({
+      id,
+      kind: tx.direction === "in" ? "received" : "tipped",
+      amount: tx.amount,
+      address: tx.counterparty,
+    });
+  }
+  // Canh bao het tien nam CUOI danh sach nhu Figma (xanh, do, roi vang)
+  notices.sort((a, b) => Number(a.kind === "low-balance") - Number(b.kind === "low-balance"));
+
+  const dismissNotice = (id: string) => {
+    const next = [...dismissed, id];
+    setDismissed(next);
+    // Canh bao het tien chi an trong phien nay - lan mo app sau van con thieu
+    // tien thi phai nhac lai.
+    if (id === "low-balance") return;
+    try {
+      localStorage.setItem(DISMISSED_KEY, JSON.stringify(next.filter((d) => d !== "low-balance").slice(-200)));
+    } catch {
+      // localStorage bi chan - chi an trong phien nay
+    }
+  };
+
+  // ================= Camera (chi chay o tab Send, buoc scan) ================
   const startScanner = async () => {
     setScanError(null);
     if (!document.getElementById(QR_REGION_ID)) {
       await new Promise((resolve) => requestAnimationFrame(resolve));
     }
     if (!document.getElementById(QR_REGION_ID)) return;
-
     try {
       const scanner = new Html5Qrcode(QR_REGION_ID);
       scannerRef.current = scanner;
@@ -145,7 +210,7 @@ function HomeScreenContent({ primaryWallet }: Props) {
             const size = Math.max(50, Math.floor(Math.min(w, h) * 0.7));
             return { width: size, height: size };
           },
-          aspectRatio: CONTENT_W / 333,
+          aspectRatio: 340 / 333,
         },
         (decodedText) => handleScanResultRef.current(decodedText),
         () => {},
@@ -168,14 +233,11 @@ function HomeScreenContent({ primaryWallet }: Props) {
   };
 
   useEffect(() => {
-    if (tab === "send" && sendStep === "scan") {
-      startScanner();
-    } else {
-      stopScanner();
-    }
+    if (tab === "send" && sendStep === "scan" && !pickerOpen) startScanner();
+    else stopScanner();
     return () => stopScanner();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [tab, sendStep]);
+  }, [tab, sendStep, pickerOpen]);
 
   const handleScanResult = async (decodedText: string) => {
     if (defaultAmount == null) {
@@ -198,7 +260,6 @@ function HomeScreenContent({ primaryWallet }: Props) {
 
     stopScanner();
     setSendStep("sending");
-
     const response = await fetch("/api/tip", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -216,7 +277,9 @@ function HomeScreenContent({ primaryWallet }: Props) {
 
     setLastAmount(defaultAmount);
     setSendStep("success");
-    refreshBalances().catch((err) => console.error("Failed to refresh balance:", err));
+    refreshBalances().catch(() => {});
+    loadTransactions();
+    // Tip lien tiep nhieu nguoi: quay lai quet ngay, khong roi man
     setTimeout(() => setSendStep("scan"), 2000);
   };
 
@@ -225,60 +288,79 @@ function HomeScreenContent({ primaryWallet }: Props) {
     handleScanResultRef.current = handleScanResult;
   });
 
+  const copyAddress = () => {
+    navigator.clipboard.writeText(address);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
+
+  const savePicker = (value: number) => {
+    const slot = pickerSlot;
+    setPickerSlot(null);
+    if (settings && slot != null && value !== slotValue(settings, slot)) {
+      saveSlotValue(settings, slot, value, setSettings);
+    }
+  };
+
+  const balanceText = `$${formatAmount(balance.token)}`;
+
   return (
     <div data-home-root className="relative w-full h-full overflow-hidden">
-      <div className={`absolute inset-0 ${menuOpen ? "opacity-20 pointer-events-none" : ""}`}>
-        {/* Header - Figma frame 23/26...: wordmark "TapTip.fun" (chu, 20px)
-            trai + nut menu 33.32x33.32 phai. */}
-        <div className="absolute" style={{ left: CONTENT_X, top: 12 }}>
+      {/* ======= Noi dung chinh - bi lam mo khi mo menu / picker ======= */}
+      <div
+        className="absolute inset-0 transition-[filter] duration-150"
+        style={overlayOpen ? { filter: "blur(4px)" } : undefined}
+        aria-hidden={overlayOpen}
+      >
+        <div className="absolute flex items-center" style={{ left: 25, top: 0.32, width: 166, height: 49 }}>
           <TapTipWordmark fontSize={20} />
         </div>
 
-        {/* Khung QR/camera - CHUNG 1 vi tri cho ca 2 tab (324x333, rounded-8,
-            nen --surface). Get Tip: QR that. Send Tip: camera quet that. */}
+        <button
+          type="button"
+          onClick={() => setMenuOpen(true)}
+          aria-label="Open menu"
+          className="absolute flex items-center justify-center text-foreground"
+          style={{ left: 331.51, top: 8.16, width: 33.32, height: 33.32 }}
+        >
+          <Icon.Menu className="w-8 h-8" />
+        </button>
+
+        {/* Khung QR / camera */}
         <div
-          className="absolute bg-surface rounded-[8px] overflow-hidden flex items-center justify-center"
-          style={{ left: CONTENT_X, top: 56.32, width: CONTENT_W, height: 333 }}
+          className={`absolute rounded-[8px] overflow-hidden flex items-center justify-center ${
+            tab === "get" ? "bg-white" : "bg-ink"
+          }`}
+          style={{ left: 25, top: 56.32, width: 340, height: 333 }}
         >
           {tab === "get" ? (
             hasWallet ? (
-              <QRCodeSVG
-                value={encodeTapTipQr(primaryWallet.wallet_address)}
-                size={324}
-                marginSize={4}
-                bgColor="#FFFFFF"
-                fgColor="#000000"
-              />
+              <QRCodeSVG value={encodeTapTipQr(address)} size={333} marginSize={4} bgColor="#FFFFFF" fgColor="#000000" />
             ) : (
-              <div className="font-body text-body text-foreground/50 text-center px-4">
-                Setting up your wallet...
-              </div>
+              <p className="font-body text-body font-medium text-hint">Setting up your wallet...</p>
             )
           ) : (
-            <div className="relative w-full h-full bg-black flex items-center justify-center">
+            <div className="relative w-full h-full">
               <div id={QR_REGION_ID} className="w-full h-full" />
               {scanError && (
-                <div className="absolute inset-0 flex flex-col items-center justify-center p-6 text-center bg-black/90 z-20">
+                <div className="absolute inset-0 z-20 flex flex-col items-center justify-center p-6 text-center bg-ink">
                   <Icon.Warning className="w-8 h-8 text-danger mb-2" />
                   <p className="font-body text-small font-medium text-white/80">{scanError}</p>
-                  <button
-                    onClick={startScanner}
-                    className="mt-4 font-body text-small font-medium text-white underline"
-                  >
+                  <button onClick={startScanner} className="mt-4 font-body text-small font-bold text-primary underline">
                     Retry
                   </button>
                 </div>
               )}
-              {(sendStep === "sending" || sendStep === "success") && (
-                <div className="absolute inset-0 z-30 bg-black/90 flex flex-col items-center justify-center gap-3">
+              {sendStep !== "scan" && (
+                <div className="absolute inset-0 z-30 bg-ink flex flex-col items-center justify-center gap-3">
                   {sendStep === "sending" ? (
                     <>
                       <Icon.Loading className="w-10 h-10 text-primary animate-spin" />
-                      <p className="font-display text-title font-bold text-white">Processing...</p>
+                      <p className="font-display text-title font-bold text-white">Sending...</p>
                     </>
                   ) : (
                     <>
-                      <Icon.Check className="w-10 h-10 text-success" />
+                      <Icon.Check className="w-10 h-10 text-brand" />
                       <p className="font-display text-title font-bold text-white">Tipped ${lastAmount}</p>
                     </>
                   )}
@@ -288,146 +370,168 @@ function HomeScreenContent({ primaryWallet }: Props) {
           )}
         </div>
 
-        {/* Balance - luon hien, ca 2 tab. */}
+        {/* Balance */}
         <div
-          className="absolute flex items-center justify-between"
-          style={{ left: CONTENT_X, top: 397.32, width: CONTENT_W, height: 49 }}
+          className="absolute flex items-center font-display font-bold text-body text-foreground leading-[40px]"
+          style={{ left: 25, top: 397.32, height: 49 }}
         >
-          <span className="font-body text-body font-medium text-foreground">Balance:</span>
-          <span
-            className="font-display font-bold text-[#42a556]"
-            style={{ fontSize: balanceSizePx(`$${formatBalance(balance.token)}`) }}
-          >
-            ${formatBalance(balance.token)}
-          </span>
+          Balance:
+        </div>
+        <div
+          className="absolute flex items-center justify-center font-display font-bold text-brand leading-[40px] whitespace-nowrap"
+          style={{ left: 113.97, top: 397.32, width: 162.13, height: 49, fontSize: balanceSizePx(balanceText) }}
+        >
+          {balanceText}
         </div>
 
-        {/* Send Tip: bang chon so tien, chiem het khoang trong ben duoi
-            Balance den truoc hang tab. */}
-        {tab === "send" && settings && (
-          <div className="absolute" style={{ left: CONTENT_X, top: 461, width: CONTENT_W }}>
-            <TipAmountPanel settings={settings} onSettingsChange={setSettings} />
-          </div>
-        )}
+        {/* The xam */}
+        <div className="absolute bg-surface rounded-[8px]" style={{ left: 25, top: 446.32, width: 340, height: 235 }}>
+          {tab === "get" ? (
+            notices.length === 0 ? (
+              <p className="absolute inset-0 flex items-center justify-center font-body text-small font-medium text-hint">
+                No new activity
+              </p>
+            ) : (
+              <div className="absolute flex flex-col" style={{ left: 8, top: 8, width: 324, gap: 8 }}>
+                {notices.map((n) => (
+                  <NoticeRow key={n.id} notice={n} onDismiss={() => dismissNotice(n.id)} />
+                ))}
+              </div>
+            )
+          ) : settings ? (
+            <TipAmountGrid
+              settings={settings}
+              onSettingsChange={setSettings}
+              onEditSlot={setPickerSlot}
+              initialEditing={initialOverlay === "choose"}
+            />
+          ) : null}
+        </div>
 
-        {/* Bao loi doc so du - hang 15 */}
         {balanceError && (
           <p
-            className="absolute font-body text-small font-medium text-danger leading-[20px]"
-            style={{ left: CONTENT_X, top: 795, width: CONTENT_W, height: 49 }}
+            className="absolute font-body text-small font-medium text-danger text-center leading-[20px]"
+            style={{ left: 25, top: 688, width: 340, height: 44 }}
           >
             {balanceError}
           </p>
         )}
+
+        {/* Thanh tab */}
+        <div className="absolute bg-surface rounded-full" style={{ left: 25, top: 738, width: 340, height: 49.32 }}>
+          <div
+            className={`absolute top-0 rounded-full transition-[left,background-color] duration-200 ${
+              tab === "get" ? "bg-brand" : "bg-danger"
+            }`}
+            style={{ left: tab === "get" ? 0 : 166, width: 174, height: 49.32 }}
+          />
+          <button
+            type="button"
+            onClick={() => setTab("get")}
+            className={`absolute top-0 font-display text-title font-bold leading-[normal] ${
+              tab === "get" ? "text-foreground" : "text-hint"
+            }`}
+            style={{ left: 0, width: 174, height: 49.32 }}
+          >
+            Get Tip
+          </button>
+          <button
+            type="button"
+            onClick={() => setTab("send")}
+            className={`absolute top-0 font-display text-title font-bold leading-[normal] ${
+              tab === "send" ? "text-foreground" : "text-hint"
+            }`}
+            style={{ left: 166, width: 174, height: 49.32 }}
+          >
+            Send Tip
+          </button>
+        </div>
       </div>
 
-      {/* Popup "vua nhan tip" - hang 1, tu an sau 3s, z cao hon menu. */}
-      {receivedAmount != null && (
+      {/* ======= Lop phu: menu / picker ======= */}
+      {overlayOpen && (
         <div
-          className="absolute z-[60] flex items-center justify-center bg-success text-background font-display text-body font-bold rounded-[8px] shadow-btn pointer-events-none"
-          style={{ left: CONTENT_X, top: 0, width: CONTENT_W, height: 48.8 }}
+          className="absolute inset-0 z-40"
+          onClick={() => (menuOpen ? setMenuOpen(false) : setPickerSlot(null))}
+          aria-hidden="true"
+        />
+      )}
+
+      {menuOpen && (
+        <div
+          className="absolute z-50 bg-background border border-foreground rounded-[8px] flex flex-col items-end font-display text-small font-medium text-foreground leading-[32px]"
+          style={{ left: 191.04, top: 48.97, width: 173.8, height: 212, padding: "10px 10px 10px 0" }}
         >
-          +${formatBalance(receivedAmount)} received
+          <button type="button" onClick={copyAddress} className="flex items-center gap-1" aria-label="Copy wallet address">
+            <span>{shortenAddress(address)}</span>
+            {copied ? <Icon.Check className="w-4 h-4 text-brand" /> : <Icon.Copy className="w-4 h-4" />}
+          </button>
+          <button type="button" onClick={() => goTo("/dashboard/deposit")}>Deposit</button>
+          <button type="button" onClick={() => goTo("/dashboard/withdraw")}>Withdraw</button>
+          <button type="button" onClick={() => goTo("/dashboard/history")}>History</button>
+          <button type="button" onClick={() => goTo("/dashboard/settings")}>Setting</button>
+          <form action={signOutAction}>
+            <button type="submit" className="text-danger">Log out</button>
+          </form>
         </div>
       )}
 
-      {/* Nut menu */}
-      <button
-        onClick={() => setMenuOpen((v) => !v)}
-        aria-label="Open menu"
-        className="absolute z-50 flex items-center justify-center text-foreground"
-        style={{ left: CONTENT_X + CONTENT_W - 33.32, top: 8.16, width: 33.32, height: 33.32 }}
-      >
-        <Icon.Menu className="w-6 h-6" />
-      </button>
-
-      {/* Menu popup - Figma frame 28 (node 38:376): khung rounded-[8px]
-          vien den, danh sach chu don gian, "Log out" mau do. Them muc
-          "Setting" moi (khong co trong ban truoc). */}
-      {menuOpen && (
-        <>
-          {/* Lop bat click-ra-ngoai nay KHONG dung FixedOverlay (khac
-              AppLockGate) - vi popup card ben duoi la `absolute` dinh vi
-              THEO toa do 390x844 cua .tt-frame (CONTENT_X...), khong the
-              tach rieng ra Portal ma khong tinh lai toa do that tren man
-              hinh. Trong suot (khong bg-scrim) nen KHONG bi bug "line xam"
-              nhu components/app-lock-gate.tsx - chi co 1 nhuoc diem nho:
-              tren dien thoai co letterbox, bam vao dung dai vien ngoai
-              cung se khong dong duoc menu (van dong binh thuong khi bam
-              bat ky dau khac tren man hinh). Xem components/ui/fixed-
-              overlay.tsx de biet ro nguyen nhan goc. */}
-          <div
-            className="fixed inset-0 z-40"
-            onClick={() => setMenuOpen(false)}
-            aria-hidden="true"
+      {pickerSlot != null && settings && (
+        <div className="absolute z-50" style={{ left: 24.96, top: 405.32 }}>
+          <AmountPicker
+            initialValue={slotValue(settings, pickerSlot) ?? 1}
+            onSave={savePicker}
+            onCancel={() => setPickerSlot(null)}
           />
-          <div
-            className="absolute z-50 bg-background border border-foreground rounded-[8px] px-5 py-4"
-            style={{ left: CONTENT_X + 58, top: 49, width: 274 }}
-          >
-            <div className="flex items-center gap-2 font-display text-small font-medium text-foreground py-1">
-              <span>Wallet address: {shortAddress}</span>
-              <CopyButton value={primaryWallet.wallet_address} label="Copy wallet address" />
-            </div>
-            <button
-              onClick={() => goTo("/dashboard/deposit")}
-              className="block w-full text-left font-display text-small font-medium text-foreground py-1"
-            >
-              Deposit
-            </button>
-            <button
-              onClick={() => goTo("/dashboard/withdraw")}
-              className="block w-full text-left font-display text-small font-medium text-foreground py-1"
-            >
-              Withdraw
-            </button>
-            <button
-              onClick={() => goTo("/dashboard/history")}
-              className="block w-full text-left font-display text-small font-medium text-foreground py-1"
-            >
-              History
-            </button>
-            <button
-              onClick={() => goTo("/dashboard/settings")}
-              className="block w-full text-left font-display text-small font-medium text-foreground py-1"
-            >
-              Setting
-            </button>
-            <form action={signOutAction}>
-              <button
-                type="submit"
-                className="block w-full text-left font-display text-small font-medium text-danger py-1"
-              >
-                Log out
-              </button>
-            </form>
-          </div>
-        </>
+        </div>
       )}
+    </div>
+  );
+}
 
-      {/* Hang tab Get Tip / Send Tip - pill 2 nua, dung chinh vi tri hang
-          hanh dong (738.4) nhu moi man khac. */}
-      <div
-        className="absolute bg-surface rounded-full flex overflow-hidden"
-        style={{ left: CONTENT_X, top: 738.53, width: CONTENT_W, height: 49.32 }}
+/** 1 dong thong bao 324x49 - Figma Rectangle 76/77/78 + chu 16/20 + dau X. */
+function NoticeRow({ notice, onDismiss }: { notice: Notice; onDismiss: () => void }) {
+  const bg =
+    notice.kind === "received" ? "bg-success-bg" : notice.kind === "tipped" ? "bg-danger-bg" : "bg-warning-bg";
+
+  return (
+    <div className={`relative rounded-[8px] ${bg}`} style={{ height: 49 }}>
+      <p
+        className="absolute flex items-center font-body text-small font-medium text-foreground leading-[20px]"
+        style={{ left: 7.62, top: 0, width: 277.31, height: 49 }}
       >
-        <button
-          onClick={() => setTab("get")}
-          className={`flex-1 h-full font-display text-title font-bold rounded-full transition-colors ${
-            tab === "get" ? "bg-primary text-foreground" : "text-[#909090]"
-          }`}
-        >
-          Get Tip
-        </button>
-        <button
-          onClick={() => setTab("send")}
-          className={`flex-1 h-full font-display text-title font-bold rounded-full transition-colors ${
-            tab === "send" ? "bg-primary text-foreground" : "text-[#909090]"
-          }`}
-        >
-          Send Tip
-        </button>
-      </div>
+        {notice.kind === "low-balance" ? (
+          <span>
+            You don’t have enough USDC to tip. Please{" "}
+            <a
+              href={CIRCLE_FAUCET_URL}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="font-bold underline"
+            >
+              tap here to faucet
+            </a>
+            .
+          </span>
+        ) : (
+          <span>
+            {notice.kind === "received" ? "Received " : "Tipped "}
+            <span className="font-bold">${formatAmount(notice.amount)}</span>
+            {notice.kind === "received" ? " from " : " for "}
+            {shortenAddress(notice.address)}
+          </span>
+        )}
+      </p>
+      <button
+        type="button"
+        onClick={onDismiss}
+        aria-label="Dismiss"
+        className="absolute top-1/2 -translate-y-1/2 flex items-center justify-center"
+        style={{ right: 11.16, width: 16.7455, height: 17.4736 }}
+      >
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img src="/figma/close-x.svg" alt="" width={16.7455} height={17.4736} />
+      </button>
     </div>
   );
 }

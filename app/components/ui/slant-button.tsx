@@ -16,7 +16,7 @@
  * Cap nhan do tu Figma:
  *   size="action" : Quicksand Bold 24px - nut hang 14 (Send OTP, Done,
  *                    Continue, Create wallet)
- *   size="inline" : Quicksand/Montserrat SemiBold 20px - nut giua man
+ *   size="inline" : Quicksand SemiBold 20px - nut giua man
  */
 
 import React from "react";
@@ -46,7 +46,8 @@ export function SlantButton({
   // Disabled: Figma dung opacity 0.33 (khong phai 0.5 nhu ban cu) - xem man
   // Sign in luc chua go email, nut "Send OTP" mo dung muc nay.
   if (variant === "primary") {
-    styleClasses = "bg-primary text-primary-foreground border-0";
+    // 09-24b: Figma ve nut vang CO vien den 1px (enter-otp 37:195, deposit 45:566...)
+    styleClasses = "bg-primary text-primary-foreground border border-foreground";
   } else if (variant === "outline") {
     styleClasses = "bg-background border border-foreground text-foreground";
   } else if (variant === "preset") {
@@ -67,7 +68,7 @@ export function SlantButton({
       {...props}
     >
       <span
-        className={`flex items-center justify-center gap-2 w-full h-full font-display ${label} px-4 leading-none`}
+        className={`flex items-center justify-center gap-2 w-full h-full font-display ${label} px-4 leading-[normal]`}
       >
         {children}
       </span>

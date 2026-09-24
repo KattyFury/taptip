@@ -1,26 +1,19 @@
 /**
  * Khung man hinh dung chung cho MOI man toan khung cua TapTip.
  *
- * ============ LUOI 15 HANG - PX TUYET DOI (v3, 09-17) =======================
- * Khung dien thoai CO DINH 390x844 (app/layout.tsx scale nguyen khung).
- * 15 hang x DUNG 48.8px, gap 8px  ->  48.8*15 + 8*14 = 844.
+ * Khung dien thoai CO DINH 390x844 (app/layout.tsx scale nguyen khung). Moi
+ * con so o day do THANG tu Figma rLGoWK4AHhqov9CKHXJqqE (ban cap nhat
+ * 09-24b, doc lai du 14 frame bang get_design_context) - KHONG suy dien:
  *
- *   Hang 1   y=0      : logo + nut Menu (chi Home dung)
- *   Hang 2   y=56.8   : tieu de man (Figma dat o y=49, cao 65, rong 274)
- *   Hang 3   y=113.6  : dau vung noi dung cho man CARD (History, Tipping)
- *   Hang 4   y=170.4  : dau vung noi dung cho man CHU (Sign in, Deposit...)
- *   ...
- *   Hang 14  y=738.4  : hang nut hanh dong (cao 49)
- *   Hang 15  y=795.2  : hang phu (Skip / bao loi), sat day khung
+ *   Tieu de      y=49   cao 65  rong 274, can giua, chu CANH TREN (khong
+ *                                can giua doc - 1 dong nam sat mep tren)
+ *   Noi dung     y=170  x=25    rong 340
+ *   Hang nut     y=738  cao 49.32
+ *                 - co Back: Back 100 (x=25) + khe 8 + nut chinh 232 (x=133)
+ *                 - nut don: rong 274, can giua (x=58)
+ *   Hang phu     y=795  cao 49, rong CA KHUNG 390 ("Skip")
  *
- * KHAC BIET LON SO VOI BAN TRUOC: ban truoc dung flexbox flow
- * (justify-center/gap-4) nen phan tu roi vao cho flex quyet dinh, KHONG roi
- * dung hang Figma. Gio moi slot co dinh duoc dat TUYET DOI theo dung toa do
- * do tu Figma bang get_metadata/get_design_context.
- *
- * Moi con so trong file nay deu do that tu Figma rLGoWK4AHhqov9CKHXJqqE -
- * KHONG suy dien. Xem bang so lieu day du trong HANDOFF.md muc 09-17.
- * ============================================================================
+ * Luoi 15 hang x 48.8 cu van giu (rowTop) cho vai man tu dat vi tri.
  */
 
 import type { ReactNode } from "react";
@@ -38,52 +31,38 @@ export const rowTop = (row: number) => (row - 1) * (ROW_H + ROW_GAP);
 /** Chieu cao cua mot khoi chiem n hang lien tiep. rowSpan(9) = 503.2 */
 export const rowSpan = (rows: number) => rows * ROW_H + (rows - 1) * ROW_GAP;
 
-/**
- * Vung noi dung v2 (09-24, redesign Tet) - LE DOI tu 25px len ~33px.
- * Doi chieu nhieu frame Figma moi (Sign in email input, Home QR card, hang
- * nut hanh dong...) deu ra dung `left: calc(8.33%+0.54px)` tren khung 390 =
- * 32.487+0.54 = 33.03px, RONG 324 (khong con 340 nhu ban 09-17). Day la thay
- * doi that, khong phai lam tron - kiem tra ca chuc frame deu khop.
- */
-export const CONTENT_X = 33.03;
-export const CONTENT_W = 324;
+/** Vung noi dung: le 25px, rong 340 (x=25..365) */
+export const CONTENT_X = 25;
+export const CONTENT_W = 340;
+export const CONTENT_TOP = 170;
 
-/**
- * Hang nut hanh dong (Back + nut chinh) - pill, KHONG con nghieng.
- * Do tu Figma (OTP 37:190, Deposit 38:413...): Back la pill RONG CO DINH
- * 92px (khong con ty le 1/3), nut chinh 224px, khe 8px - vua khop CONTENT_W
- * (92+8+224=324). Nut don (khong Back, vd "Back to sign in") rong het 324.
- */
+/** Hang nut hanh dong */
 export const SLANT_X = CONTENT_X;
 export const SLANT_W = CONTENT_W;
 export const SLANT_GAP = 8;
-export const BACK_W = 92;
-export const MAIN_W = 224;
-export const MAIN_OFFSET = BACK_W + SLANT_GAP; // 100
+export const BACK_W = 100;
+export const MAIN_W = 232;
+export const MAIN_OFFSET = BACK_W + SLANT_GAP; // 108
+export const SINGLE_W = 274;
+export const ACTION_TOP = 738;
+export const ACTION_H = 49.32;
+export const FOOT_TOP = 795;
 
-/** Tieu de man: Figma dat tuyet doi o y=49, cao 65, rong 274, can giua */
+/** Tieu de man */
 export const TITLE_TOP = 49;
 export const TITLE_H = 65;
 export const TITLE_W = 274;
 
-export const ACTION_TOP = rowTop(14); // 738.4
-export const FOOT_TOP = rowTop(15); // 795.2
-
 /* ============================== Screen ==================================== */
 
 interface ScreenProps {
-  /** Tieu de man. Nhan ReactNode de man OTP ghep them dong email mau xanh */
   title?: ReactNode;
-  /** Noi dung chinh, bat dau tu contentTop */
   children?: ReactNode;
-  /** Hang 14: nut hanh dong. Dung <BackAction> hoac mot <SlantButton> don */
+  /** Hang nut: dung <BackAction> hoac <SingleAction> */
   action?: ReactNode;
-  /** Hang 15: link phu (Skip) hoac dong bao loi */
+  /** Hang phu (Skip) hoac dong bao loi - rong ca khung 390 */
   foot?: ReactNode;
-  /**
-   * Moc y bat dau vung noi dung. Mac dinh hang 4 (170.4) - dung cho man co
-   * doan van ban. Man dung CARD lon (History, Tipping) dat hang 3 (113.6).
-   */
+  /** Moc y vung noi dung. Mac dinh 170 (Figma). */
   contentTop?: number;
 }
 
@@ -92,31 +71,26 @@ export function Screen({
   children,
   action,
   foot,
-  contentTop = rowTop(4),
+  contentTop = CONTENT_TOP,
 }: ScreenProps) {
   return (
     <div data-screen-root className="relative w-full h-full overflow-hidden">
       {title ? (
-        <div
-          className="absolute left-1/2 -translate-x-1/2 flex items-center justify-center"
+        <h1
+          className="absolute left-1/2 -translate-x-1/2 font-display text-title font-bold text-foreground text-center leading-[normal]"
           style={{ top: TITLE_TOP, height: TITLE_H, width: TITLE_W }}
         >
-          <h1 className="font-display text-title font-bold text-foreground text-center">
-            {title}
-          </h1>
-        </div>
+          {title}
+        </h1>
       ) : null}
 
-      {/* Vung noi dung la khoi THUONG (relative) chu khong phai flex can giua:
-          moi man tu dat con cua no theo dung toa do Figma. Ban truoc dung
-          flex+gap nen phan tu khong bao gio roi dung hang. */}
       <div
         className="absolute"
         style={{
           left: CONTENT_X,
           width: CONTENT_W,
           top: contentTop,
-          height: ACTION_TOP - ROW_GAP - contentTop,
+          height: ACTION_TOP - 8 - contentTop,
         }}
       >
         {children}
@@ -125,7 +99,7 @@ export function Screen({
       {action ? (
         <div
           className="absolute"
-          style={{ left: SLANT_X, width: SLANT_W, top: ACTION_TOP, height: ROW_H }}
+          style={{ left: SLANT_X, width: SLANT_W, top: ACTION_TOP, height: ACTION_H }}
         >
           {action}
         </div>
@@ -133,8 +107,8 @@ export function Screen({
 
       {foot ? (
         <div
-          className="absolute flex items-center justify-center"
-          style={{ left: CONTENT_X, width: CONTENT_W, top: FOOT_TOP, height: ROW_H }}
+          className="absolute left-0 flex items-center justify-center"
+          style={{ width: FRAME_W, top: FOOT_TOP, height: 49 }}
         >
           {foot}
         </div>
@@ -145,10 +119,7 @@ export function Screen({
 
 /* ========================= Cac manh dung chung ============================ */
 
-/**
- * Hang hanh dong co nut Quay lai: Back 1/3 ben trai, nut chinh 2/3 ben
- * phai, khe 8px giua 2 canh nghieng (xem quy luat o BACK_W/MAIN_W).
- */
+/** Hang nut co Back: Back 100 ben trai, nut chinh 232 ben phai, khe 8. */
 export function BackAction({
   onBack,
   backLabel = "Go back",
@@ -163,17 +134,26 @@ export function BackAction({
       <div className="absolute inset-y-0" style={{ left: 0, width: BACK_W }}>
         <BackButton onBack={onBack} ariaLabel={backLabel} />
       </div>
-      <div
-        className="absolute inset-y-0 [&>button]:h-full"
-        style={{ left: MAIN_OFFSET, width: MAIN_W }}
-      >
+      <div className="absolute inset-y-0" style={{ left: MAIN_OFFSET, width: MAIN_W }}>
         {children}
       </div>
     </div>
   );
 }
 
-/** Link chu o hang phu (Skip). Figma ve chu DEN, khong phai xanh. */
+/** Nut don o hang nut: rong 274, can giua khung (x=58). */
+export function SingleAction({ children }: { children: ReactNode }) {
+  return (
+    <div
+      className="absolute inset-y-0"
+      style={{ left: (CONTENT_W - SINGLE_W) / 2, width: SINGLE_W }}
+    >
+      {children}
+    </div>
+  );
+}
+
+/** Link chu o hang phu ("Skip") - Quicksand Medium 20/40, chu den. */
 export function TextLink({
   children,
   className = "",
@@ -181,10 +161,32 @@ export function TextLink({
 }: React.ButtonHTMLAttributes<HTMLButtonElement>) {
   return (
     <button
-      className={`font-body text-body font-medium text-foreground text-center ${className}`}
+      className={`font-body text-body font-medium text-foreground text-center leading-[40px] ${className}`}
       {...props}
     >
       {children}
     </button>
+  );
+}
+
+/** Doan van ban noi dung - Quicksand Medium 20/40 (passkey, create-wallet, error). */
+export function BodyText({ children }: { children: ReactNode }) {
+  return (
+    <p className="font-body text-body font-medium text-foreground leading-[40px]">
+      {children}
+    </p>
+  );
+}
+
+/** Cham tron vang 25x25 danh so (add-home, deposit) - dung dung asset Figma. */
+export function StepDot({ n }: { n: number }) {
+  return (
+    <span className="relative inline-flex shrink-0" style={{ width: 25, height: 25 }}>
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img src="/figma/step-dot.svg" alt="" width={25} height={25} className="absolute inset-0" />
+      <span className="relative w-full h-full flex items-center justify-center font-display font-bold text-[19px] leading-none text-foreground">
+        {n}
+      </span>
+    </span>
   );
 }

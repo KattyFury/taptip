@@ -20,7 +20,7 @@
 
 import { useEffect, useState, type ReactNode } from "react";
 import { useRouter } from "next/navigation";
-import { Screen, TextLink } from "@/components/screen";
+import { Screen, TextLink, SingleAction, StepDot } from "@/components/screen";
 import { TapTipWordmark, SlantButton } from "@/components/ui";
 
 const SPLASH_DURATION_MS = 1600;
@@ -28,17 +28,17 @@ const SPLASH_DURATION_MS = 1600;
 // Tung dong co doan in dam theo dung Figma Frame 1:13
 const INSTALL_STEPS: Record<"ios" | "android", ReactNode[]> = {
   ios: [
-    <>Open <strong className="font-bold text-foreground">TapTip in Safari</strong></>,
-    <>Tap <strong className="font-bold text-foreground">Option</strong></>,
-    <>Tap <strong className="font-bold text-foreground">Share</strong></>,
-    <>Tap <strong className="font-bold text-foreground">Add to Home Screen</strong></>,
-    <>Tap <strong className="font-bold text-foreground">Add</strong> – you&apos;re done!</>,
+    <>Open <strong className="font-bold">TapTip in Safari</strong></>,
+    <>Tap <strong className="font-bold">Option</strong></>,
+    <>Tap <strong className="font-bold">Share</strong></>,
+    <>Tap <strong className="font-bold">Add to Home Screen</strong></>,
+    <>Tap <strong className="font-bold">Add</strong> – you&apos;re done!</>,
   ],
   android: [
-    <>Open <strong className="font-bold text-foreground">TapTip in Chrome</strong></>,
-    <>Tap <strong className="font-bold text-foreground">⋮</strong> in the top-right corner</>,
-    <>Tap <strong className="font-bold text-foreground">Add to Home screen</strong></>,
-    <>Tap <strong className="font-bold text-foreground">Add</strong> — you&apos;re done!</>,
+    <>Open <strong className="font-bold">TapTip in Chrome</strong></>,
+    <>Tap <strong className="font-bold">⋮</strong> in the top-right corner</>,
+    <>Tap <strong className="font-bold">Add to Home screen</strong></>,
+    <>Tap <strong className="font-bold">Add</strong> — you&apos;re done!</>,
   ],
 };
 
@@ -70,53 +70,72 @@ export default function Splash() {
     return () => clearTimeout(timer);
   }, [router]);
 
-  // Splash (Figma frame "10", node 37:2): CHI co wordmark chu "TapTip.fun"
-  // (40px), can GIUA NGANG man hinh (x=195, -translate-x-1/2), khong con la
-  // anh logo nhu ban truoc - xem components/ui/wordmark.tsx.
+  // Splash - Figma "splash" (37:2): wordmark 40px o y=170 can giua + 3 hinh
+  // trang tri (khung xanh/vang goc duoi-trai dung DUNG asset Group 28, 2 o
+  // vuong xoay 60 do vien do/vang ben phai). Khung 390x844 tu cat phan tran.
   if (step === "splash") {
     return (
-      <div className="relative w-full h-full">
-        <div className="absolute -translate-x-1/2" style={{ left: 195, top: 194.82 }}>
+      <div className="relative w-full h-full overflow-hidden">
+        <div
+          className="absolute left-0 flex items-center justify-center"
+          style={{ top: 170.32, width: 390, height: 49 }}
+        >
           <TapTipWordmark fontSize={40} />
+        </div>
+
+        <div
+          className="absolute flex items-center justify-center"
+          style={{ left: -62.18, top: 692.74, width: 199.769, height: 199.769 }}
+        >
+          <div className="rotate-90">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src="/figma/splash-deco.svg" alt="" width={199.769} height={199.769} className="block" />
+          </div>
+        </div>
+
+        <div
+          className="absolute flex items-center justify-center"
+          style={{ left: 197.68, top: 519.19, width: 152.109, height: 152.109 }}
+        >
+          <div
+            className="rotate-60 bg-background border-4 border-danger"
+            style={{ width: 111.352, height: 111.352 }}
+          />
+        </div>
+
+        <div
+          className="absolute flex items-center justify-center"
+          style={{ left: 218.71, top: 540.22, width: 110.054, height: 110.054 }}
+        >
+          <div className="rotate-60 border-4 border-primary" style={{ width: 80.565, height: 80.565 }} />
         </div>
       </div>
     );
   }
 
+  // Add to Home Screen - Figma "add-home" (37:10): cham vang so o x=33, chu
+  // o x=66 (Quicksand 20/40, doan dam Bold), Continue nut don 274 can giua,
+  // Skip o y=795.
   return (
-    <div className="h-full w-full">
-      <Screen
-        title="Add Taptip to your Home Screen"
-        action={
-          <SlantButton onClick={() => router.push("/sign-in")}>
-            Continue
-          </SlantButton>
-        }
-        foot={
-          <TextLink onClick={() => router.push("/sign-in")}>Skip</TextLink>
-        }
-      >
-        {/* Figma frame "11" (node 37:10): moi dong la 1 khoang tron VANG
-            (ellipse 25x25) chua so DEN, roi toi chu - khong phai "1." chu
-            thuong nhu ban truoc suy ra. Chu dung font-display (Quicksand,
-            dung Figma xac nhan qua get_design_context), khong phai
-            font-body Montserrat nhu cac doan van khac. */}
-        <div className="flex flex-col" style={{ gap: 8 }}>
-          {INSTALL_STEPS[platform].map((label, index) => (
-            <div key={index} className="flex items-center" style={{ gap: 8 }}>
-              <span
-                className="rounded-full bg-primary text-foreground font-display font-bold text-small flex items-center justify-center shrink-0"
-                style={{ width: 25, height: 25 }}
-              >
-                {index + 1}
-              </span>
-              <span className="font-display text-body font-medium text-foreground">
-                {label}
-              </span>
-            </div>
-          ))}
-        </div>
-      </Screen>
-    </div>
+    <Screen
+      title="Add Taptip to your Home Screen"
+      action={
+        <SingleAction>
+          <SlantButton onClick={() => router.push("/sign-in")}>Continue</SlantButton>
+        </SingleAction>
+      }
+      foot={<TextLink onClick={() => router.push("/sign-in")}>Skip</TextLink>}
+    >
+      <ol className="flex flex-col">
+        {INSTALL_STEPS[platform].map((label, index) => (
+          <li key={index} className="flex items-center" style={{ height: 40, paddingLeft: 8, gap: 8 }}>
+            <StepDot n={index + 1} />
+            <span className="font-body text-body font-medium text-foreground leading-[40px] whitespace-nowrap">
+              {label}
+            </span>
+          </li>
+        ))}
+      </ol>
+    </Screen>
   );
 }

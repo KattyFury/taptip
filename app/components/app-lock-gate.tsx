@@ -150,7 +150,8 @@ export function AppLockGate({ children }: { children: React.ReactNode }) {
 
       {showScrim && (
         <FixedOverlay>
-          <div className="fixed inset-0 z-40 bg-scrim" aria-hidden="true" />
+          {/* 09-24b: nen MO (blur) thay nen den - cung ngon ngu voi menu/picker Figma */}
+          <div className="fixed inset-0 z-40 backdrop-blur-[4px]" aria-hidden="true" />
         </FixedOverlay>
       )}
 
@@ -169,16 +170,16 @@ export function AppLockGate({ children }: { children: React.ReactNode }) {
       {showCard && (
         <FixedOverlay>
           <div className="fixed inset-0 z-50 flex items-center justify-center px-5">
-            <div className="w-full max-w-[324px] bg-background border border-foreground rounded-[8px] shadow-xl px-6 py-8 flex flex-col items-center gap-4">
+            <div className="w-full max-w-[340px] bg-background border border-foreground rounded-[8px] px-6 py-8 flex flex-col items-center gap-4">
               <h2 className="font-display text-title font-bold text-foreground">Try again</h2>
-              <div className="w-full" style={{ height: 49 }}>
+              <div className="w-full" style={{ height: 49.32 }}>
                 <SlantButton onClick={authenticate}>Unlock</SlantButton>
               </div>
               {error && (
                 <p className="text-danger text-small font-bold text-center">{error}</p>
               )}
               <button
-                className="font-display text-small font-medium text-foreground/60 text-center underline"
+                className="font-display text-small font-medium text-secondary-text text-center underline"
                 onClick={() => router.push("/dashboard/settings")}
               >
                 Switched devices? Reset passkey

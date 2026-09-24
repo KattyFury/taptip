@@ -1,27 +1,23 @@
 "use client";
 
 /**
- * Bang chon so tien tip - Figma frame "26" (node 37:310) ben tab "Send Tip"
- * cua Home. THAY THE HOAN TOAN TipPresetsRow cu (hang ngang keo doc chinh
- * gia) - redesign 09-24:
- *   - "Default amount:" - 1 pill vang, la muc DANG DUNG de gui tip. Bam vao
- *     mo PICKER (frame 27) de doi so tien.
- *   - "Other amounts:" - danh sach pill con lai (toi da 4), bam 1 cai =
- *     HOAN DOI len lam default (dung API setDefault co san, giong tinh
- *     than "tap to select" cua ban cu). Pill tu them (slot 4/5) co the xoa
- *     (dau x do goc tren-phai). Pill cuoi la nut "+" them moi (toi da 5).
- *   - Phan hoi that 09-23: "sua 3 thanh keo thanh dang moi, hien thi cac
- *     nut, click vao la duoc keo chon nhu chon gio phone" -> PickerModal
- *     cuon doc, snap giua, thay he keo doc/mui ten tang-giam cu.
+ * Tab "Send Tip" o Home - Figma "tip" (44:445) + "edit" (44:495), ban cap nhat
+ * 09-24b. Thay han ban truoc ("Default amount" + "Other amounts" + nut "+"):
  *
- * Van dung chung backend /api/tip-settings (khong doi schema) - chi doi
- * lop giao dien.
+ *   - Luoi 2x2 pill so tien 158x49 trong the xam 340x235 (padding 8, khe 8).
+ *     Pill dang chon: nen vang, vien #1A1A1A. Pill khac: nen kem, vien den.
+ *     Bam 1 pill = chon lam muc gui tu dong (default_slot).
+ *   - Dong mo ta 16px xam #686868 + link "EDIT" do gach chan.
+ *   - EDIT -> chon 1 o -> mo AmountPicker (frame "edit"): hop 340x275 o
+ *     y=405, luot doc snap giua, SAVE (xanh) moi luu, X / bam ra ngoai = huy.
+ *
+ * Van dung chung backend /api/tip-settings (5 cot slot, khong doi schema).
+ * Figma ve dung 4 pill -> hien slot 1-4; slot 4 con trong (user cu chi co 3
+ * nut mac dinh) thi tu dien 1 gia tri de luon du 4 o nhu thiet ke.
  */
 
-import { useState } from "react";
-import * as Icon from "@/components/icons";
+import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
-import { FixedOverlay } from "@/components/ui";
 
 export interface TipSettings {
   slot1: number;
@@ -32,268 +28,241 @@ export interface TipSettings {
   default_slot: number;
 }
 
-const SLOTS = [1, 2, 3, 4, 5] as const;
-const MAX_SLOTS = 5;
-/** 3 nut mac dinh khong xoa duoc - chi nut tu them (4-5) moi co dau X. */
-const DEFAULT_SLOT_COUNT = 3;
+export const VISIBLE_SLOTS = [1, 2, 3, 4] as const;
 const PICKER_MIN = 1;
 const PICKER_MAX = 200;
 
-export function TipAmountPanel({
+export const slotValue = (settings: TipSettings, slot: number): number | null =>
+  settings[`slot${slot}` as keyof TipSettings] as number | null;
+
+async function patchSettings(body: Record<string, unknown>): Promise<TipSettings> {
+  const res = await fetch("/api/tip-settings", {
+    method: "PATCH",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(body),
+  });
+  if (!res.ok) throw new Error("save failed");
+  const { settings } = (await res.json()) as { settings: TipSettings };
+  return settings;
+}
+
+/** Luu so tien cho 1 slot - lac quan cap nhat UI truoc, loi thi tra lai. */
+export async function saveSlotValue(
+  settings: TipSettings,
+  slot: number,
+  value: number,
+  onChange: (next: TipSettings) => void,
+) {
+  onChange({ ...settings, [`slot${slot}`]: value } as TipSettings);
+  try {
+    onChange(await patchSettings({ slot, value }));
+  } catch {
+    onChange(settings);
+    toast.error("Could not save, try again");
+  }
+}
+
+/* ============================ Luoi 2x2 ==================================== */
+
+export function TipAmountGrid({
   settings,
   onSettingsChange,
+  onEditSlot,
+  initialEditing = false,
 }: {
   settings: TipSettings;
   onSettingsChange: (next: TipSettings) => void;
+  /** Da bam EDIT roi chon 1 o -> mo picker cho o do */
+  onEditSlot: (slot: number) => void;
+  initialEditing?: boolean;
 }) {
-  const [pickerSlot, setPickerSlot] = useState<number | null>(null);
-
-  const slotValue = (slot: number): number | null =>
-    settings[`slot${slot}` as keyof TipSettings] as number | null;
-
-  const visibleSlots = SLOTS.filter((slot) => slotValue(slot) != null);
-  const otherSlots = visibleSlots.filter((slot) => slot !== settings.default_slot);
-  const nextEmptySlot = SLOTS.find((slot) => slotValue(slot) == null);
-  const canAddMore = visibleSlots.length < MAX_SLOTS && nextEmptySlot != null;
-
-  const persistValue = async (slot: number, value: number) => {
-    const previous = settings;
-    onSettingsChange({ ...settings, [`slot${slot}`]: value } as TipSettings);
-    const res = await fetch("/api/tip-settings", {
-      method: "PATCH",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ slot, value }),
-    });
-    if (!res.ok) {
-      onSettingsChange(previous);
-      toast.error("Could not save, try again");
-      return;
+  // EDIT -> chon o can sua. Figma khong ve buoc nay; user mo ta 09-24b: "bam
+  // edit thi se duoc chon 1 trong cac o de thay doi so tien bang cach luot,
+  // chon xong click SAVE la luu".
+  const [editing, setEditing] = useState(initialEditing);
+  // Slot 4 trong / default dang o slot 5 (khong hien) -> sua 1 lan cho khop
+  // 4 pill cua Figma.
+  const fixedRef = useRef(false);
+  useEffect(() => {
+    if (fixedRef.current) return;
+    fixedRef.current = true;
+    if (settings.slot4 == null) {
+      const taken = VISIBLE_SLOTS.map((s) => slotValue(settings, s)).filter((v): v is number => v != null);
+      const candidate = !taken.includes(20) ? 20 : Math.max(...taken) + 10;
+      saveSlotValue(settings, 4, candidate, onSettingsChange);
     }
-    const { settings: next } = (await res.json()) as { settings: TipSettings };
-    onSettingsChange(next);
-  };
+    if (settings.default_slot === 5) {
+      makeDefault(1);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const makeDefault = async (slot: number) => {
-    if (settings.default_slot === slot) return;
+    if (settings.default_slot === slot || slotValue(settings, slot) == null) return;
     const previous = settings;
     onSettingsChange({ ...settings, default_slot: slot });
-    const res = await fetch("/api/tip-settings", {
-      method: "PATCH",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ slot, setDefault: true }),
-    });
-    if (!res.ok) {
+    try {
+      onSettingsChange(await patchSettings({ slot, setDefault: true }));
+    } catch {
       onSettingsChange(previous);
       toast.error("Could not save, try again");
-      return;
     }
-    const { settings: next } = (await res.json()) as { settings: TipSettings };
-    onSettingsChange(next);
-  };
-
-  const addSlot = () => {
-    if (nextEmptySlot == null) return;
-    const lastValue = [...visibleSlots].reverse().map(slotValue).find((v) => v != null) ?? 0;
-    persistValue(nextEmptySlot, (lastValue as number) + 10);
-  };
-
-  const clearSlot = (slot: number) => {
-    fetch("/api/tip-settings", {
-      method: "PATCH",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ slot, clear: true }),
-    })
-      .then((res) => res.json() as Promise<{ settings: TipSettings }>)
-      .then((data) => onSettingsChange(data.settings))
-      .catch(() => toast.error("Could not remove, try again"));
   };
 
   return (
-    <div className="w-full flex flex-col" style={{ gap: 8 }}>
-      {/* Default amount */}
-      <div className="w-full bg-surface rounded-[8px] flex items-center justify-between px-[10px]" style={{ height: 49 }}>
-        <span className="font-body text-small font-medium text-foreground">Default amount:</span>
-        <button
-          type="button"
-          onClick={() => setPickerSlot(settings.default_slot)}
-          className="bg-primary border border-foreground text-foreground font-body text-small font-medium rounded-full"
-          style={{ width: 150, height: 32.66 }}
-        >
-          ${slotValue(settings.default_slot)}
-        </button>
-      </div>
-
-      {/* Other amounts */}
-      <div className="w-full bg-surface rounded-[8px] px-[10px] py-[8px] flex flex-col" style={{ gap: 8 }}>
-        <div className="flex items-center justify-between">
-          <span className="font-body text-small font-medium text-foreground">Other amounts:</span>
-          {otherSlots[0] != null && (
-            <OtherPill slot={otherSlots[0]} value={slotValue(otherSlots[0])!} onPromote={makeDefault} onClear={clearSlot} removable={otherSlots[0] > DEFAULT_SLOT_COUNT} />
-          )}
-        </div>
-        <div className="grid grid-cols-2" style={{ gap: 8 }}>
-          {otherSlots.slice(1).map((slot) => (
-            <OtherPill key={slot} slot={slot} value={slotValue(slot)!} onPromote={makeDefault} onClear={clearSlot} removable={slot > DEFAULT_SLOT_COUNT} />
-          ))}
-          {canAddMore && (
+    <div className="relative w-full h-full">
+      <div className="absolute grid grid-cols-2" style={{ left: 8, top: 8, width: 324, gap: 8 }}>
+        {VISIBLE_SLOTS.map((slot) => {
+          const value = slotValue(settings, slot);
+          const selected = settings.default_slot === slot;
+          return (
             <button
+              key={slot}
               type="button"
-              onClick={addSlot}
-              aria-label="Add another tip amount"
-              className="bg-background border border-foreground rounded-full flex items-center justify-center"
-              style={{ height: 32.66 }}
+              onClick={() => {
+                if (editing) {
+                  setEditing(false);
+                  onEditSlot(slot);
+                } else {
+                  makeDefault(slot);
+                }
+              }}
+              disabled={value == null}
+              className={
+                "rounded-full border font-display text-title font-bold text-foreground leading-[40px] " +
+                (selected ? "bg-primary border-ink" : "bg-background border-foreground")
+              }
+              style={{ height: 49 }}
             >
-              <Icon.Add className="w-4 h-4 text-foreground" />
+              {value != null ? `$${value}` : ""}
             </button>
-          )}
-        </div>
+          );
+        })}
       </div>
 
-      {pickerSlot != null && (
-        <PickerModal
-          initialValue={slotValue(pickerSlot) ?? PICKER_MIN}
-          onClose={() => setPickerSlot(null)}
-          onConfirm={(value) => {
-            persistValue(pickerSlot, value);
-            setPickerSlot(null);
-          }}
-        />
-      )}
-    </div>
-  );
-}
+      <p
+        className="absolute font-body text-small font-medium text-secondary-text leading-[24px] flex items-center"
+        style={{ left: 8, top: 122, width: 324, height: 70 }}
+      >
+        {editing ? (
+          <span>
+            Tap the <span className="font-bold">amount you want to change</span>.
+          </span>
+        ) : (
+          <span>
+            Automatically sends the selected amount when scanning a QR. Tap{" "}
+            <span className="font-bold">Edit to change the amounts</span>.
+          </span>
+        )}
+      </p>
 
-function OtherPill({
-  slot,
-  value,
-  removable,
-  onPromote,
-  onClear,
-}: {
-  slot: number;
-  value: number;
-  removable: boolean;
-  onPromote: (slot: number) => void;
-  onClear: (slot: number) => void;
-}) {
-  return (
-    <div className="relative">
       <button
         type="button"
-        onClick={() => onPromote(slot)}
-        className="w-full bg-background border border-foreground text-foreground font-body text-small font-medium rounded-full"
-        style={{ height: 32.66 }}
+        onClick={() => setEditing((v) => !v)}
+        className="absolute font-display text-body font-bold text-danger underline leading-[24px]"
+        style={{ left: 8, top: 192, width: 324, height: 35 }}
       >
-        ${value}
+        {editing ? "CANCEL" : "EDIT"}
       </button>
-      {removable && (
-        <button
-          type="button"
-          onClick={(e) => {
-            e.stopPropagation();
-            onClear(slot);
-          }}
-          aria-label="Remove this tip amount"
-          className="absolute -top-1.5 -right-1.5 w-4 h-4 rounded-full bg-danger text-background flex items-center justify-center"
-        >
-          <Icon.X className="w-2.5 h-2.5" />
-        </button>
-      )}
     </div>
   );
 }
 
+/* ============================ Picker ====================================== */
+
+const ITEM_H = 275.36 / 7; // luoi 7 hang trong hop cao 275.36
+const VISIBLE_ROWS = 5; // Figma 09-24b (co SAVE): hien 5 so, hang 2..6
+const PAD_ROWS = Math.floor(VISIBLE_ROWS / 2);
+
 /**
- * Picker cuon so tien - Figma frame "27" (node 38:338), popup vien den
- * rounded-[8px] chinh giua, dau X do goc tren-phai de dong. Cuon doc,
- * gia tri o GIUA duoc chon (dam), 2 ben mo dan.
+ * Hop picker - Figma "edit" (44:495, ban co nut SAVE): hop 340x275.36 bo 8
+ * vien den. Hang 1 de trong (dau X goc phai), hang 2-6 la vung luot 5 so -
+ * so giua to dam trong pill vang 157.43x47.68, so khac 16px #AEAEAE. Duoi
+ * cung "SAVE" xanh la gach chan (y=233 trong hop, cao 35).
+ * SAVE = luu, X / bam ra ngoai = huy (khong luu).
  */
-function PickerModal({
+export function AmountPicker({
   initialValue,
-  onClose,
-  onConfirm,
+  onSave,
+  onCancel,
 }: {
   initialValue: number;
-  onClose: () => void;
-  onConfirm: (value: number) => void;
+  onSave: (value: number) => void;
+  onCancel: () => void;
 }) {
-  const ITEM_H = 39.34; // 275.364 / 7 hang hien Figma ve
-  const VISIBLE_ROWS = 7;
   const [value, setValue] = useState(initialValue);
-
-  const range = Array.from(
-    { length: PICKER_MAX - PICKER_MIN + 1 },
-    (_, i) => PICKER_MIN + i,
-  );
+  const range = Array.from({ length: PICKER_MAX - PICKER_MIN + 1 }, (_, i) => PICKER_MIN + i);
 
   const handleScroll = (e: React.UIEvent<HTMLDivElement>) => {
-    const el = e.currentTarget;
-    const index = Math.round(el.scrollTop / ITEM_H);
+    const index = Math.round(e.currentTarget.scrollTop / ITEM_H);
     const picked = range[Math.min(Math.max(index, 0), range.length - 1)];
     if (picked !== value) setValue(picked);
   };
 
   return (
-    // FixedOverlay: ca backdrop lan card nam CHUNG 1 khoi (portal ca 2 cung
-    // luc, khong tach roi z-index) - xem components/ui/fixed-overlay.tsx.
-    <FixedOverlay>
-    <div className="fixed inset-0 z-50 flex items-center justify-center px-5" onClick={onClose}>
+    <div
+      className="relative bg-background border border-foreground rounded-[8px] overflow-hidden"
+      style={{ width: 340.07, height: 275.36 }}
+      onClick={(e) => e.stopPropagation()}
+    >
       <div
-        className="relative bg-background border border-foreground rounded-[8px] overflow-hidden"
-        style={{ width: 324, height: ITEM_H * VISIBLE_ROWS }}
-        onClick={(e) => e.stopPropagation()}
+        className="absolute left-1/2 -translate-x-1/2 bg-primary border border-foreground rounded-full pointer-events-none"
+        style={{ top: ITEM_H * 3 + (ITEM_H - 47.68) / 2, width: 157.43, height: 47.68 }}
+      />
+
+      <div
+        className="absolute left-0 right-0 overflow-y-auto snap-y snap-mandatory no-scrollbar"
+        style={{
+          top: ITEM_H,
+          height: ITEM_H * VISIBLE_ROWS,
+          paddingTop: ITEM_H * PAD_ROWS,
+          paddingBottom: ITEM_H * PAD_ROWS,
+        }}
+        onScroll={handleScroll}
+        ref={(el) => {
+          if (el && el.dataset.inited !== "1") {
+            el.dataset.inited = "1";
+            el.scrollTop = (initialValue - PICKER_MIN) * ITEM_H;
+          }
+        }}
       >
-        <button
-          type="button"
-          onClick={onClose}
-          aria-label="Close"
-          className="absolute z-10 -top-2 -right-2 w-6 h-6 rounded-full bg-danger text-background flex items-center justify-center"
-        >
-          <Icon.X className="w-3.5 h-3.5" />
-        </button>
-
-        {/* Vach highlight hang giua - chi de trang tri, khong bat su kien */}
-        <div
-          className="absolute left-2 right-2 pointer-events-none rounded-full bg-primary/40"
-          style={{ top: ITEM_H * Math.floor(VISIBLE_ROWS / 2), height: ITEM_H }}
-        />
-
-        <div
-          className="h-full overflow-y-auto snap-y snap-mandatory no-scrollbar"
-          style={{ paddingTop: ITEM_H * Math.floor(VISIBLE_ROWS / 2), paddingBottom: ITEM_H * Math.floor(VISIBLE_ROWS / 2) }}
-          onScroll={handleScroll}
-          ref={(el) => {
-            if (el && el.dataset.inited !== "1") {
-              el.dataset.inited = "1";
-              el.scrollTop = (initialValue - PICKER_MIN) * ITEM_H;
+        {range.map((n) => (
+          <button
+            key={n}
+            type="button"
+            onClick={(e) => {
+              e.currentTarget.parentElement?.scrollTo({ top: (n - PICKER_MIN) * ITEM_H, behavior: "smooth" });
+            }}
+            className={
+              "snap-center w-full flex items-center justify-center font-display " +
+              (n === value ? "text-title font-bold text-foreground" : "text-small font-medium text-hint")
             }
-          }}
-        >
-          {range.map((n) => (
-            <div
-              key={n}
-              className="snap-center flex items-center justify-center font-body text-small"
-              style={{ height: ITEM_H, color: n === value ? undefined : "#909090" }}
-            >
-              <span className={n === value ? "font-bold text-foreground" : "font-medium"}>
-                ${n}
-              </span>
-            </div>
-          ))}
-        </div>
-
-        {/* Xac nhan bang cach cham ra ngoai hoac tu dong luu khi dung cuon -
-            them 1 nut nho o duoi de ro rang co hanh dong xac nhan, tranh
-            nguoi dung khong biet phai lam gi tiep. */}
-        <button
-          type="button"
-          onClick={() => onConfirm(value)}
-          className="absolute bottom-2 right-2 font-body text-small font-bold text-foreground underline"
-        >
-          Done
-        </button>
+            style={{ height: ITEM_H }}
+          >
+            ${n}
+          </button>
+        ))}
       </div>
+
+      <button
+        type="button"
+        onClick={onCancel}
+        aria-label="Close without saving"
+        className="absolute flex items-center justify-center"
+        style={{ right: 11, top: 11, width: 16.7455, height: 17.4736 }}
+      >
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img src="/figma/close-x.svg" alt="" width={16.7455} height={17.4736} />
+      </button>
+
+      <button
+        type="button"
+        onClick={() => onSave(value)}
+        className="absolute left-0 right-0 font-display text-body font-bold text-brand underline leading-[24px]"
+        style={{ top: 233, height: 35 }}
+      >
+        SAVE
+      </button>
     </div>
-    </FixedOverlay>
   );
 }

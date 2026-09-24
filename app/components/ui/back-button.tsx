@@ -32,7 +32,10 @@ export function BackButton({
       }
       {...props}
     >
-      <Icon.Back className="w-5 h-5 text-foreground" />
+      {/* Mui ten lay DUNG asset Figma (Vector 18/19/20/21 - moi man cung 1
+          path), giu nguyen kich thuoc goc cua SVG 30.646x19.588. */}
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img src="/figma/arrow-left.svg" alt="" width={30.646} height={19.588} />
     </button>
   );
 }

@@ -18,7 +18,7 @@
 
 "use client"
 
-import { Screen, BackAction, ROW_H } from "@/components/screen";
+import { Screen, BackAction } from "@/components/screen";
 import { SlantButton, TextField } from "@/components/ui";
 import { GlobalContext } from "@/contexts/global-context";
 import { useRouter } from "next/navigation";
@@ -101,11 +101,11 @@ export default function SignIn() {
         )
       }
     >
-      {/* Figma node 24:8: o nhap cao dung 1 hang luoi, rong het 340 */}
-      <div style={{ height: ROW_H }}>
+      {/* Figma enter-email "Vector 5" (37:90): o nhap x=25 y=170, 340x49 */}
+      <div style={{ height: 49 }}>
         <TextField
           type="email"
-          placeholder="Type here"
+          placeholder="Your_email_@gmail.com"
           value={email}
           onChange={handleEmailChange}
           autoComplete="off"
@@ -114,13 +114,13 @@ export default function SignIn() {
 
       {/* Hang goi y ngay duoi o nhap (hang luoi 5), cach o nhap 8px */}
       {emailSuggestions.length > 0 && (
-        <div className="flex gap-2 mt-2" style={{ height: ROW_H }}>
+        <div className="flex gap-2 mt-2" style={{ height: 49 }}>
           {emailSuggestions.map(domain => (
             <button
               key={domain}
               type="button"
               onClick={() => applyEmailSuggestion(domain)}
-              className="flex-1 min-w-0 truncate px-3 bg-surface rounded-[8px] font-body text-small font-medium text-foreground"
+              className="flex-1 min-w-0 truncate px-[10px] text-left bg-surface rounded-[8px] font-body text-body font-medium text-foreground"
             >
               {localPart}{domain}
             </button>

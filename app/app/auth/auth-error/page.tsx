@@ -19,7 +19,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { Screen } from "@/components/screen";
+import { Screen, SingleAction, BodyText } from "@/components/screen";
 import { SlantButton } from "@/components/ui";
 
 /**
@@ -35,12 +35,14 @@ export default function AuthError() {
     <Screen
       title="Something went wrong"
       action={
-        <SlantButton onClick={() => router.push("/sign-in")}>Back to sign in</SlantButton>
+        <SingleAction>
+          <SlantButton onClick={() => router.push("/sign-in")}>Back to sign in</SlantButton>
+        </SingleAction>
       }
     >
-      <p className="font-display text-body font-medium text-foreground text-left w-full leading-[40px]">
-        We <span className="font-bold">can&apos;t</span> sign you in. Please try again later.
-      </p>
+      <BodyText>
+        We <span className="font-bold">can’t</span> sign you in. Please try again later.
+      </BodyText>
     </Screen>
   );
 }

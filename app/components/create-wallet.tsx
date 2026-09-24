@@ -20,7 +20,7 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { Screen, BackAction } from "@/components/screen";
+import { Screen, BackAction, BodyText } from "@/components/screen";
 import { SlantButton } from "@/components/ui";
 import { signOutAction } from "@/app/actions";
 
@@ -80,12 +80,11 @@ export function CreateWallet() {
                 ) : null
             }
         >
-            {/* Figma node 7:154: x=25 w=340 h=244, Montserrat Medium 19px,
-                leading 30px, mau den, can trai */}
-            <p className="font-body text-body font-medium text-foreground text-left w-full leading-[30px]">
+            {/* Figma "create-wallet" (37:235): Quicksand Medium 20/40, x=25 w=340 */}
+            <BodyText>
                 We’ll set up your USDC wallet on Arc. Nothing to install, no
                 seed phrase to writedown.
-            </p>
+            </BodyText>
         </Screen>
     );
 }

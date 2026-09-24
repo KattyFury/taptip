@@ -23,7 +23,7 @@
 import { useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { startRegistration, type PublicKeyCredentialCreationOptionsJSON } from "@simplewebauthn/browser";
-import { Screen, BackAction } from "@/components/screen";
+import { Screen, BackAction, TextLink, BodyText } from "@/components/screen";
 import { SlantButton } from "@/components/ui";
 
 async function postJson<T>(url: string, body?: unknown): Promise<T> {
@@ -83,17 +83,16 @@ export default function TurnOnPasskey() {
           </SlantButton>
         </BackAction>
       }
-      foot={
-        error && (
-          <p className="font-body text-small font-medium text-danger text-center leading-[20px]">
-            {error}
-          </p>
-        )
-      }
+      // Figma "passkey" (37:224): hang phu y=795 la chu "Skip" - loi (neu co)
+      // hien ngay duoi doan van thay vi chiem cho cua Skip.
+      foot={<TextLink onClick={skip}>Skip</TextLink>}
     >
-      <p className="font-display text-body font-medium text-foreground text-left w-full leading-[40px]">
-        So only you can access the app.
-      </p>
+      <BodyText>
+        Passkey make sure that only you can access the app. You can also skip for now.
+      </BodyText>
+      {error && (
+        <p className="font-body text-small font-medium text-danger leading-[20px] mt-2">{error}</p>
+      )}
     </Screen>
   );
 }

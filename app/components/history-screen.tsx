@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
-import { Screen, BackAction, rowTop } from "@/components/screen";
+import { Screen, BackAction } from "@/components/screen";
 import { SlantButton } from "@/components/ui";
 import { shortenAddress } from "@/lib/utils/address";
 
@@ -14,16 +14,20 @@ interface TransactionRow {
   createdAt: string;
 }
 
-
 function formatDate(iso: string): string {
   const date = new Date(iso.endsWith("Z") ? iso : `${iso}Z`);
   return date.toLocaleDateString([], { day: "2-digit", month: "2-digit", year: "2-digit" });
 }
 
+function formatAmount(amount: number): string {
+  return amount.toFixed(2).replace(/\.00$/, "");
+}
+
 /**
- * Man History rieng (khong con la popup) - dung Figma frame "history"
- * (node 11:408): tieu de + danh sach giao dich trong khung rieng, Back +
- * Done o hang hanh dong.
+ * Man History - Figma "history" (38:453): tieu de + the xam x=25 y=105.93
+ * 340x575.39 bo 8 + Back/Done. Figma chua ve noi dung dong - dung LAI kieu
+ * the thong bao o Home (324x49 bo 8, xanh = nhan, do = gui, chu 16/20) cho
+ * dong bo, them ngay giao dich ben phai (#686868).
  */
 export function HistoryScreen() {
   const router = useRouter();
@@ -39,45 +43,45 @@ export function HistoryScreen() {
   return (
     <Screen
       title="History"
-      contentTop={rowTop(3)}
+      contentTop={105.93}
       action={
         <BackAction onBack={() => router.push("/dashboard")}>
           <SlantButton onClick={() => router.push("/dashboard")}>Done</SlantButton>
         </BackAction>
       }
     >
-      {/* Figma frame "30" (node 38:453): the 324x568, bo goc 8px, nen
-          --surface - KHONG con vat goc (cut-corner) nhu ban truoc, redesign
-          09-24 bo han he chamfer, chi dung rounded-[8px] don gian. */}
-      <div className="w-full h-full overflow-y-auto bg-surface rounded-[8px] px-4">
+      <div className="bg-surface rounded-[8px] overflow-y-auto no-scrollbar" style={{ width: 340, height: 575.39 }}>
         {rows == null && (
-          <p className="py-6 text-center font-body text-body text-accent">Loading...</p>
+          <p className="h-full flex items-center justify-center font-body text-small font-medium text-hint">
+            Loading...
+          </p>
         )}
         {rows != null && rows.length === 0 && (
-          <p className="py-6 text-center font-body text-body text-accent">No transactions yet</p>
+          <p className="h-full flex items-center justify-center font-body text-small font-medium text-hint">
+            No transactions yet
+          </p>
         )}
-        {rows?.map((row, i) => (
-          <div
-            key={i}
-            className="flex items-center justify-between gap-3 py-3 border-b border-brand/20 last:border-b-0"
-          >
-            <div className="flex flex-col">
-              <span className="font-body text-body font-semibold text-foreground">
-                {row.direction === "out" ? "Sent to " : "Received from "}
-                {shortenAddress(row.counterparty)}
-              </span>
-              <span className="font-body text-small text-accent">{formatDate(row.createdAt)}</span>
-            </div>
-            <span
-              className={
-                "font-display text-body font-bold shrink-0 " +
-                (row.direction === "out" ? "text-danger" : "text-success")
-              }
-            >
-              {row.direction === "out" ? "-" : "+"}${row.amount.toFixed(2)}
-            </span>
+        {rows != null && rows.length > 0 && (
+          <div className="flex flex-col" style={{ padding: 8, gap: 8 }}>
+            {rows.map((row, i) => (
+              <div
+                key={i}
+                className={`flex shrink-0 items-center justify-between rounded-[8px] font-body text-small font-medium text-foreground leading-[20px] ${
+                  row.direction === "out" ? "bg-danger-bg" : "bg-success-bg"
+                }`}
+                style={{ height: 49, paddingLeft: 7.62, paddingRight: 11 }}
+              >
+                <span>
+                  {row.direction === "out" ? "Tipped " : "Received "}
+                  <span className="font-bold">${formatAmount(row.amount)}</span>
+                  {row.direction === "out" ? " for " : " from "}
+                  {shortenAddress(row.counterparty)}
+                </span>
+                <span className="text-secondary-text shrink-0">{formatDate(row.createdAt)}</span>
+              </div>
+            ))}
           </div>
-        ))}
+        )}
       </div>
     </Screen>
   );

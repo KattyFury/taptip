@@ -43,15 +43,15 @@ const InputOTPGroup = React.forwardRef<
   React.ElementRef<"div">,
   React.ComponentPropsWithoutRef<"div">
 >(({ className, ...props }, ref) => (
-  <div ref={ref} className={cn("flex items-center gap-2", className)} {...props} />
+  <div ref={ref} className={cn("flex items-center gap-[10px]", className)} {...props} />
 ))
 InputOTPGroup.displayName = "InputOTPGroup"
 
 /**
  * O nhap mot chu so - Figma frame "19" (node 37:190) ve THAT 6 o deu nhau,
  * KHONG chia 2 nhom 3 (khong co dau ngan cach o giua nhu ban truoc suy ra).
- * Kich thuoc do tu Figma: 47.33 x 49, bo goc 8px, nen --surface (#E4E4DB),
- * khe 8px deu giua cac o (dung InputOTPGroup gap-2 = 8px, KHONG con
+ * Kich thuoc do tu Figma 09-24b (Group 27): 48.18 x 49, bo goc 8px, nen --surface,
+ * khe 10px (6 o = 339.1, can giua trong 340) - KHONG con
  * InputOTPSeparator).
  */
 const InputOTPSlot = React.forwardRef<
@@ -66,7 +66,7 @@ const InputOTPSlot = React.forwardRef<
       ref={ref}
       className={cn(
         "relative flex items-center justify-center",
-        "w-[47.33px] h-[49px]",
+        "w-[48.18px] h-[49px]",
         "rounded-[8px] bg-surface",
         "font-display text-title font-bold text-foreground",
         isActive && "ring-2 ring-inset ring-foreground",

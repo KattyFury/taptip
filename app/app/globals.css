@@ -54,23 +54,25 @@
   --background: #fff8eb;        /* nen kem giay */
   --foreground: #000000;
   --surface: #e4e4db;           /* the QR, pill chua chon (Get/Send Tip) */
-  --hint: #909090;              /* chu xam phu - placeholder, tab chua chon */
+  --hint: #aeaeae;              /* Figma "muted": placeholder, tab chua chon, so picker mo */
+  --secondary-text: #686868;    /* Figma "text phu": mo ta nho, gia tri phu */
+  --ink: #1a1a1a;               /* vien pill so tien dang chon */
   --border: #000000;            /* vien nut outline + khung ngoai dien thoai */
 
   /* --- Thuong hieu --- */
   --primary: #f5b800;           /* vang: NEN moi nut CTA + tab dang chon */
   --primary-foreground: #000000;/* DEN: chu tren nut CTA vang (truoc la xanh) */
   --brand: #42a556;             /* XANH LA: so du/so tien - thay hoan toan xanh 155eef cu */
-  --accent: #909090;            /* bi danh = --hint, giu ten cu cho cac call-site chua doi */
+  --accent: #aeaeae;            /* bi danh = --hint, giu ten cu cho cac call-site chua doi */
 
   /* --- Trang thai --- */
   --success: #34c759;
-  --success-bg: #dcfce7;
+  --success-bg: #aff4c6;        /* the thong bao "Received" o Home */
   --success-fg: #166534;
-  --danger: #ff383c;
-  --danger-bg: #fee2e2;
+  --danger: #e12b32;             /* Figma "red": tab Send Tip, EDIT, SEND, Log out */
+  --danger-bg: #fcb3ad;         /* the thong bao "Tipped" o Home */
   --danger-fg: #991b1b;
-  --warning-bg: #fef9c3;
+  --warning-bg: #ffe8a3;        /* the canh bao het USDC o Home */
   --warning-fg: #854d0e;
 
   /* --- Nen ngoai khung dien thoai (chi thay tren desktop) --- */
@@ -103,6 +105,8 @@
   --color-foreground: var(--foreground);
   --color-surface: var(--surface);
   --color-hint: var(--hint);
+  --color-secondary-text: var(--secondary-text);
+  --color-ink: var(--ink);
   --color-border: var(--border);
 
   --color-primary: var(--primary);
@@ -152,7 +156,7 @@
 
   /* 2 font tach rieng - xem quy dinh muc 2 o tren */
   --font-display: var(--font-quicksand), sans-serif;
-  --font-body: var(--font-montserrat), sans-serif;
+  --font-body: var(--font-quicksand), sans-serif; /* 09-24b: Figma moi dung Quicksand cho CA noi dung */
   --font-sans: var(--font-body); /* mac dinh body cho the co ban */
 
   /* Thang chu v2 (09-24, redesign Tet) - do THANG tu get_design_context
@@ -164,7 +168,7 @@
   --text-small: 16px;  /* nhan "Default/Other amount", pill so tien nho */
 
   /* Line-height do tu Figma (khong suy dien) */
-  --leading-body: 30px;  /* doan van ban dai */
+  --leading-body: 40px;  /* doan van ban dai (Figma: Quicksand 20/40) */
   --leading-row: 40px;   /* nhan 1 dong: muc menu, nhan nut, "Balance:" */
   --leading-error: 20px; /* dong bao loi hang 15 */
 }
@@ -251,3 +255,11 @@ input:-webkit-autofill:focus {
 /* He "cat goc" (chamfer, .tt-card-cut / CutCornerCard) da RETIRE hoan toan
    09-24 - redesign moi dung rounded-[8px] don gian cho moi card/popup lon
    (menu, History, camera...). Xem components/ui/cut-corner-card.tsx da xoa. */
+
+/* An thanh cuon (picker so tien o tab Send Tip) - van cuon duoc bang tay */
+.no-scrollbar {
+  scrollbar-width: none;
+}
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}

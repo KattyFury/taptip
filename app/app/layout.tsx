@@ -17,7 +17,7 @@
  */
 
 import type { Viewport } from "next";
-import { Quicksand, Montserrat } from "next/font/google";
+import { Quicksand } from "next/font/google";
 import { Toaster } from "@/components/ui/sonner";
 import "./globals.css";
 import { BalanceProvider } from "@/contexts/balanceContext";
@@ -30,19 +30,12 @@ const defaultUrl = process.env.NEXT_PUBLIC_SITE_URL
 // tiep - "Figma la nguon su that"): doi font display tu Sora sang Quicksand
 // (xac nhan bang get_design_context man Sign in that: title dung
 // "Quicksand:Bold", nut dung "Quicksand:Medium/Bold" - font tron, am, hop
-// tong mau kem/vang/xanh la Tet). Montserrat giu nguyen cho noi dung (van
-// thay "Montserrat:Medium" trong code Figma cho o nhap/nhan).
+// tong mau kem/vang/xanh la Tet). Ban Figma cap nhat sau do (09-24b) doi
+// luon PHAN NOI DUNG sang Quicksand Medium - Montserrat da bo han.
 const quicksand = Quicksand({
   subsets: ["latin", "latin-ext"],
   weight: ["500", "600", "700"],
   variable: "--font-quicksand",
-  display: "swap",
-});
-
-const montserrat = Montserrat({
-  subsets: ["latin", "vietnamese"],
-  weight: ["400", "500", "600", "700"],
-  variable: "--font-montserrat",
   display: "swap",
 });
 
@@ -70,7 +63,7 @@ export default async function RootLayout({
   return (
     <html
       lang="en"
-      className={`${quicksand.variable} ${montserrat.variable}`}
+      className={quicksand.variable}
       suppressHydrationWarning
     >
       <body className="bg-page-backdrop text-foreground font-sans min-h-dvh h-dvh overflow-hidden">

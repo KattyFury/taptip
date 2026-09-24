@@ -24,7 +24,10 @@ if (!process.env.CIRCLE_API_KEY?.trim()) {
 }
 
 /** @type {import('next').NextConfig} */
-const nextConfig = {};
+const nextConfig = {
+  // Tat badge "N" cua Next dev (lot vao anh chup so sanh voi Figma)
+  devIndicators: false,
+};
 
 module.exports = nextConfig;
 
