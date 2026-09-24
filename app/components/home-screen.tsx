@@ -22,7 +22,7 @@ import { QRCodeSVG } from "qrcode.react";
 import { Html5Qrcode } from "html5-qrcode";
 import * as Icon from "@/components/icons";
 import { useBalance, BalanceProvider } from "@/contexts/balanceContext";
-import { TapTipWordmark } from "@/components/ui";
+import { SlantButton, TapTipWordmark } from "@/components/ui";
 import {
   TipAmountGrid,
   AmountPicker,
@@ -50,7 +50,7 @@ interface Props {
   profile: { id: string; name: string; daily_tip_limit: number | null };
   /** Chi dung cho anh chup so sanh Figma / test: mo san 1 trang thai */
   initialTab?: Tab;
-  initialOverlay?: "menu" | "edit" | "choose";
+  initialOverlay?: "menu" | "edit" | "choose" | "logout";
 }
 
 type Tab = "get" | "send";
@@ -116,6 +116,9 @@ function HomeScreenContent({ primaryWallet, initialTab = "get", initialOverlay }
   /** Khoa gui/rut 24h sau khi reset Passkey (ms) */
   const [lockedUntil, setLockedUntil] = useState<number | null>(null);
   const [copied, setCopied] = useState(false);
+  /** Bam vao QR -> copy dia chi, hien "Copied to clipboard" 2s */
+  const [qrCopied, setQrCopied] = useState(false);
+  const [confirmLogout, setConfirmLogout] = useState(initialOverlay === "logout");
   const [scanError, setScanError] = useState<string | null>(null);
   const [sendStep, setSendStep] = useState<"scan" | "sending" | "success">("scan");
   const [lastAmount, setLastAmount] = useState<number | null>(null);
@@ -124,7 +127,7 @@ function HomeScreenContent({ primaryWallet, initialTab = "get", initialOverlay }
   const address = primaryWallet.wallet_address;
   const hasWallet = !!address && address !== "0x0";
   const balanceNum = isNaN(balance.token) ? 0 : balance.token;
-  const overlayOpen = menuOpen || pickerOpen;
+  const overlayOpen = menuOpen || pickerOpen || confirmLogout;
 
   const goTo = (path: string) => {
     setMenuOpen(false);
@@ -163,6 +166,20 @@ function HomeScreenContent({ primaryWallet, initialTab = "get", initialOverlay }
   }, [refreshBalances, loadTransactions]);
 
   const defaultAmount = settings ? slotValue(settings, settings.default_slot) : null;
+
+  // User chot 09-24b: Send Tip KHONG phai man mac dinh - dien thoai khoa /
+  // app an xuong nen la tu ve tab Get Tip (tat camera), dong moi popup.
+  useEffect(() => {
+    const onVisibility = () => {
+      if (document.visibilityState !== "hidden") return;
+      setTab("get");
+      setMenuOpen(false);
+      setPickerSlot(null);
+      setConfirmLogout(false);
+    };
+    document.addEventListener("visibilitychange", onVisibility);
+    return () => document.removeEventListener("visibilitychange", onVisibility);
+  }, []);
 
   // ================= Thong bao o tab Get Tip ================================
   const notices: Notice[] = [];
@@ -265,8 +282,8 @@ function HomeScreenContent({ primaryWallet, initialTab = "get", initialOverlay }
     if (!decoded.ok) {
       setScanError(
         decoded.reason === "wrong-network"
-          ? "This QR is for another network. TapTip only sends on Arc Testnet."
-          : "That doesn't look like a wallet QR code.",
+          ? "This QR isn't for USDC on Arc."
+          : "This isn't a TapTip QR code.",
       );
       return;
     }
@@ -291,13 +308,20 @@ function HomeScreenContent({ primaryWallet, initialTab = "get", initialOverlay }
     refreshBalances().catch(() => {});
     loadTransactions();
     // Tip lien tiep nhieu nguoi: quay lai quet ngay, khong roi man
-    setTimeout(() => setSendStep("scan"), 2000);
+    // Popup "Tipped $X" 3s (user chot 09-24b: 2s nhanh qua) roi quet tiep
+    setTimeout(() => setSendStep("scan"), 3000);
   };
 
   const handleScanResultRef = useRef(handleScanResult);
   useEffect(() => {
     handleScanResultRef.current = handleScanResult;
   });
+
+  const copyFromQr = () => {
+    navigator.clipboard.writeText(address).catch(() => {});
+    setQrCopied(true);
+    setTimeout(() => setQrCopied(false), 2000);
+  };
 
   const copyAddress = () => {
     navigator.clipboard.writeText(address);
@@ -346,7 +370,14 @@ function HomeScreenContent({ primaryWallet, initialTab = "get", initialOverlay }
         >
           {tab === "get" ? (
             hasWallet ? (
-              <QRCodeSVG value={encodeTapTipQr(address)} size={333} marginSize={4} bgColor="#FFFFFF" fgColor="#000000" />
+              <button type="button" onClick={copyFromQr} aria-label="Copy wallet address" className="relative block">
+                <QRCodeSVG value={encodeTapTipQr(address)} size={333} marginSize={4} bgColor="#FFFFFF" fgColor="#000000" />
+                {qrCopied && (
+                  <span className="absolute left-1/2 -translate-x-1/2 bottom-3 bg-foreground text-background font-body text-small font-bold rounded-full px-4 py-2 whitespace-nowrap">
+                    Copied to clipboard
+                  </span>
+                )}
+              </button>
             ) : (
               <p className="font-body text-body font-medium text-hint">Setting up your wallet...</p>
             )
@@ -405,7 +436,12 @@ function HomeScreenContent({ primaryWallet, initialTab = "get", initialOverlay }
             ) : (
               <div className="absolute flex flex-col" style={{ left: 8, top: 8, width: 324, gap: 8 }}>
                 {notices.map((n) => (
-                  <NoticeRow key={n.id} notice={n} onDismiss={() => dismissNotice(n.id)} />
+                  <NoticeRow
+                    key={n.id}
+                    notice={n}
+                    onDismiss={() => dismissNotice(n.id)}
+                    onOpen={() => router.push("/dashboard/history")}
+                  />
                 ))}
               </div>
             )
@@ -463,7 +499,11 @@ function HomeScreenContent({ primaryWallet, initialTab = "get", initialOverlay }
       {overlayOpen && (
         <div
           className="absolute inset-0 z-40"
-          onClick={() => (menuOpen ? setMenuOpen(false) : setPickerSlot(null))}
+          onClick={() => {
+            setMenuOpen(false);
+            setPickerSlot(null);
+            setConfirmLogout(false);
+          }}
           aria-hidden="true"
         />
       )}
@@ -481,9 +521,39 @@ function HomeScreenContent({ primaryWallet, initialTab = "get", initialOverlay }
           <button type="button" onClick={() => goTo("/dashboard/withdraw")}>Withdraw</button>
           <button type="button" onClick={() => goTo("/dashboard/history")}>History</button>
           <button type="button" onClick={() => goTo("/dashboard/settings")}>Setting</button>
-          <form action={signOutAction}>
-            <button type="submit" className="text-danger">Log out</button>
+          <button
+            type="button"
+            className="text-danger"
+            onClick={() => {
+              setMenuOpen(false);
+              setConfirmLogout(true);
+            }}
+          >
+            Log out
+          </button>
+        </div>
+      )}
+
+      {/* Xac nhan dang xuat (user chot 09-24b) - cung kieu hop picker */}
+      {confirmLogout && (
+        <div
+          className="absolute z-50 bg-background border border-foreground rounded-[8px] flex flex-col items-center"
+          style={{ left: 24.96, top: 405.32, width: 340.07, padding: "24px 24px 16px", gap: 16 }}
+        >
+          <p className="font-display text-title font-bold text-foreground">Log out?</p>
+          <p className="font-body text-small font-medium text-secondary-text text-center leading-[24px]">
+            You&apos;ll need your email and a new code to sign in again.
+          </p>
+          <form action={signOutAction} className="w-full" style={{ height: 49.32 }}>
+            <SlantButton type="submit">Log out</SlantButton>
           </form>
+          <button
+            type="button"
+            onClick={() => setConfirmLogout(false)}
+            className="font-display text-small font-semibold text-foreground underline"
+          >
+            Cancel
+          </button>
         </div>
       )}
 
@@ -501,7 +571,16 @@ function HomeScreenContent({ primaryWallet, initialTab = "get", initialOverlay }
 }
 
 /** 1 dong thong bao 324x49 - Figma Rectangle 76/77/78 + chu 16/20 + dau X. */
-function NoticeRow({ notice, onDismiss }: { notice: Notice; onDismiss: () => void }) {
+function NoticeRow({
+  notice,
+  onDismiss,
+  onOpen,
+}: {
+  notice: Notice;
+  onDismiss: () => void;
+  /** Bam vao dong Received/Tipped -> mo History (user chot 09-24b) */
+  onOpen: () => void;
+}) {
   const bg =
     notice.kind === "received" ? "bg-success-bg" : notice.kind === "tipped" ? "bg-danger-bg" : "bg-warning-bg";
 
@@ -530,8 +609,15 @@ function NoticeRow({ notice, onDismiss }: { notice: Notice; onDismiss: () => voi
     );
   }
 
+  const isTx = notice.kind === "received" || notice.kind === "tipped";
+
   return (
-    <div className={`relative rounded-[8px] ${bg}`} style={{ height: 49 }}>
+    <div
+      className={`relative rounded-[8px] ${bg} ${isTx ? "cursor-pointer" : ""}`}
+      style={{ height: 49 }}
+      onClick={isTx ? onOpen : undefined}
+      role={isTx ? "button" : undefined}
+    >
       <p
         className="absolute flex items-center font-body text-small font-medium text-foreground leading-[20px]"
         style={{ left: 7.62, top: 0, width: 277.31, height: 49 }}
@@ -560,7 +646,10 @@ function NoticeRow({ notice, onDismiss }: { notice: Notice; onDismiss: () => voi
       </p>
       <button
         type="button"
-        onClick={onDismiss}
+        onClick={(e) => {
+          e.stopPropagation();
+          onDismiss();
+        }}
         aria-label="Dismiss"
         className="absolute top-1/2 -translate-y-1/2 flex items-center justify-center"
         style={{ right: 11.16, width: 16.7455, height: 17.4736 }}

@@ -97,6 +97,19 @@ export function TipAmountGrid({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  // Hien 4 o theo so tien TANG DAN; moi lan mo tab Send Tip luon chon o dau
+  // tien = it tien nhat (user chot 09-24b).
+  const orderedSlots = [...VISIBLE_SLOTS].sort(
+    (a, b) => (slotValue(settings, a) ?? Infinity) - (slotValue(settings, b) ?? Infinity),
+  );
+  const cheapestRef = useRef(false);
+  useEffect(() => {
+    if (cheapestRef.current || settings.slot4 == null) return;
+    cheapestRef.current = true;
+    makeDefault(orderedSlots[0]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [settings.slot4]);
+
   const makeDefault = async (slot: number) => {
     if (settings.default_slot === slot || slotValue(settings, slot) == null) return;
     const previous = settings;
@@ -112,7 +125,7 @@ export function TipAmountGrid({
   return (
     <div className="relative w-full h-full">
       <div className="absolute grid grid-cols-2" style={{ left: 8, top: 8, width: 324, gap: 8 }}>
-        {VISIBLE_SLOTS.map((slot) => {
+        {orderedSlots.map((slot) => {
           const value = slotValue(settings, slot);
           const selected = settings.default_slot === slot;
           return (

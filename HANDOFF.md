@@ -52,6 +52,11 @@ Verify: `tsc` sạch, `npm run build` sạch; ảnh so sánh từng màn ở Des
 - **Server kiểm tra khoá** (`lib/auth/applock.ts`): mở khoá thành công → KV `applock_unlocked:<sessionToken>` 30 phút (tự gia hạn khi còn <10 phút). User có Passkey mà phiên chưa mở → `/api/tip`, `/api/applock/disable`, thêm passkey mới đều trả 423 `APPLOCK_REQUIRED` (client bắn event để gate khoá lại). Client khoá lại (ẩn ≥5 phút) gọi `/api/applock/lock` xoá luôn trạng thái server.
 - **Reset passkey khi mở khoá thất bại** (user chốt: có thể là chủ thật hoặc trộm): có bước xác nhận → `/api/applock/reset` xoá passkey + **khoá GỬI/RÚT 24h** (KV `wallet_lock:<userId>`), vẫn xem & nhận tip. `/api/tip` trả 423 `WALLET_LOCKED`; Home hiện thẻ vàng "Sending is paused until …".
 - **You’re all set / Create wallet**: GIỮ màn này (cho người dùng hiểu đã tạo ví), ← về màn Passkey.
+- **QR Home ĐỔI NGƯỢC quyết định 09-23**: giờ là QR RIÊNG TapTip `taptip:0x…?chain=5042002&currency=USDC` — user: "chỉ nhận USDC trên Arc, tránh người ta dùng MetaMask gửi vào, đây là app tip không phải ví đa năng". Máy quét Send Tip cũng CHỈ nhận QR TapTip (địa chỉ trần / EIP-681 bị từ chối: "This isn't a TapTip QR code."). Nạp/rút với bên ngoài đi qua Deposit/Withdraw. Bấm vào QR = copy địa chỉ + hiện "Copied to clipboard".
+- Balance giữ ký hiệu "$" (sau này tích hợp oracle hiện tiền địa phương — lì xì là tiền địa phương).
+- Thông báo Home: bấm dòng Received/Tipped → mở History. KHÔNG hiện "Received" cho tiền nạp từ ngoài (gửi/nhận trong app là riêng, ngoài app là nạp/rút).
+- **Send Tip**: không phải màn mặc định — khoá máy / ẩn app là tự về tab Get Tip. Quét xong gửi ngay không hỏi, popup "Tipped $X" **3 giây** (không rung/âm thanh). Ô tiền xếp **tăng dần**, mở tab luôn chọn **ô rẻ nhất**. Không tip lẻ ($1–$200 bước $1). Chưa chặn ô trùng số.
+- **Log out** có hỏi xác nhận (hộp "Log out?" cùng kiểu picker).
 - **Màn "Something went wrong" đã XOÁ** (`/auth/auth-error`) — không chỗ nào dùng, là màn Claude bịa ra từ trước.
 
 **Còn nợ:** chưa test trên điện thoại thật; ô vuông đen ở nút menu Figma vẫn coi là placeholder icon (dùng icon hamburger); Figma nút Continue màn passkey viền #602323 (gần như đen) — dùng viền đen chung.
