@@ -81,7 +81,7 @@ function WithdrawContent() {
       title="Withdraw"
       contentTop={114}
       action={
-        <BackAction onBack={() => router.push("/dashboard")}>
+        <BackAction>
           <SlantButton onClick={() => router.push("/dashboard")}>Done</SlantButton>
         </BackAction>
       }

@@ -22,7 +22,6 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Screen, BackAction, BodyText } from "@/components/screen";
 import { SlantButton } from "@/components/ui";
-import { signOutAction } from "@/app/actions";
 
 /**
  * Tao vi cho user.
@@ -61,12 +60,8 @@ export function CreateWallet() {
         <Screen
             title="You’re all set"
             action={
-                // Figma node 31:108 CO nut Back o hang 14 (code truoc thieu han).
-                // Khong the lui ve /sign-in: layout (auth-pages) thay da dang
-                // nhap se day sang /dashboard, roi /dashboard lai day nguoc ve
-                // day vi chua co vi -> lap vo han. Gan hanh dong gan nghia nhat
-                // la dang xuat, dung tien le da ghi trong HANDOFF.
-                <BackAction onBack={() => void signOutAction()} backLabel="Sign out">
+                // Back = quay ve man truoc (man Turn on Passkey) - quy tac chung 09-24b.
+                <BackAction>
                     <SlantButton onClick={createWallet} disabled={isCreating}>
                         {isCreating ? 'Creating...' : 'Create wallet'}
                     </SlantButton>

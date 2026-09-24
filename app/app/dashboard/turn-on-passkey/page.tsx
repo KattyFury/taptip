@@ -25,6 +25,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { startRegistration, type PublicKeyCredentialCreationOptionsJSON } from "@simplewebauthn/browser";
 import { Screen, BackAction, TextLink, BodyText } from "@/components/screen";
 import { SlantButton } from "@/components/ui";
+import { signOutAction } from "@/app/actions";
 
 async function postJson<T>(url: string, body?: unknown): Promise<T> {
   const res = await fetch(url, {
@@ -76,8 +77,11 @@ export default function TurnOnPasskey() {
   return (
     <Screen
       title="Turn on Passkey"
+      // Ngoai le duy nhat cua quy tac "Back = man truoc": man truoc la OTP cua
+      // 1 lan dang nhap DA XONG (phien da tao) - quay lai OTP vo nghia, nen
+      // Back = dang xuat ve man nhap email. Skip o duoi van la bo qua.
       action={
-        <BackAction onBack={skip} backLabel="Skip">
+        <BackAction onBack={() => void signOutAction()} backLabel="Back to sign in">
           <SlantButton onClick={turnOn} disabled={loading}>
             {loading ? "Setting up..." : "Continue"}
           </SlantButton>

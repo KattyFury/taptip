@@ -87,7 +87,7 @@ export default function SettingsPage() {
     <Screen
       title="Setting"
       action={
-        <BackAction onBack={() => router.push("/dashboard")}>
+        <BackAction>
           <SlantButton onClick={() => router.push("/dashboard")}>Done</SlantButton>
         </BackAction>
       }

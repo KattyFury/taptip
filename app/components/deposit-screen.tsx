@@ -31,7 +31,7 @@ export function DepositScreen({ walletAddress }: { walletAddress: string }) {
     <Screen
       title="Deposit"
       action={
-        <BackAction onBack={() => router.push("/dashboard")}>
+        <BackAction>
           <SlantButton onClick={() => router.push("/dashboard")}>Done</SlantButton>
         </BackAction>
       }

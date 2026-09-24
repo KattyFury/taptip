@@ -16,7 +16,10 @@
  * Luoi 15 hang x 48.8 cu van giu (rowTop) cho vai man tu dat vi tri.
  */
 
+"use client";
+
 import type { ReactNode } from "react";
+import { useRouter } from "next/navigation";
 import { BackButton } from "@/components/ui/back-button";
 
 /* ===================== Hang so luoi (do tu Figma) ========================= */
@@ -119,20 +122,37 @@ export function Screen({
 
 /* ========================= Cac manh dung chung ============================ */
 
-/** Hang nut co Back: Back 100 ben trai, nut chinh 232 ben phai, khe 8. */
+/**
+ * Hang nut co Back: Back 100 ben trai, nut chinh 232 ben phai, khe 8.
+ *
+ * User chot 09-24b: nut Back LUC NAO cung la "quay ve man truoc do" (lich
+ * su trinh duyet), khong nhay ve Home hay 1 man co dinh. `fallback` chi
+ * dung khi khong co lich su (vd mo thang link) - khi do moi di toi route nay.
+ * `onBack` chi truyen khi co ly do dac biet (xem turn-on-passkey).
+ */
 export function BackAction({
   onBack,
+  fallback = "/dashboard",
   backLabel = "Go back",
   children,
 }: {
-  onBack: () => void;
+  onBack?: () => void;
+  fallback?: string;
   backLabel?: string;
   children: ReactNode;
 }) {
+  const router = useRouter();
+  const goBack =
+    onBack ??
+    (() => {
+      if (window.history.length > 1) router.back();
+      else router.push(fallback);
+    });
+
   return (
     <div className="relative w-full h-full">
       <div className="absolute inset-y-0" style={{ left: 0, width: BACK_W }}>
-        <BackButton onBack={onBack} ariaLabel={backLabel} />
+        <BackButton onBack={goBack} ariaLabel={backLabel} />
       </div>
       <div className="absolute inset-y-0" style={{ left: MAIN_OFFSET, width: MAIN_W }}>
         {children}

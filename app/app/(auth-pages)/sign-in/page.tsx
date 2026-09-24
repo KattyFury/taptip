@@ -31,10 +31,11 @@ const EMAIL_DOMAIN_SUGGESTIONS = ["@gmail.com"];
 
 export default function SignIn() {
   const router = useRouter()
-  const [email, setEmail] = useState('')
+  // Giu email da go khi quay lai tu man OTP (GlobalContext song chung layout)
+  const { email: savedEmail, updateState } = useContext(GlobalContext)
+  const [email, setEmail] = useState(savedEmail ?? '')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
-  const { updateState } = useContext(GlobalContext)
 
   const isEmailInvalid = useMemo(() => !/^\S+@\S+\.\S+$/.test(email), [email])
 
@@ -87,7 +88,7 @@ export default function SignIn() {
     <Screen
       title="Enter your email to get started"
       action={
-        <BackAction onBack={() => router.push("/")}>
+        <BackAction fallback="/">
           <SlantButton disabled={isEmailInvalid || loading} onClick={signInWithEmail}>
             {loading ? "Sending..." : "Send OTP"}
           </SlantButton>

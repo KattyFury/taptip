@@ -45,7 +45,7 @@ export function HistoryScreen() {
       title="History"
       contentTop={105.93}
       action={
-        <BackAction onBack={() => router.push("/dashboard")}>
+        <BackAction>
           <SlantButton onClick={() => router.push("/dashboard")}>Done</SlantButton>
         </BackAction>
       }

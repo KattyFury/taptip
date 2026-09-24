@@ -40,6 +40,15 @@
 
 Verify: `tsc` sạch, `npm run build` sạch; ảnh so sánh từng màn ở Desktop. **CHƯA deploy** — chờ user duyệt ảnh.
 
+### Quyết định tính năng user chốt (hỏi–đáp từng màn, 09-24b)
+- **Splash**: chỉ hiện khi đang tải thật (bỏ ép 1.6s) — dùng cho `/`, `dashboard/loading.tsx`, và nền phía sau popup Passkey. Hình trang trí đứng yên.
+- Đã đăng nhập → vào thẳng Home; **có Passkey → Splash + popup Passkey TRƯỚC**, Home chưa render. Mở khoá rồi thì đi Deposit/History về không hỏi lại (nhớ trong phiên, mất khi app ẩn xuống nền).
+- **Add to Home**: luôn hiện (trừ khi đã cài PWA); giữ 2 bản iPhone/Android; Android có `beforeinstallprompt` → nút **Install app** + dòng hướng dẫn.
+- **Nút ← mọi màn = quay về màn trước** (`router.back()`, `fallback` khi không có lịch sử). Ngoại lệ duy nhất: màn Turn on Passkey (màn trước là OTP của lần đăng nhập đã xong) → Back = đăng xuất về màn email.
+- **Email**: giữ gợi ý `@gmail.com`; lỗi ở dòng dưới cùng; giới hạn 5 mã/15 phút giữ tạm; quay lại từ OTP thì ô email giữ nguyên.
+- **OTP**: đủ 6 số tự gửi; **Resend code** (chờ 60s); `autoComplete="one-time-code"` để điện thoại gợi ý mã.
+- **Màn "Something went wrong" đã XOÁ** (`/auth/auth-error`) — không chỗ nào dùng, là màn Claude bịa ra từ trước.
+
 **Còn nợ:** chưa test trên điện thoại thật; ô vuông đen ở nút menu Figma vẫn coi là placeholder icon (dùng icon hamburger); Figma nút Continue màn passkey viền #602323 (gần như đen) — dùng viền đen chung.
 
 ---
