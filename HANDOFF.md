@@ -57,6 +57,11 @@ Verify: `tsc` sạch, `npm run build` sạch; ảnh so sánh từng màn ở Des
 - Thông báo Home: bấm dòng Received/Tipped → mở History. KHÔNG hiện "Received" cho tiền nạp từ ngoài (gửi/nhận trong app là riêng, ngoài app là nạp/rút).
 - **Send Tip**: không phải màn mặc định — khoá máy / ẩn app là tự về tab Get Tip. Quét xong gửi ngay không hỏi, popup "Tipped $X" **3 giây** (không rung/âm thanh). Ô tiền xếp **tăng dần**, mở tab luôn chọn **ô rẻ nhất**. Không tip lẻ ($1–$200 bước $1). Chưa chặn ô trùng số.
 - **Log out** có hỏi xác nhận (hộp "Log out?" cùng kiểu picker).
+- **Deposit**: không thêm QR thường, không hiện địa chỉ đầy đủ; faucet mở tab mới là đủ.
+- **Withdraw**: có hộp xác nhận "Send $X to 0x…?"; rút **được số lẻ** (≤2 chữ số), có nút **MAX**; luôn **chừa $0.1** tiền gas (USDC là gas token trên Arc); không có mức tối thiểu. Ghi lịch sử là `kind=withdraw`.
+- **History**: phân loại Received / Tipped / **Withdrew** / **Deposited**. Rút ghi cột `kind` (migration `0006_transactions_kind.sql` — code chịu được khi DB chưa có cột). **Tiền nạp** lấy từ API Blockscout `explorer.testnet.arc.io/api/v2/addresses/<ví>/token-transfers?filter=to&token=USDC` (lib/deposits.ts, chỉ khi `/api/transactions?include=deposits`), bỏ các khoản mà người gửi là ví TapTip (đã là tip). Bấm dòng không làm gì; tải 1 lần.
+- **Setting**: thêm **Daily tip limit** (nhập số, trống = không giới hạn; chỉ tính tip, không tính rút; server chặn ở `/api/tip` theo 0h giờ máy user) + **Currency** USD/USDC (hiện "$12" hay "12 USDC" khắp app). Lưu **KV** `prefs:<userId>` (`lib/prefs`, `/api/preferences`) — KHÔNG thêm cột D1 vì user ngại đụng database.
+- **VIỆC ĐỂ SAU (user chốt)**: **Tên hiển thị** trong app — hay nhưng dính database (cần cột/ bảng mới), chưa làm.
 - **Màn "Something went wrong" đã XOÁ** (`/auth/auth-error`) — không chỗ nào dùng, là màn Claude bịa ra từ trước.
 
 **Còn nợ:** chưa test trên điện thoại thật; ô vuông đen ở nút menu Figma vẫn coi là placeholder icon (dùng icon hamburger); Figma nút Continue màn passkey viền #602323 (gần như đen) — dùng viền đen chung.

@@ -57,3 +57,17 @@ export async function setUserCircleWallet(
     .bind(walletAddress, circleWalletId, userId)
     .run();
 }
+
+/** Trong danh sach dia chi, cai nao la vi cua user TapTip (tra ve chu thuong).
+ * Dung de tach "tien nap tu ngoai" khoi "tip tu nguoi dung TapTip" o History. */
+export async function getTapTipWalletsAmong(addresses: string[]): Promise<Set<string>> {
+  const unique = Array.from(new Set(addresses.map((a) => a.toLowerCase())));
+  if (unique.length === 0) return new Set();
+  const db = await getDb();
+  const placeholders = unique.map(() => "?").join(",");
+  const { results } = await db
+    .prepare(`SELECT lower(wallet_address) AS w FROM users WHERE lower(wallet_address) IN (${placeholders})`)
+    .bind(...unique)
+    .all<{ w: string }>();
+  return new Set((results ?? []).map((r) => r.w));
+}

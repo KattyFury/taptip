@@ -35,6 +35,7 @@ import { encodeTapTipQr, decodeTapTipQr } from "@/lib/utils/qr-payment";
 import { signOutAction } from "@/app/actions";
 import { describeSendError, formatLockUntil, type SendErrorBody } from "@/lib/utils/send-errors";
 import { toast } from "sonner";
+import { usePrefs } from "@/contexts/prefs-context";
 
 const QR_REGION_ID = "taptip-qr-region";
 const CIRCLE_FAUCET_URL = "https://faucet.circle.com/";
@@ -57,6 +58,8 @@ type Tab = "get" | "send";
 
 interface TransactionRow {
   direction: "in" | "out";
+  /** Home chi thong bao tip (rut/nap la chuyen ngoai app - user chot 09-24b) */
+  kind?: "tip" | "withdraw" | "deposit";
   counterparty: string;
   amount: number;
   createdAt: string;
@@ -67,17 +70,13 @@ type Notice =
   | { id: string; kind: "low-balance" }
   | { id: string; kind: "wallet-locked"; until: number };
 
-/** Lam tron XUONG 2 chu so thap phan - khong bao gio hien nhieu hon so that co. */
-function formatAmount(token: number): string {
-  if (isNaN(token) || token <= 0) return "0";
-  return (Math.floor(token * 100) / 100).toLocaleString("en-US", { maximumFractionDigits: 2 });
-}
-
-/** Figma: "$XXX" (ngan) 37px, "$XXXXXXX" (dai) 28px - co chu tu co theo do dai. */
+/** Figma: "$XXX" (ngan) 37px, "$XXXXXXX" (dai) 28px - co chu tu co theo do
+ * dai (don vi USDC dai hon "$" nen them 1 nac 24px). */
 function balanceSizePx(text: string): number {
   if (text.length <= 4) return 37;
   if (text.length <= 6) return 32;
-  return 28;
+  if (text.length <= 9) return 28;
+  return 24;
 }
 
 function parseUtc(iso: string): number {
@@ -105,6 +104,7 @@ export default function HomeScreen(props: Props) {
 function HomeScreenContent({ primaryWallet, initialTab = "get", initialOverlay }: Props) {
   const router = useRouter();
   const { balance, balanceError, refreshBalances } = useBalance();
+  const { money } = usePrefs();
   const [tab, setTab] = useState<Tab>(initialTab);
   const [menuOpen, setMenuOpen] = useState(initialOverlay === "menu");
   // O dang sua trong picker (null = picker dong)
@@ -194,6 +194,7 @@ function HomeScreenContent({ primaryWallet, initialTab = "get", initialOverlay }
   const now = Date.now();
   for (const tx of transactions) {
     if (notices.length >= MAX_NOTICES) break;
+    if (tx.kind && tx.kind !== "tip") continue;
     if (now - parseUtc(tx.createdAt) > NOTICE_WINDOW_MS) continue;
     const id = `${tx.direction}-${tx.createdAt}-${tx.counterparty}-${tx.amount}`;
     if (dismissed.includes(id)) continue;
@@ -337,7 +338,7 @@ function HomeScreenContent({ primaryWallet, initialTab = "get", initialOverlay }
     }
   };
 
-  const balanceText = `$${formatAmount(balance.token)}`;
+  const balanceText = money(isNaN(balance.token) ? 0 : balance.token);
 
   return (
     <div data-home-root className="relative w-full h-full overflow-hidden">
@@ -403,7 +404,7 @@ function HomeScreenContent({ primaryWallet, initialTab = "get", initialOverlay }
                   ) : (
                     <>
                       <Icon.Check className="w-10 h-10 text-brand" />
-                      <p className="font-display text-title font-bold text-white">Tipped ${lastAmount}</p>
+                      <p className="font-display text-title font-bold text-white">Tipped {lastAmount != null ? money(lastAmount) : ""}</p>
                     </>
                   )}
                 </div>
@@ -610,6 +611,7 @@ function NoticeRow({
   }
 
   const isTx = notice.kind === "received" || notice.kind === "tipped";
+  const { money } = usePrefs();
 
   return (
     <div
@@ -638,7 +640,7 @@ function NoticeRow({
         ) : (
           <span>
             {notice.kind === "received" ? "Received " : "Tipped "}
-            <span className="font-bold">${formatAmount(notice.amount)}</span>
+            <span className="font-bold">{money(notice.amount)}</span>
             {notice.kind === "received" ? " from " : " for "}
             {shortenAddress(notice.address)}
           </span>

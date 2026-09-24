@@ -18,6 +18,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
+import { usePrefs } from "@/contexts/prefs-context";
 
 export interface TipSettings {
   slot1: number;
@@ -80,6 +81,7 @@ export function TipAmountGrid({
   // edit thi se duoc chon 1 trong cac o de thay doi so tien bang cach luot,
   // chon xong click SAVE la luu".
   const [editing, setEditing] = useState(initialEditing);
+  const { money } = usePrefs();
   // Slot 4 trong / default dang o slot 5 (khong hien) -> sua 1 lan cho khop
   // 4 pill cua Figma.
   const fixedRef = useRef(false);
@@ -147,7 +149,7 @@ export function TipAmountGrid({
               }
               style={{ height: 49 }}
             >
-              {value != null ? `$${value}` : ""}
+              {value != null ? money(value) : ""}
             </button>
           );
         })}
@@ -204,6 +206,7 @@ export function AmountPicker({
   onCancel: () => void;
 }) {
   const [value, setValue] = useState(initialValue);
+  const { money } = usePrefs();
   const range = Array.from({ length: PICKER_MAX - PICKER_MIN + 1 }, (_, i) => PICKER_MIN + i);
 
   const handleScroll = (e: React.UIEvent<HTMLDivElement>) => {
@@ -252,7 +255,7 @@ export function AmountPicker({
             }
             style={{ height: ITEM_H }}
           >
-            ${n}
+            {money(n)}
           </button>
         ))}
       </div>

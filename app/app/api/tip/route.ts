@@ -12,7 +12,8 @@ import { NextRequest, NextResponse } from "next/server";
 import { getSession } from "@/lib/auth/session";
 import { getUserById } from "@/lib/db/users";
 import { sendUsdc } from "@/lib/circle/wallets";
-import { createTransaction } from "@/lib/db/transactions";
+import { createTransaction, sumTipsSince } from "@/lib/db/transactions";
+import { getPrefs, startOfUserDaySql } from "@/lib/prefs";
 import { passesAppLock, walletLockedUntil } from "@/lib/auth/applock";
 
 const ADDRESS_REGEX = /^0x[a-fA-F0-9]{40}$/;
@@ -45,7 +46,11 @@ export async function POST(req: NextRequest) {
   const body = (await req.json().catch(() => null)) as {
     toAddress?: string;
     amount?: number;
+    /** "withdraw" = rut ra vi ngoai tu man Withdraw (ghi dung loai o History,
+     * khong tinh vao gioi han tip/ngay). Mac dinh "tip". */
+    kind?: "tip" | "withdraw";
   } | null;
+  const kind = body?.kind === "withdraw" ? "withdraw" : "tip";
 
   const toAddress = body?.toAddress;
   const amount = body?.amount;
@@ -55,6 +60,11 @@ export async function POST(req: NextRequest) {
   }
   if (typeof amount !== "number" || !isFinite(amount) || amount <= 0) {
     return NextResponse.json({ error: "Invalid amount" }, { status: 400 });
+  }
+
+  // Tip: khong qua 2 chu so thap phan (rut thi duoc le), tip thi so nguyen
+  if (kind === "tip" && !Number.isInteger(amount)) {
+    return NextResponse.json({ error: "Tips must be whole dollars" }, { status: 400 });
   }
 
   const user = await getUserById(userId);
@@ -72,6 +82,26 @@ export async function POST(req: NextRequest) {
     );
   }
 
+  // Gioi han tip moi ngay (man Setting, luu KV) - chi tinh TIP, khong tinh rut
+  if (kind === "tip") {
+    const prefs = await getPrefs(userId);
+    if (prefs.dailyTipLimit != null) {
+      const spent = await sumTipsSince(user.wallet_address, startOfUserDaySql(prefs.tzOffsetMinutes));
+      const left = Math.max(0, prefs.dailyTipLimit - spent);
+      if (amount > left + 1e-9) {
+        return NextResponse.json(
+          {
+            error: left > 0
+              ? `Daily tip limit reached - only $${left.toFixed(2).replace(/\.00$/, "")} left today.`
+              : "Daily tip limit reached. Change it in Setting.",
+            code: "DAILY_LIMIT",
+          },
+          { status: 403 },
+        );
+      }
+    }
+  }
+
   try {
     const { transactionId, state } = await sendUsdc(
       user.wallet_address,
@@ -87,6 +117,7 @@ export async function POST(req: NextRequest) {
       amount,
       txHash: transactionId,
       status: state,
+      kind,
     }).catch((error) => console.error("Could not record transaction:", error));
 
     return NextResponse.json({ transactionId, state });

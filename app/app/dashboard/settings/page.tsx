@@ -20,6 +20,7 @@ import { Screen, BackAction } from "@/components/screen";
 import { SlantButton } from "@/components/ui";
 import * as Icon from "@/components/icons";
 import { markClientUnlocked } from "@/components/app-lock-gate";
+import { usePrefs, type Currency } from "@/contexts/prefs-context";
 
 type LockStatus = "loading" | "off" | "on" | "busy";
 
@@ -122,10 +123,117 @@ export default function SettingsPage() {
           {lockStatus === "on" ? "Turn off" : busy ? "..." : "Turn on"}
         </button>
       </div>
-      <p className="font-body text-small font-medium text-secondary-text leading-[24px] mt-3">
+      <p className="font-body text-small font-medium text-secondary-text leading-[24px] mt-2">
         Uses your device&apos;s Face ID / Touch ID / Windows Hello to lock the app -
         separate from your wallet, does not sign transactions.
       </p>
+
+      <DailyLimitRow onError={setError} />
+      <CurrencyRow onError={setError} />
     </Screen>
+  );
+}
+
+/* ===================== Gioi han tip moi ngay (09-24b) ====================== */
+
+/** Nhap so tien; de trong = khong gioi han. Luu khi roi o / bam Enter. Server
+ * chan o /api/tip (chi tinh tip, khong tinh rut). */
+function DailyLimitRow({ onError }: { onError: (e: string | null) => void }) {
+  const { prefs, loaded, update, money } = usePrefs();
+  const [draft, setDraft] = useState<string | null>(null);
+  const [saved, setSaved] = useState(false);
+  const value = draft ?? (prefs.dailyTipLimit != null ? String(prefs.dailyTipLimit) : "");
+
+  const save = async () => {
+    if (draft == null) return;
+    const trimmed = draft.trim().replace(",", ".");
+    const next = trimmed === "" ? null : Number(trimmed);
+    if (next !== null && (!isFinite(next) || next <= 0)) {
+      onError("Daily limit must be greater than 0 (leave empty for no limit).");
+      return;
+    }
+    try {
+      await update({ dailyTipLimit: next });
+      setDraft(null);
+      onError(null);
+      setSaved(true);
+      setTimeout(() => setSaved(false), 2000);
+    } catch (err) {
+      onError(err instanceof Error ? err.message : "Could not save");
+    }
+  };
+
+  return (
+    <>
+      <div
+        className="w-full bg-surface rounded-[8px] flex items-center justify-between mt-4"
+        style={{ height: 65, paddingLeft: 10, paddingRight: 8 }}
+      >
+        <span className="font-body text-body font-bold text-foreground">Daily tip limit</span>
+        <input
+          inputMode="decimal"
+          placeholder="No limit"
+          disabled={!loaded}
+          value={value}
+          onChange={(e) => setDraft(e.target.value)}
+          onBlur={save}
+          onKeyDown={(e) => e.key === "Enter" && (e.currentTarget as HTMLInputElement).blur()}
+          className="bg-background border border-foreground rounded-full text-center font-display text-small font-bold text-foreground placeholder:text-hint outline-none"
+          style={{ width: 120, height: 49 }}
+        />
+      </div>
+      <p className="font-body text-small font-medium text-secondary-text leading-[24px] mt-2">
+        {saved
+          ? "Saved."
+          : prefs.dailyTipLimit != null
+            ? `You can tip up to ${money(prefs.dailyTipLimit)} per day. Withdrawals don't count.`
+            : "No daily limit on tips. Withdrawals don't count."}
+      </p>
+    </>
+  );
+}
+
+/* ========================= Don vi tien (09-24b) ============================ */
+
+function CurrencyRow({ onError }: { onError: (e: string | null) => void }) {
+  const { prefs, loaded, update } = usePrefs();
+  const choose = async (currency: Currency) => {
+    if (currency === prefs.currency) return;
+    try {
+      await update({ currency });
+      onError(null);
+    } catch (err) {
+      onError(err instanceof Error ? err.message : "Could not save");
+    }
+  };
+
+  return (
+    <>
+      <div
+        className="w-full bg-surface rounded-[8px] flex items-center justify-between mt-4"
+        style={{ height: 65, paddingLeft: 10, paddingRight: 8 }}
+      >
+        <span className="font-body text-body font-bold text-foreground">Currency</span>
+        {/* Cung kieu thanh tab Get/Send Tip: pill xam + pill vang cho muc dang chon */}
+        <div className="relative flex bg-background border border-foreground rounded-full" style={{ width: 160, height: 49 }}>
+          {(["USD", "USDC"] as const).map((c) => (
+            <button
+              key={c}
+              type="button"
+              disabled={!loaded}
+              onClick={() => choose(c)}
+              className={`flex-1 rounded-full font-display text-small font-bold ${
+                prefs.currency === c ? "bg-primary text-foreground" : "text-hint"
+              }`}
+            >
+              {c}
+            </button>
+          ))}
+        </div>
+      </div>
+      <p className="font-body text-small font-medium text-secondary-text leading-[24px] mt-2">
+        Show amounts as {prefs.currency === "USD" ? "$12" : "12 USDC"}. Your money is always USDC on Arc.
+      </p>
+    </>
   );
 }
