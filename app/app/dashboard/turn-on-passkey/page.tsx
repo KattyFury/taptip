@@ -9,10 +9,19 @@
  * lib/auth/applock.ts, khoi phuc tu commit truoc khi bi go 09-11:
  * bd495d3^). "Nhe" o day nghia la 1 lop khoa tien loi cuc bo, khong bat
  * buoc - bam Back de bo qua van tao vi binh thuong.
+ *
+ * Dung LAI man nay cho 2 tinh huong (phan hoi that 09-24 - "ai bo qua thi
+ * lan sau nhac lai cho nguoi ta khi nguoi ta log in, dung lam no bat buoc"):
+ * 1. Onboarding lan dau (chua co vi) - ?next khong co, mac dinh ve
+ *    /dashboard/setup-wallet nhu truoc gio.
+ * 2. Nhac lai moi lan dang nhap cho user DA co vi nhung van chua bat
+ *    Passkey (xem app/(auth-pages)/code-confirmation/page.tsx,
+ *    promptPasskey) - ?next=/dashboard, Skip di thang vao app binh
+ *    thuong, KHONG chan duong, khong ep ai ca.
  */
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { startRegistration, type PublicKeyCredentialCreationOptionsJSON } from "@simplewebauthn/browser";
 import { Screen, BackAction } from "@/components/screen";
 import { SlantButton } from "@/components/ui";
@@ -32,10 +41,12 @@ async function postJson<T>(url: string, body?: unknown): Promise<T> {
 
 export default function TurnOnPasskey() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const next = searchParams.get("next") || "/dashboard/setup-wallet";
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const skip = () => router.push("/dashboard/setup-wallet");
+  const skip = () => router.push(next);
 
   const turnOn = async () => {
     setLoading(true);
@@ -46,7 +57,7 @@ export default function TurnOnPasskey() {
       );
       const response = await startRegistration({ optionsJSON: options });
       await postJson("/api/applock/register-verify", { response });
-      router.push("/dashboard/setup-wallet");
+      router.push(next);
     } catch (err) {
       console.warn("Turn on passkey failed:", err);
       // Nguoi dung tu huy prompt (Face ID/Touch ID/Windows Hello) - khong

@@ -13,7 +13,71 @@
 
 ---
 
-## 👉 BẮT ĐẦU TỪ ĐÂY (09-24 — REDESIGN TOÀN BỘ)
+## 👉 BẮT ĐẦU TỪ ĐÂY (09-24, sau redesign — vá lỗi Passkey khoá nhầm user cũ)
+
+**User báo (viết HOA, gấp): "Passkey không phải là must mà là thứ bỏ qua
+được, ai bỏ qua thì lần sau nhắc lại cho người ta khi người ta log in,
+ĐỪNG LÀM NÓ TRỞ THÀNH BẮT BUỘC ĐỂ RỒI NHỮNG AI ĐANG CÓ TIỀN TEST KHÔNG THỂ
+NÀO VÀO VÍ ĐƯỢC."**
+
+**Root cause tìm ra:** đúng như ghi trong mục redesign 09-24 bên dưới —
+lúc khôi phục tính năng khoá-app Passkey, bảng D1 `applock_credentials`
+**chưa bao giờ bị xoá khỏi production** từ lần dùng đầu (bật 09-03, gỡ
+09-11). `AppLockGate`/`/api/applock/status` chỉ hỏi "user này có row nào
+trong bảng không" — user nào từng bật Passkey hồi 09-03→09-11 (rồi tính
+năng bị gỡ, họ quên mất) vẫn còn row cũ, nên login lại hôm nay bị bắt xác
+thực Passkey ngay dù **chưa hề bấm bật** ở bản redesign hiện tại — có thể
+kẹt luôn không vào được ví nếu thiết bị/trình duyệt hiện tại không khớp
+được với credential đã đăng ký hồi tháng trước. Đúng y triệu chứng user mô
+tả.
+
+**Đã sửa (không đụng gì tới production DB — an toàn hơn xoá dữ liệu):**
+`lib/db/applock.ts` (`getApplockCredentialsByUserId`) giờ lọc thêm
+`created_at >= '2026-09-20 00:00:00'` — bỏ qua mọi row có từ TRƯỚC mốc
+khôi phục tính năng (commit `1559bd5`, 09-24). Hàm này là nơi DUY NHẤT cả
+`/api/applock/status` lẫn `/api/applock/auth-options` cùng gọi, nên tự
+động nhất quán: `AppLockGate` báo "off" (không khoá gì), `auth-options` từ
+chối tạo challenge cho row rác. Row cũ vẫn nằm im trong bảng (không xoá),
+chỉ không còn được tính nữa — nếu sau này thật sự cần dọn hẳn thì làm
+migration riêng, phiên này ưu tiên sửa NHANH và AN TOÀN (không chạm
+production data).
+
+**Thêm luôn phần "nhắc lại lần sau" user yêu cầu (trước đây CHƯA có — màn
+`turn-on-passkey` cũ chỉ hiện đúng 1 lần lúc onboarding, bỏ qua là mất
+luôn, không bao giờ hỏi lại):**
+- `/api/auth/verify-otp` trả thêm `promptPasskey`: true khi user đã có ví
+  (không phải lần đầu) nhưng chưa có credential Passkey nào (sau khi đã
+  lọc mốc ở trên).
+- `code-confirmation/page.tsx`: nếu `promptPasskey`, điều hướng qua
+  `/dashboard/turn-on-passkey?next=/dashboard` thay vì vào thẳng
+  `/dashboard` — vẫn màn cũ, vẫn nút Skip y nguyên, KHÔNG chặn đường ai.
+- `turn-on-passkey/page.tsx`: đọc `?next=` qua `useSearchParams()` — có
+  `next` thì Skip/xong đều điều hướng theo đó (`/dashboard`), không có thì
+  giữ hành vi onboarding cũ (`/dashboard/setup-wallet`).
+
+Kết quả: **không ai bị coi Passkey là bắt buộc** — onboarding lần đầu bỏ
+qua được, đã có ví mà chưa bật thì mỗi lần đăng nhập được nhắc lại (vẫn bỏ
+qua được, không phải mỗi lần chặn cứng).
+
+Verify: `npm install` (thiếu `@simplewebauthn/*` do `package.json` mới kéo
+về nhưng `node_modules` local chưa cài), `tsc --noEmit` sạch, `npm run
+build` sạch (27 route). **Chưa `cf:deploy`** — cần user xác nhận trước khi
+đẩy lên production vì đây là sửa hành vi đăng nhập, không phải chỉ đổi
+giao diện.
+
+**Chưa làm được:** không đọc/xoá được bảng `applock_credentials` thật trên
+production để đếm chính xác có bao nhiêu row cũ (lệnh `wrangler d1 execute
+--remote` bị auto-mode chặn ở phiên này, lý do "Production Reads") — bằng
+chứng root cause dựa vào đúng câu chữ HANDOFF của phiên 09-24 trước
+("bảng còn nguyên", đã tự verify khi đó) chứ phiên này không tự chạy lại
+được. Nếu cần đếm/soát lại, chạy thủ công:
+```
+wrangler d1 execute taptip-db --remote --command "SELECT id, user_id, created_at FROM applock_credentials;"
+```
+
+---
+
+## 👉 Lịch sử (09-24 — REDESIGN TOÀN BỘ)
 
 **User đưa bản Figma mới hoàn toàn** (`rLGoWK4AHhqov9CKHXJqqE`, cùng file cũ nhưng vẽ lại — theo tông Tết: kem giấy/vàng mai/xanh lá sage) + 2 file logo/icon mới, yêu cầu thẳng: **"build lại toàn bộ giao diện taptip lẫn logo theo bản mới của tôi... Figma là nguồn sự thật, mọi sự theo figma"**, sau đó nhấn mạnh thêm **"làm giống Figma 100% thì làm"**. Đã đọc `get_design_context` cho **đủ cả 14 frame** trước khi code (không đoán), cộng với loạt ghi chú thoại trực tiếp của user cho từng màn (10=Splash, 11=PWA-install, 14=Sign in có disable Send OTP khi trống mail, 19=OTP, 20=lỗi, 21=Passkey **"đã bỏ nay mang lên lại làm bảo mật NHẸ"**, 22=tạo ví, 23/24=Get Tip (24 cần auto-fit cỡ chữ số dư), 25/26=Send Tip, 27=**đổi 3 thanh kéo cũ thành picker cuộn kiểu chọn giờ điện thoại**, 28=Menu bình thường, 29=Deposit, 30=History, Withdraw tạm chưa khả dụng — giữ nguyên).
 

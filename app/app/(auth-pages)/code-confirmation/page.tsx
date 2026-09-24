@@ -75,14 +75,23 @@ export default function CodeConfirmation() {
       return;
     }
 
-    const { needsOnboarding } = (await response.json()) as {
+    const { needsOnboarding, promptPasskey } = (await response.json()) as {
       needsOnboarding: boolean;
+      promptPasskey?: boolean;
     };
 
     if (needsOnboarding) {
       // Redesign 09-24: xen them buoc "Turn on Passkey" (Figma frame 21)
       // truoc man tao vi - xem app/dashboard/turn-on-passkey/page.tsx.
       router.push("/dashboard/turn-on-passkey");
+      return;
+    }
+
+    if (promptPasskey) {
+      // Da co vi tu truoc nhung chua bat Passkey (tung bam Skip, hoac dang
+      // nhap tu truoc khi tinh nang nay ton tai) - nhac lai o day, van co
+      // the Skip thang ve /dashboard, khong ep buoc gi ca.
+      router.push("/dashboard/turn-on-passkey?next=/dashboard");
       return;
     }
 

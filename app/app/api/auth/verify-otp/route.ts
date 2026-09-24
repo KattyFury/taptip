@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { verifyOtp } from "@/lib/auth/otp";
 import { createSession } from "@/lib/auth/session";
 import { getUserByEmail, createUser } from "@/lib/db/users";
+import { getApplockCredentialsByUserId } from "@/lib/db/applock";
 
 export async function POST(request: NextRequest) {
   try {
@@ -27,9 +28,20 @@ export async function POST(request: NextRequest) {
 
     await createSession(user.id);
 
+    const hasWallet = !!user.wallet_address;
+
+    // Da co vi (khong phai lan dau) nhung chua bat khoa Passkey - vd tung
+    // bam "Skip" o /dashboard/turn-on-passkey, hoac dang nhap tu truoc khi
+    // tinh nang nay ton tai. KHONG bat buoc, chi NHAC LAI moi lan dang
+    // nhap (theo yeu cau that 09-24: "ai bo qua thi lan sau nhac lai") -
+    // man turn-on-passkey van co nut Skip, khong chan duong ai ca.
+    const promptPasskey =
+      hasWallet && (await getApplockCredentialsByUserId(user.id)).length === 0;
+
     return NextResponse.json({
       ok: true,
-      needsOnboarding: isNewUser || !user.wallet_address,
+      needsOnboarding: isNewUser || !hasWallet,
+      promptPasskey,
     });
   } catch (err: any) {
     console.error("[verify-otp] Server error:", err);

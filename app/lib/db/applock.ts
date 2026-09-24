@@ -18,13 +18,27 @@ export interface ApplockCredential {
   created_at: string;
 }
 
+/** Moc thoi gian phuc hoi tinh nang (commit 1559bd5, 09-24) - bat ky
+ * credential nao TRUOC moc nay la rac cua lan dung dau tien (bat 09-03, go
+ * 09-11), KHONG phai user chu dong bat trong ban hien tai. Bang D1 chua bao
+ * gio bi xoa khi go tinh nang lan truoc, nen nhung user tung bat passkey hoi
+ * do van con row - restore lai code 09-24 vo tinh khien ho bi khoa cua app
+ * ma chua he bam "bat" o ban nay, co ca nguoi dang giu tien test khong vao
+ * duoc vi (bao that 09-24). Loc thang o day thay vi migration xoa du lieu -
+ * an toan hon (khong dong vao production DB) va la 1 cho duy nhat, ca
+ * /api/applock/status lan /api/applock/auth-options deu goi ham nay nen tu
+ * dong nhat quan (status bao "off", auth-options tu choi tao challenge). */
+const APPLOCK_RESTORE_CUTOFF = "2026-09-20 00:00:00";
+
 export async function getApplockCredentialsByUserId(
   userId: string,
 ): Promise<ApplockCredential[]> {
   const db = await getDb();
   const { results } = await db
-    .prepare("SELECT * FROM applock_credentials WHERE user_id = ?")
-    .bind(userId)
+    .prepare(
+      "SELECT * FROM applock_credentials WHERE user_id = ? AND created_at >= ?",
+    )
+    .bind(userId, APPLOCK_RESTORE_CUTOFF)
     .all<ApplockCredential>();
   return results;
 }
