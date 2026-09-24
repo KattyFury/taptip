@@ -81,6 +81,16 @@ export default async function RootLayout({
               "window.addEventListener('orientationchange',s);})();",
           }}
         />
+        {/* Android/Chrome ban "beforeinstallprompt" RAT SOM, co khi truoc
+            khi React kip mount man "/" - bat lai o day, cat vao window de
+            nut "Install app" (app/page.tsx) dung sau. */}
+        <script
+          dangerouslySetInnerHTML={{
+            __html:
+              "window.addEventListener('beforeinstallprompt',function(e){e.preventDefault();" +
+              "window.__taptipInstallPrompt=e;window.dispatchEvent(new Event('taptip-install-ready'));});",
+          }}
+        />
         <BalanceProvider>
           <Toaster expand />
           <div className="flex items-center justify-center min-h-dvh h-dvh w-full overflow-hidden">

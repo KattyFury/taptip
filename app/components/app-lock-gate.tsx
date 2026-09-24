@@ -32,6 +32,7 @@ import { useRouter } from "next/navigation";
 import { startAuthentication, type PublicKeyCredentialRequestOptionsJSON } from "@simplewebauthn/browser";
 import { signOutAction } from "@/app/actions";
 import { FixedOverlay, SlantButton } from "@/components/ui";
+import { SplashView } from "@/components/splash-view";
 
 type GateState =
   | "checking"
@@ -55,9 +56,19 @@ async function postJson<T>(url: string, body?: unknown): Promise<T> {
   return data as T;
 }
 
+/**
+ * Nho trang thai trong PHIEN (bien module, song qua cac lan chuyen trang
+ * client) - de di Home -> Deposit -> Home khong bi hoi Passkey lai / khong
+ * nhay Splash moi lan. Mat khi tai lai trang hoac app bi an xuong nen.
+ */
+let sessionUnlocked = false;
+let knownOff = false;
+
 export function AppLockGate({ children }: { children: React.ReactNode }) {
   const router = useRouter();
-  const [state, setState] = useState<GateState>("checking");
+  const [state, setState] = useState<GateState>(() =>
+    sessionUnlocked ? "unlocked" : knownOff ? "off" : "checking",
+  );
   const [error, setError] = useState<string | null>(null);
 
   const authenticate = useCallback(async () => {
@@ -69,6 +80,7 @@ export function AppLockGate({ children }: { children: React.ReactNode }) {
       );
       const response = await startAuthentication({ optionsJSON: options });
       await postJson("/api/applock/auth-verify", { response });
+      sessionUnlocked = true;
       setState("unlocked");
     } catch (err) {
       console.warn("App-lock authentication failed:", err);
@@ -95,7 +107,11 @@ export function AppLockGate({ children }: { children: React.ReactNode }) {
         if (cancelled) return;
         // Khong hoi duoc trang thai (mat mang...) - khong khoa cung nguoi
         // dung, coi nhu "off" cho lan nay, se thu lai o lan mo ke tiep.
-        setState(status?.hasCredential ? "need-auth" : "off");
+        knownOff = !status?.hasCredential;
+        // Da mo khoa trong phien nay roi thi giu nguyen, khong hoi lai
+        setState((prev) =>
+          prev === "unlocked" ? prev : status?.hasCredential ? "need-auth" : "off",
+        );
       });
 
     return () => {
@@ -121,6 +137,7 @@ export function AppLockGate({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     const onVisibilityChange = () => {
       if (document.visibilityState !== "hidden") return;
+      sessionUnlocked = false;
       setState((prev) => (prev === "unlocked" ? "need-auth" : prev));
     };
     document.addEventListener("visibilitychange", onVisibilityChange);
@@ -131,29 +148,20 @@ export function AppLockGate({ children }: { children: React.ReactNode }) {
   // (huy/loi) - luc dang tu dong thu (chua co loi) thi KHONG popup, prompt
   // cua trinh duyet la du, Home chi mo (scrim) phia sau.
   const showCard = state === "need-auth" && !!error;
-  const showScrim = state === "need-auth" || state === "authenticating";
 
-  if (state === "checking" || state === "off" || state === "unlocked") {
+  if (state === "off" || state === "unlocked") {
     return <>{children}</>;
   }
 
-  return (
-    // Lop bao ngoai chi con de layout {children} (HomeScreen can 1 khung
-    // relative/flex binh thuong) - 2 overlay ben duoi da chuyen qua
-    // FixedOverlay (Portal ra document.body) nen KHONG con phu thuoc vi tri
-    // cua div nay nua (xem components/ui/fixed-overlay.tsx: fixed inset-0
-    // long trong .tt-frame - von co transform: scale - se bam sai theo box
-    // 390x844 truoc scale thay vi viewport that, lo ra "line xam" 2 ben tren
-    // dien thoai that khi frame-scale khong khop tuyet doi ca 2 truc).
-    <div className="relative flex flex-col h-full">
-      {children}
+  // User chot 09-24b: co Passkey thi hien Passkey TRUOC khi vao Home - phia
+  // sau popup la man Splash, KHONG render Home (truoc day Home mo mo phia
+  // sau, van nhin ra so du / QR). "checking" cung dung Splash (dang tai).
 
-      {showScrim && (
-        <FixedOverlay>
-          {/* 09-24b: nen MO (blur) thay nen den - cung ngon ngu voi menu/picker Figma */}
-          <div className="fixed inset-0 z-40 backdrop-blur-[4px]" aria-hidden="true" />
-        </FixedOverlay>
-      )}
+  return (
+    // Popup "Try again" di qua FixedOverlay (Portal ra document.body) - xem
+    // components/ui/fixed-overlay.tsx ve loi fixed trong .tt-frame co transform.
+    <div className="relative flex flex-col h-full">
+      <SplashView />
 
       {/* Popup "Try again" - khong con CenteredCard (da xoa khoi codebase
           o cac ban redesign sau). Dung lai ngon ngu popup pill/rounded-[8px]
