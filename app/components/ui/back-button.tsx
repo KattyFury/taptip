@@ -6,7 +6,6 @@
  * moi icon khac trong app).
  */
 
-import * as Icon from "@/components/icons";
 
 interface BackButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
   onBack?: () => void;

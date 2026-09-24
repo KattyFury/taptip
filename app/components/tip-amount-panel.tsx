@@ -29,7 +29,7 @@ export interface TipSettings {
   default_slot: number;
 }
 
-export const VISIBLE_SLOTS = [1, 2, 3, 4] as const;
+const VISIBLE_SLOTS = [1, 2, 3, 4] as const;
 const PICKER_MIN = 1;
 const PICKER_MAX = 200;
 

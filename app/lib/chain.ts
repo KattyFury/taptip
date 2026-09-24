@@ -3,8 +3,7 @@ import { defineChain } from "viem";
 /**
  * Arc Testnet - USDC la native gas token.
  *
- * De o lib/ (khong phai trong web3-provider.tsx 'use client') de ca route
- * server lan component client deu dung chung mot dinh nghia.
+ * Dung chung cho route server lan component client.
  */
 export const arcTestnet = defineChain({
   id: 5042002,

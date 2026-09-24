@@ -94,9 +94,14 @@ export default async function RootLayout({
         <BalanceProvider>
           <Toaster expand />
           <div className="flex items-center justify-center min-h-dvh h-dvh w-full overflow-hidden">
-            <div className="tt-frame relative flex flex-col bg-background overflow-hidden border-0 sm:border-2 border-border sm:rounded-[24px] sm:shadow-2xl">
-              <main className="flex-1 flex flex-col items-center overflow-hidden w-full h-full">
-                <div className="flex flex-col w-full h-full flex-1 overflow-hidden">{children}</div>
+            {/* Dien thoai: KHONG cat noi dung tran khoi khung (overflow-visible) - khung
+                bi thu theo chieu cao tren man thap (co thanh trinh duyet) se hep hon
+                man hinh; hinh trang tri Splash phai keo ra toi mep that, khong bi
+                cat ngay mep khung (phan hoi that 09-24b: "splash chua le trai phai").
+                May tinh (sm:) van cat theo khung dien thoai bo goc. */}
+            <div className="tt-frame relative flex flex-col bg-background overflow-visible sm:overflow-hidden border-0 sm:border-2 border-border sm:rounded-[24px] sm:shadow-2xl">
+              <main className="flex-1 flex flex-col items-center overflow-visible sm:overflow-hidden w-full h-full">
+                <div className="flex flex-col w-full h-full flex-1 overflow-visible sm:overflow-hidden">{children}</div>
               </main>
             </div>
           </div>

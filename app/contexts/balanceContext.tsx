@@ -18,7 +18,7 @@
 
 "use client";
 
-import React, { createContext, useContext, ReactNode } from "react";
+import { createContext, useContext, type ReactNode } from "react";
 import { useWalletBalances } from "@/hooks/use-wallet-balances";
 
 // Define the shape of our balance context

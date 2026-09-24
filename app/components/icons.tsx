@@ -7,39 +7,18 @@
  * tu @tabler/icons-react o noi khac) - de doi stroke-width/size 1 cho ca app
  * chi can sua o day.
  *
- * Cach dung: <Icon.Mail className="w-6 h-6 text-accent" />
+ * Cach dung: <Icon.Menu className="w-6 h-6" />
  * Mau lay theo currentColor -> dat bang class text-*.
  */
 
 import {
-  IconPlus,
-  IconArrowRight,
-  IconMail,
-  IconUser,
-  IconDice5,
-  IconCoin,
   IconMenu2,
-  IconAdjustmentsHorizontal,
-  IconArrowLeft,
   IconCopy,
-  IconDots,
-  IconX,
-  IconPencil,
-  IconSquareX,
-  IconPhoto,
-  IconLoader2,
   IconCheck,
-  IconArrowDown,
-  IconArrowUp,
-  IconClock,
-  IconLogout2,
+  IconLoader2,
   IconAlertTriangle,
-  IconLock,
-  IconLockOpen,
-  IconChevronUp,
-  IconChevronDown,
-  IconQrcode,
   IconFaceId,
+  IconMail,
   type IconProps as TablerIconProps,
 } from "@tabler/icons-react";
 
@@ -55,31 +34,10 @@ function wrap(Base: React.ComponentType<TablerIconProps>) {
   };
 }
 
-export const Add = wrap(IconPlus);
-export const SignIn = wrap(IconArrowRight);
-export const Mail = wrap(IconMail);
-export const Person = wrap(IconUser);
-export const Dice = wrap(IconDice5);
-export const Tip = wrap(IconCoin);
 export const Menu = wrap(IconMenu2);
-export const Settings = wrap(IconAdjustmentsHorizontal);
-export const Back = wrap(IconArrowLeft);
 export const Copy = wrap(IconCopy);
-export const Option = wrap(IconDots);
-export const X = wrap(IconX);
-export const Edit = wrap(IconPencil);
-export const Cancel = wrap(IconSquareX);
-export const Image = wrap(IconPhoto);
-export const Loading = wrap(IconLoader2);
 export const Check = wrap(IconCheck);
-export const ArrowDown = wrap(IconArrowDown);
-export const ArrowUp = wrap(IconArrowUp);
-export const Clock = wrap(IconClock);
-export const Logout = wrap(IconLogout2);
+export const Loading = wrap(IconLoader2);
 export const Warning = wrap(IconAlertTriangle);
-export const Lock = wrap(IconLock);
-export const LockOpen = wrap(IconLockOpen);
-export const ChevronUp = wrap(IconChevronUp);
-export const ChevronDown = wrap(IconChevronDown);
-export const QrCode = wrap(IconQrcode);
 export const FaceId = wrap(IconFaceId);
+export const Mail = wrap(IconMail);

@@ -12,8 +12,6 @@
  *                 - co Back: Back 100 (x=25) + khe 8 + nut chinh 232 (x=133)
  *                 - nut don: rong 274, can giua (x=58)
  *   Hang phu     y=795  cao 49, rong CA KHUNG 390 ("Skip")
- *
- * Luoi 15 hang x 48.8 cu van giu (rowTop) cho vai man tu dat vi tri.
  */
 
 "use client";
@@ -24,37 +22,26 @@ import { BackButton } from "@/components/ui/back-button";
 
 /* ===================== Hang so luoi (do tu Figma) ========================= */
 
-export const FRAME_W = 390;
-export const FRAME_H = 844;
-export const ROW_H = 48.8;
-export const ROW_GAP = 8;
-
-/** Moc y cua hang n (n bat dau tu 1). rowTop(4) = 170.4 */
-export const rowTop = (row: number) => (row - 1) * (ROW_H + ROW_GAP);
-/** Chieu cao cua mot khoi chiem n hang lien tiep. rowSpan(9) = 503.2 */
-export const rowSpan = (rows: number) => rows * ROW_H + (rows - 1) * ROW_GAP;
+const FRAME_W = 390;
 
 /** Vung noi dung: le 25px, rong 340 (x=25..365) */
-export const CONTENT_X = 25;
-export const CONTENT_W = 340;
-export const CONTENT_TOP = 170;
+const CONTENT_X = 25;
+const CONTENT_W = 340;
+const CONTENT_TOP = 170;
 
 /** Hang nut hanh dong */
-export const SLANT_X = CONTENT_X;
-export const SLANT_W = CONTENT_W;
-export const SLANT_GAP = 8;
-export const BACK_W = 100;
-export const MAIN_W = 232;
-export const MAIN_OFFSET = BACK_W + SLANT_GAP; // 108
-export const SINGLE_W = 274;
-export const ACTION_TOP = 738;
-export const ACTION_H = 49.32;
-export const FOOT_TOP = 795;
+const BACK_W = 100;
+const MAIN_W = 232;
+const MAIN_OFFSET = BACK_W + 8; // 108
+const SINGLE_W = 274;
+const ACTION_TOP = 738;
+const ACTION_H = 49.32;
+const FOOT_TOP = 795;
 
 /** Tieu de man */
-export const TITLE_TOP = 49;
-export const TITLE_H = 65;
-export const TITLE_W = 274;
+const TITLE_TOP = 49;
+const TITLE_H = 65;
+const TITLE_W = 274;
 
 /* ============================== Screen ==================================== */
 
@@ -102,7 +89,7 @@ export function Screen({
       {action ? (
         <div
           className="absolute"
-          style={{ left: SLANT_X, width: SLANT_W, top: ACTION_TOP, height: ACTION_H }}
+          style={{ left: CONTENT_X, width: CONTENT_W, top: ACTION_TOP, height: ACTION_H }}
         >
           {action}
         </div>

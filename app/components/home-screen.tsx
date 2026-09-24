@@ -48,7 +48,6 @@ const POLL_MS = 10000;
 
 interface Props {
   primaryWallet: { wallet_address: string };
-  profile: { id: string; name: string; daily_tip_limit: number | null };
   /** Chi dung cho anh chup so sanh Figma / test: mo san 1 trang thai */
   initialTab?: Tab;
   initialOverlay?: "menu" | "edit" | "choose" | "logout";

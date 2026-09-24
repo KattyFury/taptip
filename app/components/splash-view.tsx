@@ -12,7 +12,7 @@ import { TapTipWordmark } from "@/components/ui";
 
 export function SplashView() {
   return (
-    <div className="relative w-full h-full overflow-hidden bg-background">
+    <div className="relative w-full h-full bg-background">
       <div
         className="absolute left-0 flex items-center justify-center"
         style={{ top: 170.32, width: 390, height: 49 }}

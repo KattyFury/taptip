@@ -18,7 +18,7 @@
 
 'use client'
 
-import React, { type PropsWithChildren, createContext, useState } from 'react'
+import { type PropsWithChildren, createContext, useState } from 'react'
 
 /**
  * Mang email tu man /sign-in sang /code-confirmation. Cac truong cu

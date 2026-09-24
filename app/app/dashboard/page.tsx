@@ -37,8 +37,7 @@ export default async function Dashboard() {
   }
 
   const primaryWallet = { wallet_address: user.wallet_address };
-  const profile = { id: user.id, name: "", daily_tip_limit: null };
 
   // Khoa Passkey nam o app/dashboard/layout.tsx (boc moi man dashboard).
-  return <HomeScreen primaryWallet={primaryWallet} profile={profile} />;
+  return <HomeScreen primaryWallet={primaryWallet} />;
 }

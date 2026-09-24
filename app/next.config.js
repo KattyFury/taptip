@@ -17,8 +17,8 @@
  */
 
 // Chan build som neu thieu key that su dung (route /api/wallet/balance).
-// CIRCLE_ENTITY_SECRET khong con kiem tra o day: entity secret chi danh cho
-// developer-controlled wallets, app nay dung modular wallets (passkey).
+// (CIRCLE_ENTITY_SECRET duoc lib/circle/wallets.ts tu kiem tra khi tao vi /
+// gui tien - Developer-Controlled Wallets, server ky.)
 if (!process.env.CIRCLE_API_KEY?.trim()) {
   throw new Error("CIRCLE_API_KEY environment variable is missing or empty");
 }

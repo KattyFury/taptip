@@ -50,9 +50,8 @@ InputOTPGroup.displayName = "InputOTPGroup"
 /**
  * O nhap mot chu so - Figma frame "19" (node 37:190) ve THAT 6 o deu nhau,
  * KHONG chia 2 nhom 3 (khong co dau ngan cach o giua nhu ban truoc suy ra).
- * Kich thuoc do tu Figma 09-24b (Group 27): 48.18 x 49, bo goc 8px, nen --surface,
- * khe 10px (6 o = 339.1, can giua trong 340) - KHONG con
- * InputOTPSeparator).
+ * Kich thuoc do tu Figma 09-24b (Group 27): 48.18 x 49, bo goc 8px, nen
+ * --surface, khe 10px (6 o = 339.1, can giua trong 340).
  */
 const InputOTPSlot = React.forwardRef<
   React.ElementRef<"div">,
@@ -85,20 +84,5 @@ const InputOTPSlot = React.forwardRef<
 })
 InputOTPSlot.displayName = "InputOTPSlot"
 
-/** Dau cham ngan cach giua 2 nhom 3 so. */
-const InputOTPSeparator = React.forwardRef<
-  React.ElementRef<"div">,
-  React.ComponentPropsWithoutRef<"div">
->(({ className, ...props }, ref) => (
-  <div
-    ref={ref}
-    role="separator"
-    className={cn("text-brand text-body leading-none", className)}
-    {...props}
-  >
-    &bull;
-  </div>
-))
-InputOTPSeparator.displayName = "InputOTPSeparator"
 
-export { InputOTP, InputOTPGroup, InputOTPSlot, InputOTPSeparator }
+export { InputOTP, InputOTPGroup, InputOTPSlot }

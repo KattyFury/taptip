@@ -50,7 +50,6 @@ export default function Layout({
 
   return (
     <GlobalContextProvider>
-      {/* Loai bo px-5 vi Screen da co px-[var(--grid-margin)], tranh bi bop hep ngang tren mobile */}
       <div className="flex flex-col flex-1 w-full h-full min-h-0">{children}</div>
     </GlobalContextProvider>
   );
